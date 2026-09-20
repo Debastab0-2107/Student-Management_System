@@ -101,6 +101,8 @@ public class Student {
 	public void setMustChangePassword(boolean mustChangePassword) {
 		this.mustChangePassword = mustChangePassword;
 	}
+	
+	//override toString() method
 	@Override
 	public String toString() {
 		return "Student [studentId=" + studentId + ", name=" + name + ", phoneNumber=" + phoneNumber + ", email="
@@ -109,10 +111,4 @@ public class Student {
 				+ passwordHash + ", mustChangePassword=" + mustChangePassword + "]";
 	}
 	
-	//override toString() method
-	
-	
-	
-	
-	
-}
+} // and of class
