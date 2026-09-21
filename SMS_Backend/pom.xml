@@ -62,7 +62,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- .env support for Spring Boot 4 -->
+        <!-- Loads environment variables from .env during development -->
         <dependency>
             <groupId>me.paulschwarz</groupId>
             <artifactId>springboot4-dotenv</artifactId>
