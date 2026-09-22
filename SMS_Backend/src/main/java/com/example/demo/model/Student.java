@@ -173,8 +173,6 @@ public class Student {
 	public void setMustChangePassword(boolean mustChangePassword) {
 		this.mustChangePassword = mustChangePassword;
 	}
-	
-	//override toString() method
 
 
 	/*
@@ -199,6 +197,5 @@ public class Student {
 				+ ", mustChangePassword=" + mustChangePassword
 				+ "]";
 	}
-
 
 } // End of class
