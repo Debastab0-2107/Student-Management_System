@@ -1,8 +1,9 @@
 package com.example.demo.util;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
+
+import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Component;
 
@@ -11,57 +12,28 @@ import com.example.demo.config.JwtConfig;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-/*
- * JwtUtil
- * -------
- * Responsible for creating and validating JSON Web Tokens.
- *
- * AuthServiceImpl uses this class instead of directly handling
- * JWT implementation details.
- */
 @Component
 public class JwtUtil {
 
-    /*
-     * JWT configuration supplied by JwtConfig.
-     */
     private final JwtConfig jwtConfig;
 
-    /*
-     * Constructor-based dependency injection.
-     */
     public JwtUtil(JwtConfig jwtConfig) {
         this.jwtConfig = jwtConfig;
     }
 
     /*
-     * Generates a JWT for an authenticated user.
-     *
-     * The username is stored as the JWT subject.
-     * The user's role is stored as a custom claim.
+     * Generates a JWT containing the username and role.
      */
     public String generateToken(String username, String role) {
 
-        /*
-         * Current time is used as the token creation time.
-         */
         Date issuedAt = new Date();
 
-        /*
-         * Calculate the expiration time.
-         */
         Date expiration = new Date(
                 issuedAt.getTime()
                         + jwtConfig.getExpiration());
 
-        /*
-         * Create the signing key from the configured secret.
-         */
-        Key signingKey = getSigningKey();
+        SecretKey signingKey = getSigningKey();
 
-        /*
-         * Build and return the JWT.
-         */
         return Jwts.builder()
                 .subject(username)
                 .claim("role", role)
@@ -72,7 +44,7 @@ public class JwtUtil {
     }
 
     /*
-     * Extracts the username/subject from a JWT.
+     * Extracts the username from a valid JWT.
      */
     public String extractUsername(String token) {
 
@@ -85,9 +57,7 @@ public class JwtUtil {
     }
 
     /*
-     * Validates the JWT signature and expiration.
-     *
-     * If parsing fails, the token is considered invalid.
+     * Checks whether the JWT is correctly signed and not expired.
      */
     public boolean isTokenValid(String token) {
 
@@ -118,16 +88,19 @@ public class JwtUtil {
                 .getPayload()
                 .get("role");
 
-        return role != null ? role.toString() : null;
+        return role != null
+                ? role.toString()
+                : null;
     }
 
     /*
-     * Creates the cryptographic signing key.
+     * Creates the HMAC signing key from the configured JWT secret.
      *
-     * The JWT secret must be sufficiently long for the HS256
-     * signing algorithm.
+     * SecretKey is used instead of the generic java.security.Key
+     * because JJWT's verifyWith(...) requires a SecretKey for
+     * HMAC-signed tokens.
      */
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
 
         byte[] keyBytes = jwtConfig
                 .getSecret()
