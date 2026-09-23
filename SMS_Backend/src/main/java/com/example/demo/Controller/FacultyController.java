@@ -1,84 +1,129 @@
 package com.example.demo.Controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.demo.model.Faculty;
 import com.example.demo.service.FacultyService;
 
-import java.util.List;
-
-/*
- * FacultyController handles Faculty-related operations at the
- * Controller layer of the Student Management System.
+/**
+ * REST controller responsible for handling faculty-related HTTP requests.
  *
- * This class receives Faculty-related requests and delegates
- * the actual processing to FacultyService.
+ * This controller receives requests from the client and delegates the
+ * business operations to the FacultyService layer.
  *
- * The Controller does not directly communicate with the DAO layer.
- * The request flow is:
+ * Architecture flow:
+ * Controller -> Service -> DAO -> Hibernate -> MySQL
  *
- * Controller → Service → DAO
+ * Faculty and visiting faculty are handled by the same Faculty model.
+ * The facultyType field distinguishes between the two types.
  */
+@RestController
+@RequestMapping("/faculty")
 public class FacultyController {
 
-    /*
-     * Reference to FacultyService.
-     *
-     * This service is used to perform Faculty-related operations
-     * through the Service layer.
-     */
-    private FacultyService facultyService;
+    private final FacultyService facultyService;
 
-    /*
-     * Saves a new Faculty record.
+    /**
+     * Constructor-based dependency injection for FacultyService.
      *
-     * @param faculty Faculty object containing the data to be saved.
-     * @return the saved Faculty object.
+     * @param facultyService service responsible for faculty operations
      */
-    public Faculty save(Faculty faculty) {
-
-        return facultyService.save(faculty);
+    public FacultyController(FacultyService facultyService) {
+        this.facultyService = facultyService;
     }
 
-    /*
-     * Finds a Faculty member using the teacher ID.
+    /**
+     * Creates a new faculty record.
      *
-     * @param teacherId unique ID of the faculty member.
-     * @return the matching Faculty object.
+     * @param faculty faculty information received from the request body
+     * @return the saved faculty record
      */
-    public Faculty findById(String teacherId) {
+    @PostMapping
+    public ResponseEntity<Faculty> save(
+            @RequestBody Faculty faculty) {
 
-        return facultyService.findById(teacherId);
+        Faculty savedFaculty = facultyService.save(faculty);
+
+        return ResponseEntity.ok(savedFaculty);
     }
 
-    /*
-     * Retrieves all Faculty records.
+    /**
+     * Retrieves a faculty member using the teacher ID.
      *
-     * @return a List containing all Faculty objects.
+     * @param teacherId unique teacher ID
+     * @return the faculty record if found
      */
-    public List<Faculty> findAll() {
+    @GetMapping("/{teacherId}")
+    public ResponseEntity<Faculty> findById(
+            @PathVariable String teacherId) {
 
-        return facultyService.findAll();
+        Faculty faculty = facultyService.findById(teacherId);
+
+        if (faculty == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(faculty);
     }
 
-    /*
-     * Updates an existing Faculty record.
+    /**
+     * Retrieves all faculty records.
      *
-     * @param faculty Faculty object containing the updated information.
-     * @return true if the update is successful, otherwise false.
+     * @return list containing all faculty members
      */
-    public boolean update(Faculty faculty) {
+    @GetMapping
+    public ResponseEntity<List<Faculty>> findAll() {
 
-        return facultyService.update(faculty);
+        List<Faculty> facultyList = facultyService.findAll();
+
+        return ResponseEntity.ok(facultyList);
     }
 
-    /*
-     * Deletes a Faculty record using the teacher ID.
+    /**
+     * Updates an existing faculty record.
      *
-     * @param teacherId unique ID of the faculty member to be deleted.
-     * @return true if the deletion is successful, otherwise false.
+     * @param faculty updated faculty information
+     * @return success response when the faculty is updated
      */
-    public boolean deleteById(String teacherId) {
+    @PutMapping
+    public ResponseEntity<Void> update(
+            @RequestBody Faculty faculty) {
 
-        return facultyService.deleteById(teacherId);
+        boolean updated = facultyService.update(faculty);
+
+        if (!updated) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok().build();
     }
 
+    /**
+     * Deletes a faculty member using the teacher ID.
+     *
+     * @param teacherId unique teacher ID of the faculty member
+     * @return success response when the record is deleted
+     */
+    @DeleteMapping("/{teacherId}")
+    public ResponseEntity<Void> deleteById(
+            @PathVariable String teacherId) {
+
+        boolean deleted = facultyService.deleteById(teacherId);
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok().build();
+    }
 }

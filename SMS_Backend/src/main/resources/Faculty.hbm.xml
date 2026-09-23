@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+-->
+<hibernate-mapping>
+
+    <!-- Maps the Faculty Java model to the faculty database table. -->
+    <class name="com.example.demo.model.Faculty"
+           table="faculty">
+
+        <!-- Teacher ID is the primary key and is supplied by the application. -->
+        <id name="teacherId" column="teacher_id">
+            <generator class="assigned"/>
+        </id>
+
+        <!-- Faculty details. -->
+        <property name="name"
+                  column="name"
+                  not-null="true"/>
+
+        <property name="phoneNumber"
+                  column="phone_number"/>
+
+        <property name="facultyType"
+                  column="faculty_type"
+                  not-null="true"/>
+
+        <property name="deptId"
+                  column="dept_id"/>
+
+        <property name="status"
+                  column="status"
+                  not-null="true"/>
+
+    </class>
+
+</hibernate-mapping>

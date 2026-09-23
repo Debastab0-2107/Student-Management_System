@@ -1,71 +1,66 @@
 package com.example.demo.serviceimpl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dao.FacultyDao;
 import com.example.demo.model.Faculty;
 import com.example.demo.service.FacultyService;
 
-import java.util.List;
-
 /*
- * FacultyServiceImpl provides the implementation of the FacultyService interface.
+ * FacultyServiceImpl
+ * ------------------
+ * Contains the business/service layer logic
+ * for Faculty operations.
  *
- * This class belongs to the Service Implementation layer.
- * It receives Faculty-related operations from the Controller layer
- * and delegates the required data-access operations to FacultyDao.
- *
- * The service layer acts as an intermediate layer between the
- * Controller and DAO layers.
+ * Controller
+ *     ↓
+ * FacultyService
+ *     ↓
+ * FacultyServiceImpl
+ *     ↓
+ * FacultyDao
  */
+@Service
 public class FacultyServiceImpl implements FacultyService {
 
-    /*
-     * Reference to the FacultyDao.
-     *
-     * This object is used to delegate database-related Faculty
-     * operations to the DAO layer.
-     */
-    private FacultyDao facultyDao;
+    private final FacultyDao facultyDao;
 
+    public FacultyServiceImpl(FacultyDao facultyDao) {
+        this.facultyDao = facultyDao;
+    }
 
     /*
-     * Saves a new Faculty record.
-     *
-     * The Faculty object is passed to the DAO layer, where the
-     * actual data-access operation will be performed.
-     *
-     * @param faculty Faculty object containing the data to be saved.
-     * @return the saved Faculty object.
+     * Creates a new faculty record.
      */
     @Override
     public Faculty save(Faculty faculty) {
 
+        if (faculty == null) {
+            throw new IllegalArgumentException(
+                    "Faculty cannot be null");
+        }
+
         return facultyDao.save(faculty);
     }
 
-
     /*
-     * Finds a Faculty member using the teacher ID.
-     *
-     * The teacher ID is passed to the DAO layer to retrieve
-     * the corresponding Faculty record.
-     *
-     * @param teacherId unique ID of the faculty member.
-     * @return the matching Faculty object.
+     * Finds a faculty member by teacher ID.
      */
     @Override
     public Faculty findById(String teacherId) {
 
+        if (teacherId == null || teacherId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
         return facultyDao.findById(teacherId);
     }
 
-
     /*
-     * Retrieves all Faculty records.
-     *
-     * The request is delegated to the DAO layer, which will
-     * perform the actual data-access operation.
-     *
-     * @return a List containing all Faculty objects.
+     * Retrieves all faculty records.
      */
     @Override
     public List<Faculty> findAll() {
@@ -73,36 +68,37 @@ public class FacultyServiceImpl implements FacultyService {
         return facultyDao.findAll();
     }
 
-
     /*
-     * Updates an existing Faculty record.
-     *
-     * The Faculty object containing the updated information
-     * is passed to the DAO layer for processing.
-     *
-     * @param faculty Faculty object containing the updated information.
-     * @return true if the update is successful, otherwise false.
+     * Updates an existing faculty record.
      */
     @Override
     public boolean update(Faculty faculty) {
 
+        if (faculty == null) {
+            throw new IllegalArgumentException(
+                    "Faculty cannot be null");
+        }
+
+        if (faculty.getTeacherId() == null
+                || faculty.getTeacherId().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
         return facultyDao.update(faculty);
     }
 
-
     /*
-     * Deletes a Faculty record using the teacher ID.
-     *
-     * The teacher ID is passed to the DAO layer, which will
-     * perform the actual deletion operation.
-     *
-     * @param teacherId unique ID of the faculty member to be deleted.
-     * @return true if the deletion is successful, otherwise false.
+     * Deletes a faculty record by teacher ID.
      */
     @Override
     public boolean deleteById(String teacherId) {
 
+        if (teacherId == null || teacherId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
         return facultyDao.deleteById(teacherId);
     }
-
 }
