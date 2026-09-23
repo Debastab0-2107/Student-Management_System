@@ -82,6 +82,12 @@
 			    <artifactId>hibernate-core</artifactId>
 			</dependency>
 			
+			<!-- Provides Spring JDBC and DataSource auto-configuration. -->
+			<dependency>
+			    <groupId>org.springframework.boot</groupId>
+			    <artifactId>spring-boot-starter-jdbc</artifactId>
+			</dependency>
+			
 			<!-- MySQL JDBC Driver -->
 			<dependency>
 			    <groupId>com.mysql</groupId>
