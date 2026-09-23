@@ -1,58 +1,54 @@
 package com.example.demo.Controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Student;
 import com.example.demo.service.StudentService;
 
-/*
- * StudentController handles REST requests related to the Student portal.
+/**
+ * REST controller responsible for handling student-related HTTP requests.
  *
- * The controller is responsible only for receiving HTTP requests
- * and returning HTTP responses.
+ * This controller receives requests from the client and delegates student
+ * operations to the StudentService layer.
  *
- * Business logic belongs in StudentService.
- * Database operations belong in StudentDao.
+ * Architecture flow:
+ * Controller -> Service -> DAO -> Hibernate -> MySQL
  */
 @RestController
-@RequestMapping("/api/student")
+@RequestMapping("/student")
 public class StudentController {
 
-	/*
-	 * StudentService will be used to perform Student-related
-	 * application operations.
-	 *
-	 * The actual Spring dependency injection will be configured
-	 * when the service layer is activated.
-	 */
-	private StudentService studentService;
+    private final StudentService studentService;
 
+    /**
+     * Constructor-based dependency injection for StudentService.
+     *
+     * @param studentService service responsible for student operations
+     */
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
 
-	/*
-	 * Returns the profile of the currently logged-in student.
-	 *
-	 * Endpoint:
-	 * GET /api/student/profile
-	 *
-	 * Maintainer note:
-	 * According to the SRS, the student ID must eventually be
-	 * resolved from the authenticated JWT rather than supplied
-	 * by the client.
-	 */
-	@GetMapping("/profile")
-	public Student getProfile() {
+    /**
+     * Retrieves a student using the student's unique ID.
+     *
+     * @param studentId unique student ID
+     * @return the student record if found
+     */
+    @GetMapping("/{studentId}")
+    public ResponseEntity<Student> findByStudentId(
+            @PathVariable String studentId) {
 
-		/*
-		 * TODO:
-		 * Once Spring Security/JWT is implemented, obtain the
-		 * student ID from the authenticated user's JWT and call:
-		 *
-		 * studentService.findByStudentId(studentId);
-		 */
+        Student student = studentService.findByStudentId(studentId);
 
-		return null;
-	}
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
 
+        return ResponseEntity.ok(student);
+    }
 }

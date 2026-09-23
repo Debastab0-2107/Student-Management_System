@@ -1,33 +1,36 @@
 package com.example.demo.daoimpl;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
+
 import com.example.demo.dao.StudentDao;
 import com.example.demo.model.Student;
 
-/*
- * StudentDaoImpl is the implementation class of the StudentDao interface.
- *
- * This class belongs to the DAO implementation layer and will contain
- * the actual database operations related to Student records.
- *
- * The methods are currently kept as placeholders.
- * The actual Hibernate/database logic will be added when the
- * DAO implementation phase begins.
- */
+@Repository
 public class StudentDaoImpl implements StudentDao {
 
-	/*
-	 * Finds a Student record using the student's ID.
-	 *
-	 * The actual database retrieval logic will be implemented here.
-	 *
-	 * @param studentId unique ID / roll number of the student.
-	 * @return the matching Student object.
-	 */
-	@Override
-	public Student findByStudentId(String studentId) {
+    private final SessionFactory sessionFactory;
 
-		// TODO: Implement the database retrieval logic using studentId.
-		return null;
-	}
+    public StudentDaoImpl(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 
+    @Override
+    public Student findByStudentId(String studentId) {
+
+        if (studentId == null || studentId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Student ID cannot be empty");
+        }
+
+        Session session = sessionFactory.openSession();
+
+        try {
+            return session.get(Student.class, studentId);
+
+        } finally {
+            session.close();
+        }
+    }
 }
