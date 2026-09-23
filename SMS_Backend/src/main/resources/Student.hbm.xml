@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+-->
+<hibernate-mapping>
+
+    <class name="com.example.demo.model.Student" table="student">
+
+        <id name="studentId" column="student_id">
+            <generator class="assigned"/>
+        </id>
+
+        <property name="name" column="name" not-null="true"/>
+        <property name="phoneNumber" column="phone_number"/>
+        <property name="email" column="email"/>
+        <property name="yearOfAdmission" column="year_of_admission"/>
+        <property name="dateOfBirth" column="date_of_birth"/>
+        <property name="courseId" column="course_id"/>
+        <property name="sessionId" column="session_id"/>
+        <property name="currentSemesterId" column="current_semester_id"/>
+        <property name="passwordHash" column="password_hash"/>
+        <property name="mustChangePassword"
+                  column="must_change_password"
+                  not-null="true"/>
+
+    </class>
+
+</hibernate-mapping>
