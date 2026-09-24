@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<hibernate-mapping>
+
+    <!-- Maps the Subject Java model to the subject database table. -->
+    <class name="com.example.demo.model.Subject"
+           table="subject">
+
+        <!-- Subject ID is the primary key supplied by the application. -->
+        <id name="subjectId" column="subject_id">
+            <generator class="assigned"/>
+        </id>
+
+        <!-- Subject name. -->
+        <property name="subjectName"
+                  column="subject_name"
+                  not-null="true"/>
+
+        <!-- Course to which the subject belongs. -->
+        <property name="courseId"
+                  column="course_id"/>
+
+        <!-- Semester in which the subject is offered. -->
+        <property name="semesterId"
+                  column="semester_id"/>
+
+    </class>
+
+</hibernate-mapping>
