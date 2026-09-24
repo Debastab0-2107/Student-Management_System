@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<hibernate-mapping>
+
+    <!-- Maps the Marks Java model to the marks database table. -->
+    <class name="com.example.demo.model.Marks"
+           table="marks">
+
+        <!-- Marks ID is the primary key supplied by the application. -->
+        <id name="marksId" column="marks_id">
+            <generator class="assigned"/>
+        </id>
+
+        <!-- Student who obtained the marks. -->
+        <property name="studentId"
+                  column="student_id"
+                  not-null="true"/>
+
+        <!-- Subject for which the marks were obtained. -->
+        <property name="subjectId"
+                  column="subject_id"
+                  not-null="true"/>
+
+        <!-- Marks obtained by the student. -->
+        <property name="marks"
+                  column="marks"
+                  not-null="true"/>
+
+    </class>
+
+</hibernate-mapping>

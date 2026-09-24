@@ -56,7 +56,15 @@ public class HibernateConfig {
         // Register native Hibernate XML mappings.
         configuration.addResource("Faculty.hbm.xml");
         configuration.addResource("Student.hbm.xml");
+        /**
+         * Registers the Subject Hibernate XML mapping.
+         */
+        configuration.addResource("Subject.hbm.xml");
 
+        /**
+         * Registers the Marks Hibernate XML mapping.
+         */
+        configuration.addResource("Marks.hbm.xml");
         return configuration.buildSessionFactory();
     }
 }
