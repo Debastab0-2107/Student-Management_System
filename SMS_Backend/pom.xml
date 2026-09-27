@@ -94,6 +94,18 @@
 			    <artifactId>mysql-connector-j</artifactId>
 			    <scope>runtime</scope>
 			</dependency>
+			
+					<!--
+		    Apache POI
+		    Provides support for reading Microsoft Excel (.xlsx)
+		    files uploaded by the department administrator.
+		-->
+		<dependency>
+		    <groupId>org.apache.poi</groupId>
+		    <artifactId>poi-ooxml</artifactId>
+		    <version>5.4.1</version>
+		</dependency>
+			
 		
 	</dependencies>
 

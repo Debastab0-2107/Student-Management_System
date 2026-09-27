@@ -1,26 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<!--
+    Student Hibernate Mapping
+    Maps the Student model to the student table.
+
+    Authority-controlled fields:
+        studentId
+        name
+        phoneNumber
+        courseId
+        sessionId
+
+    Student-editable fields:
+        email
+        dateOfBirth
+        fatherName
+        fatherPhoneNumber
+        motherName
+        motherPhoneNumber
+
+    Security fields:
+        passwordHash
+        mustChangePassword
+
+    Hibernate XML mapping is used because this project uses
+    native Hibernate rather than Spring Data JPA.
 -->
+
 <hibernate-mapping>
 
-    <class name="com.example.demo.model.Student" table="student">
+    <!--
+        Maps the Student Java class to the student database table.
+    -->
+    <class name="com.example.demo.model.Student"
+           table="student">
 
-        <id name="studentId" column="student_id">
+        <!--
+            Primary key.
+
+            The student ID is supplied by the authority Excel sheet,
+            therefore the assigned generator is used.
+        -->
+        <id name="studentId"
+            column="student_id">
+
             <generator class="assigned"/>
+
         </id>
 
-        <property name="name" column="name" not-null="true"/>
-        <property name="phoneNumber" column="phone_number"/>
-        <property name="email" column="email"/>
-        <property name="yearOfAdmission" column="year_of_admission"/>
-        <property name="dateOfBirth" column="date_of_birth"/>
-        <property name="courseId" column="course_id"/>
-        <property name="sessionId" column="session_id"/>
-        <property name="currentSemesterId" column="current_semester_id"/>
-        <property name="passwordHash" column="password_hash"/>
+        <!--
+            Authority-controlled student's full name.
+        -->
+        <property name="name"
+                  column="name"
+                  not-null="true"/>
+
+        <!--
+            Authority-controlled student's phone number.
+
+            This number is also used as the initial password
+            before the student changes it.
+        -->
+        <property name="phoneNumber"
+                  column="phone_number"/>
+
+        <!--
+            Student-editable email address.
+
+            It is initially stored as an empty string after
+            authority Excel import.
+        -->
+        <property name="email"
+                  column="email"/>
+
+        <!--
+            Student-editable date of birth.
+
+            It is initially stored as an empty string after
+            authority Excel import.
+        -->
+        <property name="dateOfBirth"
+                  column="date_of_birth"/>
+
+        <!--
+            Authority-controlled course ID.
+        -->
+        <property name="courseId"
+                  column="course_id"/>
+
+        <!--
+            Authority-controlled academic session ID.
+        -->
+        <property name="sessionId"
+                  column="session_id"/>
+
+        <!--
+            Student-editable father's name.
+
+            Initially stored as an empty string.
+        -->
+        <property name="fatherName"
+                  column="father_name"/>
+
+        <!--
+            Student-editable father's phone number.
+
+            Initially stored as an empty string.
+        -->
+        <property name="fatherPhoneNumber"
+                  column="father_phone_number"/>
+
+        <!--
+            Student-editable mother's name.
+
+            Initially stored as an empty string.
+        -->
+        <property name="motherName"
+                  column="mother_name"/>
+
+        <!--
+            Student-editable mother's phone number.
+
+            Initially stored as an empty string.
+        -->
+        <property name="motherPhoneNumber"
+                  column="mother_phone_number"/>
+
+        <!--
+            Stores only the BCrypt hash of the student's password.
+
+            Plain-text passwords must never be stored here.
+        -->
+        <property name="passwordHash"
+                  column="password_hash"/>
+
+        <!--
+            Indicates whether the student must change the
+            initial phone-number-based password.
+        -->
         <property name="mustChangePassword"
                   column="must_change_password"
                   not-null="true"/>
