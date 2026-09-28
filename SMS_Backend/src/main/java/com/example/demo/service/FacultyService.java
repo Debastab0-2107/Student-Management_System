@@ -1,60 +1,72 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Faculty;
-
 import java.util.List;
 
-/*
- * FacultyService defines the service-layer operations related to Faculty.
+import com.example.demo.model.Faculty;
+
+/**
+ * FacultyService
  *
- * This interface acts as a contract between the Controller layer and
- * the Service Implementation layer.
+ * Defines business operations related to Faculty management.
  *
- * The service layer is responsible for handling Faculty-related
- * application operations and delegating data-access work to the DAO layer.
+ * Faculty management is performed by the administrator.
  *
- * The actual implementation of these methods is provided by
- * FacultyServiceImpl in the service.impl package.
+ * Regular faculty:
+ * - Added through authority Excel import.
+ * - Deactivated through authority Excel.
+ *
+ * Visiting faculty:
+ * - Added directly by Admin.
+ * - Deactivated directly by Admin.
  */
 public interface FacultyService {
 
-    /*
-     * Saves a new Faculty record.
+    /**
+     * Saves a new faculty record.
      *
-     * @param faculty Faculty object containing the data to be saved.
-     * @return the saved Faculty object.
+     * @param faculty faculty to save
+     * @return saved faculty
      */
     Faculty save(Faculty faculty);
 
-    /*
-     * Finds a Faculty member using the teacher ID.
+    /**
+     * Finds faculty by teacher ID.
      *
-     * @param teacherId unique ID of the faculty member.
-     * @return the matching Faculty object.
+     * @param teacherId faculty identifier
+     * @return faculty if found
      */
     Faculty findById(String teacherId);
 
-    /*
-     * Retrieves all Faculty records.
+    /**
+     * Checks whether a faculty member exists.
      *
-     * @return a List containing all Faculty objects.
+     * @param teacherId faculty identifier
+     * @return true if exists
+     */
+    boolean existsById(String teacherId);
+
+    /**
+     * Retrieves all faculty records.
+     *
+     * @return all faculty records
      */
     List<Faculty> findAll();
 
-    /*
-     * Updates an existing Faculty record.
+    /**
+     * Updates faculty information.
      *
-     * @param faculty Faculty object containing the updated information.
-     * @return true if the update is successful, otherwise false.
+     * @param faculty updated faculty
+     * @return true if successful
      */
     boolean update(Faculty faculty);
 
-    /*
-     * Deletes a Faculty record using the teacher ID.
+    /**
+     * Deactivates faculty.
      *
-     * @param teacherId unique ID of the faculty member to be deleted.
-     * @return true if the deletion is successful, otherwise false.
+     * This performs a soft delete by setting status to false.
+     *
+     * @param teacherId faculty identifier
+     * @return true if successful
      */
-    boolean deleteById(String teacherId);
-
+    boolean deactivateById(String teacherId);
 }

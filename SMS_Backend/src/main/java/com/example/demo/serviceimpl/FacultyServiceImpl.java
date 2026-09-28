@@ -8,11 +8,12 @@ import com.example.demo.dao.FacultyDao;
 import com.example.demo.model.Faculty;
 import com.example.demo.service.FacultyService;
 
-/*
+/**
  * FacultyServiceImpl
- * ------------------
- * Contains the business/service layer logic
- * for Faculty operations.
+ *
+ * Implements business logic for Faculty management.
+ *
+ * Architecture:
  *
  * Controller
  *     ↓
@@ -21,18 +22,30 @@ import com.example.demo.service.FacultyService;
  * FacultyServiceImpl
  *     ↓
  * FacultyDao
+ *     ↓
+ * Hibernate
  */
 @Service
 public class FacultyServiceImpl implements FacultyService {
 
     private final FacultyDao facultyDao;
 
+    /**
+     * Constructor-based dependency injection.
+     *
+     * @param facultyDao faculty DAO
+     */
     public FacultyServiceImpl(FacultyDao facultyDao) {
         this.facultyDao = facultyDao;
     }
 
-    /*
-     * Creates a new faculty record.
+    /**
+     * Saves a new faculty record.
+     *
+     * Duplicate teacher IDs are rejected.
+     *
+     * @param faculty faculty to save
+     * @return saved faculty
      */
     @Override
     public Faculty save(Faculty faculty) {
@@ -42,11 +55,40 @@ public class FacultyServiceImpl implements FacultyService {
                     "Faculty cannot be null");
         }
 
+        if (faculty.getTeacherId() == null
+                || faculty.getTeacherId().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
+        if (faculty.getName() == null
+                || faculty.getName().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Faculty name is required");
+        }
+
+        if (faculty.getFacultyType() == null
+                || faculty.getFacultyType().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Faculty type is required");
+        }
+
+        if (facultyDao.existsById(
+                faculty.getTeacherId())) {
+
+            throw new IllegalArgumentException(
+                    "Faculty already exists with teacher ID: "
+                            + faculty.getTeacherId());
+        }
+
         return facultyDao.save(faculty);
     }
 
-    /*
-     * Finds a faculty member by teacher ID.
+    /**
+     * Finds faculty by teacher ID.
+     *
+     * @param teacherId faculty identifier
+     * @return faculty if found
      */
     @Override
     public Faculty findById(String teacherId) {
@@ -59,8 +101,22 @@ public class FacultyServiceImpl implements FacultyService {
         return facultyDao.findById(teacherId);
     }
 
-    /*
+    /**
+     * Checks whether a faculty member exists.
+     *
+     * @param teacherId faculty identifier
+     * @return true if exists
+     */
+    @Override
+    public boolean existsById(String teacherId) {
+
+        return facultyDao.existsById(teacherId);
+    }
+
+    /**
      * Retrieves all faculty records.
+     *
+     * @return all faculty records
      */
     @Override
     public List<Faculty> findAll() {
@@ -68,8 +124,11 @@ public class FacultyServiceImpl implements FacultyService {
         return facultyDao.findAll();
     }
 
-    /*
+    /**
      * Updates an existing faculty record.
+     *
+     * @param faculty updated faculty
+     * @return true if updated
      */
     @Override
     public boolean update(Faculty faculty) {
@@ -88,17 +147,22 @@ public class FacultyServiceImpl implements FacultyService {
         return facultyDao.update(faculty);
     }
 
-    /*
-     * Deletes a faculty record by teacher ID.
+    /**
+     * Deactivates a faculty member.
+     *
+     * No physical database deletion occurs.
+     *
+     * @param teacherId faculty identifier
+     * @return true if deactivated
      */
     @Override
-    public boolean deleteById(String teacherId) {
+    public boolean deactivateById(String teacherId) {
 
         if (teacherId == null || teacherId.isBlank()) {
             throw new IllegalArgumentException(
                     "Teacher ID is required");
         }
 
-        return facultyDao.deleteById(teacherId);
+        return facultyDao.deactivateById(teacherId);
     }
 }
