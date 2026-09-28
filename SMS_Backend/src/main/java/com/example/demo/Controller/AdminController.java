@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +17,20 @@ import com.example.demo.service.AdminService;
 /**
  * AdminController
  *
- * Handles administrator-related HTTP requests.
+ * Handles administrator-specific HTTP requests.
  *
- * Current responsibility:
+ * All endpoints under /admin/** are protected by Spring Security
+ * and require an ADMIN JWT.
  *
- * - Accept the authority-provided Excel file.
- * - Send the file to AdminService.
- * - Return the result of the student import operation.
+ * Responsibilities:
  *
- * Controller flow:
+ * 1. Import students from authority Excel.
+ * 2. Import regular/permanent faculty from authority Excel.
+ * 3. Deactivate regular/permanent faculty using authority Excel.
+ *
+ * Visiting faculty are handled separately through FacultyController.
+ *
+ * Architecture:
  *
  * HTTP Request
  *      ↓
@@ -32,24 +38,18 @@ import com.example.demo.service.AdminService;
  *      ↓
  * AdminService
  *      ↓
- * AdminServiceImpl
+ * Appropriate business service
  *      ↓
- * StudentExcelParser
- *      ↓
- * StudentService
- *      ↓
- * StudentDao
+ * DAO
  *      ↓
  * MySQL
- *
- * Administrative business logic remains inside the service layer.
  */
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
 
     /*
-     * Service responsible for administrator operations.
+     * Administrator business service.
      */
     private final AdminService adminService;
 
@@ -63,26 +63,22 @@ public class AdminController {
     }
 
     /**
-     * Uploads the authority-provided Excel sheet and imports
-     * the student records into the database.
+     * Uploads the authority-provided Student Excel file.
      *
      * HTTP:
      *
      * POST /admin/students/upload
      *
-     * Request type:
+     * Content type:
      *
      * multipart/form-data
      *
      * Form field:
      *
-     * file = Excel file
+     * file
      *
-     * The endpoint is protected by SecurityConfig, which requires
-     * the caller to have the ADMIN role for /admin/** endpoints.
-     *
-     * @param file uploaded Excel file
-     * @return imported students
+     * @param file authority student Excel
+     * @return import result
      */
     @PostMapping("/students/upload")
     public ResponseEntity<?> uploadStudents(
@@ -91,19 +87,17 @@ public class AdminController {
         try {
 
             /*
-             * Pass the uploaded file to the service layer.
+             * Import students through the service layer.
              */
             List<Student> importedStudents =
                     adminService.importStudentsFromExcel(file);
 
             /*
-             * Return the number of successfully imported students.
-             *
-             * Do not return Student entities directly because they
-             * contain passwordHash internally.
+             * Do not expose Student objects because they
+             * internally contain passwordHash.
              */
             return ResponseEntity.ok(
-                    java.util.Map.of(
+                    Map.of(
                             "message",
                             "Students imported successfully",
                             "count",
@@ -114,14 +108,12 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
 
             /*
-             * Excel validation errors, duplicate student IDs,
-             * missing required fields, and similar client-side
-             * import errors are returned as HTTP 400.
+             * Client-side Excel/business validation error.
              */
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(
-                            java.util.Map.of(
+                            Map.of(
                                     "message",
                                     e.getMessage()
                             )
@@ -130,14 +122,166 @@ public class AdminController {
         } catch (Exception e) {
 
             /*
-             * Unexpected import errors are returned as HTTP 500.
+             * Unexpected server-side error.
              */
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(
-                            java.util.Map.of(
+                            Map.of(
                                     "message",
                                     "Failed to import students"
+                            )
+                    );
+        }
+    }
+
+    /**
+     * Uploads the authority-provided Regular Faculty Excel file.
+     *
+     * HTTP:
+     *
+     * POST /admin/faculty/regular/upload
+     *
+     * Content type:
+     *
+     * multipart/form-data
+     *
+     * Form field:
+     *
+     * file
+     *
+     * Expected Excel columns:
+     *
+     * teacherId | name | phoneNumber | facultyType | deptId
+     *
+     * @param file authority regular faculty Excel
+     * @return number of imported faculty records
+     */
+    @PostMapping("/faculty/regular/upload")
+    public ResponseEntity<?> uploadRegularFaculty(
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+
+            /*
+             * Import regular faculty through AdminService.
+             */
+            int count =
+                    adminService
+                            .importRegularFacultyFromExcel(file);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "message",
+                            "Regular faculty imported successfully",
+                            "count",
+                            count
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            /*
+             * Excel validation or business validation error.
+             */
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    e.getMessage()
+                            )
+                    );
+
+        } catch (Exception e) {
+
+            /*
+             * Unexpected server-side error.
+             */
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    "Failed to import regular faculty"
+                            )
+                    );
+        }
+    }
+
+    /**
+     * Deactivates Regular Faculty using an authority Excel file.
+     *
+     * HTTP:
+     *
+     * POST /admin/faculty/regular/deactivate
+     *
+     * Content type:
+     *
+     * multipart/form-data
+     *
+     * Form field:
+     *
+     * file
+     *
+     * Expected Excel column:
+     *
+     * teacherId
+     *
+     * No physical database deletion is performed.
+     * The faculty status becomes false.
+     *
+     * @param file authority deactivation Excel
+     * @return number of deactivated faculty records
+     */
+    @PostMapping("/faculty/regular/deactivate")
+    public ResponseEntity<?> deactivateRegularFaculty(
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+
+            /*
+             * Deactivate faculty through AdminService.
+             */
+            int count =
+                    adminService
+                            .deactivateRegularFacultyFromExcel(
+                                    file);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "message",
+                            "Regular faculty deactivated successfully",
+                            "count",
+                            count
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            /*
+             * Validation or business error.
+             */
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    e.getMessage()
+                            )
+                    );
+
+        } catch (Exception e) {
+
+            /*
+             * Unexpected server-side error.
+             */
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    "Failed to deactivate regular faculty"
                             )
                     );
         }

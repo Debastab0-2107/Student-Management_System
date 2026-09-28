@@ -11,43 +11,71 @@ import com.example.demo.model.Student;
  *
  * Defines business operations available to the department administrator.
  *
- * The main responsibility currently being added is importing students
- * from the authority-provided Excel sheet.
+ * Current responsibilities:
  *
- * Flow:
+ * 1. Import students from the authority Excel file.
+ * 2. Import regular/permanent faculty from the authority Excel file.
+ * 3. Deactivate regular/permanent faculty using the authority
+ *    deactivation Excel file.
+ *
+ * Visiting faculty are managed directly through the FacultyController
+ * using authenticated Admin requests.
+ *
+ * Architecture:
  *
  * AdminController
  *       ↓
  * AdminService
  *       ↓
- * StudentExcelParser
+ * StudentService / FacultyService
  *       ↓
- * StudentService
+ * DAO
  *       ↓
- * StudentDao
+ * Hibernate
  *       ↓
  * MySQL
  */
 public interface AdminService {
 
     /**
-     * Imports student records from an authority Excel file.
+     * Imports student records from an authority-provided Excel file.
      *
-     * The Excel file contains only authority-controlled information:
+     * Expected student Excel columns:
      *
-     * - studentId
-     * - name
-     * - phoneNumber
-     * - courseId
-     * - sessionId
+     * studentId | name | phoneNumber | courseId | sessionId
      *
-     * The initial password is NOT taken from Excel.
-     *
-     * The StudentService is responsible for assigning the agreed
-     * initial password and storing its BCrypt hash.
-     *
-     * @param file authority-provided Excel file
-     * @return list of students successfully imported
+     * @param file authority-provided student Excel file
+     * @return list of successfully imported students
      */
     List<Student> importStudentsFromExcel(MultipartFile file);
+
+    /**
+     * Imports regular/permanent faculty from the authority Excel file.
+     *
+     * Expected columns:
+     *
+     * teacherId | name | phoneNumber | facultyType | deptId
+     *
+     * The facultyType must be REGULAR.
+     *
+     * @param file authority-provided regular faculty Excel file
+     * @return number of successfully imported faculty records
+     */
+    int importRegularFacultyFromExcel(MultipartFile file);
+
+    /**
+     * Deactivates regular/permanent faculty using an authority-provided
+     * deactivation Excel file.
+     *
+     * Expected column:
+     *
+     * teacherId
+     *
+     * Faculty records are NOT physically deleted.
+     * Their status is changed to false.
+     *
+     * @param file authority-provided faculty deactivation Excel file
+     * @return number of successfully deactivated faculty records
+     */
+    int deactivateRegularFacultyFromExcel(MultipartFile file);
 }
