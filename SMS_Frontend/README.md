@@ -135,7 +135,9 @@ npm run preview
 - If the application requires a backend, the backend must also be running for its API-dependent features to work.
 
 
-
+```bash
+npm install axios
+```
 
 
 
