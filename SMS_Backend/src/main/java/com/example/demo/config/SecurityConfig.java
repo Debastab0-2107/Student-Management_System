@@ -10,6 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+//done by debastab 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 //import com.example.demo.security.JwtAuthenticationFilter;
 
 /**
@@ -83,74 +88,67 @@ public class SecurityConfig {
      * @return configured security filter chain
      * @throws Exception when security configuration fails
      */
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    //SecurityFilterChain replaced by Debastab Das 
 
-        http
-            /*
-             * CSRF protection is disabled because the application
-             * uses stateless JWT authentication rather than
-             * browser session authentication.
-             */
-            .csrf(csrf -> csrf.disable())
+@Bean
+public SecurityFilterChain securityFilterChain(
+        HttpSecurity http) throws Exception {
 
-            /*
-             * Do not create HTTP sessions.
-             *
-             * Every authenticated request must carry its JWT.
-             */
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(
-                            SessionCreationPolicy.STATELESS))
+    http
+        // Allow the React frontend to make cross-origin requests.
+        .cors(cors -> {})
 
-            /*
-             * Define endpoint authorization rules.
-             */
-            .authorizeHttpRequests(auth -> auth
+        // JWT-based stateless authentication.
+        .csrf(csrf -> csrf.disable())
 
-                    /*
-                     * Admin and student login endpoints must be
-                     * publicly accessible because users do not
-                     * have a JWT before logging in.
-                     */
-                    .requestMatchers(
-                            "/auth/**",
-                            "/error")
-                    .permitAll()
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(
+                SessionCreationPolicy.STATELESS))
 
-                    /*
-                     * Only users with the ADMIN role can access
-                     * department-admin endpoints.
-                     */
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
+        .authorizeHttpRequests(auth -> auth
+            // Login endpoints must be accessible before obtaining a JWT.
+            .requestMatchers("/auth/**", "/error").permitAll()
 
-                    /*
-                     * Only users with the STUDENT role can access
-                     * student-specific endpoints.
-                     */
-                    .requestMatchers("/student/**")
-                    .hasRole("STUDENT")
+            .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                    /*
-                     * Existing Subject, Marks, Faculty and other
-                     * protected application endpoints remain
-                     * accessible only to authenticated users.
-                     */
-                    .anyRequest()
-                    .authenticated())
+            .requestMatchers("/student/**").hasRole("STUDENT")
 
-            /*
-             * Run the JWT filter before Spring Security's normal
-             * username/password authentication filter.
-             */
-            .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class);
+            .anyRequest().authenticated()
+        )
 
-        return http.build();
-    }
+        .addFilterBefore(
+            jwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class
+        );
+
+    return http.build();
+}
+
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+
+    config.setAllowedOrigins(
+        List.of("http://localhost:5173")
+    );
+
+    config.setAllowedMethods(
+        List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+    );
+
+    config.setAllowedHeaders(
+        List.of("Authorization", "Content-Type", "Accept")
+    );
+
+    config.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source =
+        new UrlBasedCorsConfigurationSource();
+
+    source.registerCorsConfiguration("/**", config);
+
+    return source;
+}
 
     /**
      * Creates the application's BCrypt password encoder.
