@@ -357,4 +357,30 @@ public class AdminServiceImpl implements AdminService {
                     e);
         }
     }
+    
+    @Override
+    public boolean deactivateRegularFacultyById(String teacherId) {
+
+        if (teacherId == null || teacherId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
+        Faculty faculty = facultyService.findById(teacherId);
+
+        if (faculty == null) {
+            return false;
+        }
+
+        if (!"REGULAR".equalsIgnoreCase(faculty.getFacultyType())) {
+            throw new IllegalArgumentException(
+                    "Only regular faculty can be deactivated through this endpoint");
+        }
+
+        if (!faculty.isStatus()) {
+            return false; // Already deactivated
+        }
+
+        return facultyService.deactivateById(teacherId);
+    }
 }

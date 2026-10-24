@@ -106,7 +106,14 @@
 		    <version>5.4.1</version>
 		</dependency>
 			
+		<!-- Spring ORM integration for native Hibernate transactions -->
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-orm</artifactId>
+		</dependency>
+
 		
+
 	</dependencies>
 
 	<build>

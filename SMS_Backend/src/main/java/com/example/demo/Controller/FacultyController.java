@@ -226,10 +226,8 @@ public class FacultyController {
     /**
      * Deactivates a Visiting Faculty member.
      *
-     * HTTP:
-     *
-     * DELETE /admin/faculty/visiting/{teacherId}
-     *
+     * HTTP:	PUT /admin/faculty/visiting/{teacherId}/deactivate
+	 * Changes status to false without physically deleting the record.
      * IMPORTANT:
      *
      * Despite using HTTP DELETE, the database record is NOT
@@ -242,7 +240,7 @@ public class FacultyController {
      * @param teacherId visiting faculty identifier
      * @return success response
      */
-    @DeleteMapping("/visiting/{teacherId}")
+    @PutMapping("/visiting/{teacherId}/deactivate")
     public ResponseEntity<?> deactivateVisitingFaculty(
             @PathVariable String teacherId) {
 

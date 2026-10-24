@@ -1,0 +1,21 @@
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="com.example.demo.model.CAMarks" table="CA_MARKS">
+
+        <id name="marksId" column="marks_id" type="string">
+            <generator class="assigned"/>
+        </id>
+
+        <property name="studentId" column="student_id" type="string" not-null="true"/>
+        <property name="teacherId" column="teacher_id" type="string" not-null="true"/>
+        <property name="subjectId" column="subject_id" type="string" not-null="true"/>
+		<property name="totalMarks" column="total_marks" type="big_decimal" not-null="true"/>
+        <property name="sem" column="sem" type="string" not-null="true"/>
+        <property name="caNo" column="ca_no" type="integer" not-null="true"/>
+
+    </class>
+</hibernate-mapping>
