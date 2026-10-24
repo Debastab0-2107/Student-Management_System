@@ -144,6 +144,29 @@ public class FacultyServiceImpl implements FacultyService {
                     "Teacher ID is required");
         }
 
+        Faculty existingFaculty =
+                facultyDao.findById(faculty.getTeacherId());
+
+        if (existingFaculty == null) {
+            return false;
+        }
+
+        if (!"VISITING".equalsIgnoreCase(
+                existingFaculty.getFacultyType())) {
+            throw new IllegalArgumentException(
+                    "Only visiting faculty can be updated "
+                    + "through this endpoint");
+        }
+
+        if (faculty.getName() == null
+                || faculty.getName().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Faculty name is required");
+        }
+
+        faculty.setFacultyType("VISITING");
+        faculty.setStatus(existingFaculty.isStatus());
+
         return facultyDao.update(faculty);
     }
 

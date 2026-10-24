@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.demo.model.Student;
 import com.example.demo.service.AdminService;
@@ -284,6 +286,37 @@ public class AdminController {
                                     "Failed to deactivate regular faculty"
                             )
                     );
+        }
+    }
+    
+    @PutMapping("/faculty/regular/{teacherId}/deactivate")
+    public ResponseEntity<?> deactivateRegularFacultyById(
+            @PathVariable String teacherId) {
+
+        try {
+            boolean deactivated =
+                    adminService.deactivateRegularFacultyById(teacherId);
+
+            if (!deactivated) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of(
+                                "message",
+                                "Regular faculty not found or already deactivated"
+                        ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message",
+                    "Regular faculty deactivated successfully",
+                    "teacherId",
+                    teacherId,
+                    "status",
+                    false
+            ));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
         }
     }
 }

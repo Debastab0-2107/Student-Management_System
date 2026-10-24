@@ -13,7 +13,7 @@ public class Faculty {
     private String phoneNumber;
     private String facultyType;
     private String deptId;
-    private boolean status;
+    private boolean status=true;
 
     /**
      * Default constructor required for object creation and framework usage.

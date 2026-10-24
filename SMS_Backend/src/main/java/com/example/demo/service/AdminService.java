@@ -78,4 +78,7 @@ public interface AdminService {
      * @return number of successfully deactivated faculty records
      */
     int deactivateRegularFacultyFromExcel(MultipartFile file);
+    
+    boolean deactivateRegularFacultyById(String teacherId);
+    
 }
