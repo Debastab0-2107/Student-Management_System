@@ -83,21 +83,17 @@
 ### Project GitHub Link
 	https://github.com/Debastab0-2107/Student-Management_System
 	
+### admin credentials
+	Body:
+	{
+    "username": "admin",
+    "password": "admin123"
+	}
+	
 ### Update the FacultyServiceImpl.java [Priyanshu]
 	I had modified the update() method of "FacultyServiceImpl.java" for uploading 	faculty records through admin's JWT token
 
-### mysql faculty table schema [Priyanshu]
-	+--------------+--------------+------+-----+---------+-------+
-	| Field        | Type         | Null | Key | Default | Extra |
-	+--------------+--------------+------+-----+---------+-------+
-	| teacher_id   | varchar(50)  | NO   | PRI | NULL    |       |
-	| name         | varchar(100) | NO   |     | NULL    |       |
-	| phone_number | varchar(20)  | YES  |     | NULL    |       |
-	| faculty_type | varchar(30)  | NO   |     | NULL    |       |
-	| dept_id      | varchar(50)  | YES  |     | NULL    |       |
-	| status       | tinyint(1)   | NO   |     | 1       |       |
-	+--------------+--------------+------+-----+---------+-------+
-	
+
 ### faculty[regular] upload(.xl) process through admin's JWT token [Priyanshu]
 	POST:	http://localhost:8080/admin/faculty/regular/upload
 	
@@ -133,25 +129,10 @@
 
 ### Important: New regular faculty insertion rule	[Priyanshu]
 	there is one distinction that is to be followed:
-	when a new faculty arrives as a regular ones , if we want to add them with the 	existing (.xl) sheet then the records should be at 1st row, [XXX] don't put it at 	last or middle while uploading it through the JSON request
+	when a new faculty arrives as a regular ones , if we want to add them with the 	existing (.xl) 	sheet then the records should be at 1st row, [XXX] don't put it at 	last or middle while 	uploading it through the JSON request
 	
-### Marks Upload of each student through Admin's token	[Priyanshu,20/10/2026]
-	## SQL Query:
-	USE mca_student_management;
-	CREATE TABLE CA_MARKS (
-	    marks_id    VARCHAR(50)  NOT NULL,
-	    student_id  VARCHAR(50)  NOT NULL,
-	    teacher_id  VARCHAR(50)  NOT NULL,
-	    subject_id  VARCHAR(50)  NOT NULL,
-	    total_marks DECIMAL(5,2) NOT NULL,
-	    sem         VARCHAR(20)  NOT NULL,
-	    ca_no       INT          NOT NULL,
-    CONSTRAINT pk_ca_marks PRIMARY KEY (marks_id),
-    CONSTRAINT chk_ca_marks_nonnegative CHECK (total_marks >= 0),
-    CONSTRAINT chk_ca_marks_ca_no CHECK (ca_no > 0)
-	);
 
-	
+### Marks Upload of each student through Admin's token	[Priyanshu,20/10/2026]	
 	##URL:
 	POST:	http://localhost:8080/marks
 	{
@@ -164,18 +145,6 @@
 ### Marks review section	[Priyanshu]
 	GET:	http://localhost:8080/marks/TEST_MARKS_001
 	
-### Teacher Credentials storing in separate tables	[Priyanshu]
-	USE mca_student_management;
-	
-	CREATE TABLE teacher_credentials (
-	    teacher_id VARCHAR(50) PRIMARY KEY,
-	    password_hash VARCHAR(255) NOT NULL,
-	    must_change_password TINYINT(1) NOT NULL DEFAULT 1,
-
-    CONSTRAINT fk_teacher_credentials_faculty
-        FOREIGN KEY (teacher_id)
-        REFERENCES faculty(teacher_id)
-	);
 
 ###	Find out the active teachers	[Priyanshu]
 	USE mca_student_management;
@@ -211,23 +180,11 @@
 ### Set MarksId in MarksController.java	[Priyanshu]
 	marks.setMarksId(java.util.UUID.randomUUID().toString());
 	
-### New Database table added	[Priyanshu]
-	USE mca_student_management;	
-	CREATE TABLE IF NOT EXISTS marks_id_sequence (
-	    sequence_name VARCHAR(50) PRIMARY KEY,
-	    next_value BIGINT NOT NULL
-	);	
-	INSERT INTO marks_id_sequence (sequence_name, next_value)
-	VALUES ('TEST_MARKS', 2)
-	ON DUPLICATE KEY UPDATE sequence_name = VALUES(sequence_name);
-	
-	SELECT * FROM marks_id_sequence;
 	
 ### Teacher upload numbers through his JWt login token (.xl)	[Priyanshu]
 	key:			Type:		Value:
 	file			File		.xlsx file
 	semesterId		Text		real sem id
 	
-	
-	
+
 	
