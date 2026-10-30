@@ -15,6 +15,8 @@ import StudentFeaturePage from "./pages/student/StudentFeaturePage";
 import ClassRoutine from "./pages/student/ClassRoutine";
 import StudentLayout from "./components/layout/StudentLayout";
 
+import CourseOverview from "./pages/student/CourseOverview";
+
 export default function App() {
   return (
     <Routes>
@@ -38,6 +40,7 @@ export default function App() {
       <Route path="/student" element={<StudentLayout />}>
         <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="routine" element={<ClassRoutine />} />
+        <Route path="course-overview" element={<CourseOverview />} />
         <Route path=":feature" element={<StudentFeaturePage />} />
       </Route>
 
