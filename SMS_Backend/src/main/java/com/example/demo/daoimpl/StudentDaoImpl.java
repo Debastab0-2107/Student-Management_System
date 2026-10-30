@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.dao.StudentDao;
@@ -55,23 +54,15 @@ public class StudentDaoImpl implements StudentDao {
     @Override
     public Student save(Student student) {
 
-        Transaction transaction = null;
+        try {
 
-        try (Session session = sessionFactory.openSession()) {
-
-            transaction = session.beginTransaction();
+            Session session = sessionFactory.getCurrentSession();
 
             session.persist(student);
-
-            transaction.commit();
 
             return student;
 
         } catch (Exception e) {
-
-            if (transaction != null) {
-                transaction.rollback();
-            }
 
             throw new RuntimeException(
                     "Failed to save student with ID: "
@@ -87,22 +78,24 @@ public class StudentDaoImpl implements StudentDao {
      * @return matching student, or null when not found
      */
     @Override
-    public Student findByStudentId(String studentId) {
+    public Student findByStudentId(Student student) {
 
-        try (Session session = sessionFactory.openSession()) {
+        try {
+
+            Session session = sessionFactory.getCurrentSession();
 
             String hql =
                     "FROM Student s WHERE s.studentId = :studentId";
 
             return session.createQuery(hql, Student.class)
-                    .setParameter("studentId", studentId)
+                    .setParameter("studentId", student.getStudentId())
                     .uniqueResult();
 
         } catch (Exception e) {
 
             throw new RuntimeException(
                     "Failed to find student with ID: "
-                            + studentId,
+                            + student.getStudentId(),
                     e);
         }
     }
@@ -115,9 +108,11 @@ public class StudentDaoImpl implements StudentDao {
      * @return true when the student exists, otherwise false
      */
     @Override
-    public boolean existsByStudentId(String studentId) {
+    public boolean existsByStudentId(Student student) {
 
-        try (Session session = sessionFactory.openSession()) {
+        try {
+
+            Session session = sessionFactory.getCurrentSession();
 
             String hql =
                     "SELECT COUNT(s) "
@@ -125,7 +120,7 @@ public class StudentDaoImpl implements StudentDao {
                     + "WHERE s.studentId = :studentId";
 
             Long count = session.createQuery(hql, Long.class)
-                    .setParameter("studentId", studentId)
+                    .setParameter("studentId", student.getStudentId())
                     .uniqueResult();
 
             return count != null && count > 0;
@@ -134,11 +129,10 @@ public class StudentDaoImpl implements StudentDao {
 
             throw new RuntimeException(
                     "Failed to check student ID: "
-                            + studentId,
+                            + student.getStudentId(),
                     e);
         }
     }
-
     /**
      * Retrieves all student records.
      *
@@ -147,7 +141,9 @@ public class StudentDaoImpl implements StudentDao {
     @Override
     public List<Student> findAll() {
 
-        try (Session session = sessionFactory.openSession()) {
+        try {
+
+            Session session = sessionFactory.getCurrentSession();
 
             String hql =
                     "FROM Student s ORDER BY s.studentId";
@@ -196,11 +192,9 @@ public class StudentDaoImpl implements StudentDao {
             String motherName,
             String motherPhoneNumber) {
 
-        Transaction transaction = null;
+        try {
 
-        try (Session session = sessionFactory.openSession()) {
-
-            transaction = session.beginTransaction();
+            Session session = sessionFactory.getCurrentSession();
 
             String hql =
                     "UPDATE Student SET "
@@ -222,15 +216,9 @@ public class StudentDaoImpl implements StudentDao {
                     .setParameter("studentId", studentId)
                     .executeUpdate();
 
-            transaction.commit();
-
             return updatedRows > 0;
 
         } catch (Exception e) {
-
-            if (transaction != null) {
-                transaction.rollback();
-            }
 
             throw new RuntimeException(
                     "Failed to update profile for student ID: "
@@ -256,11 +244,9 @@ public class StudentDaoImpl implements StudentDao {
             String passwordHash,
             boolean mustChangePassword) {
 
-        Transaction transaction = null;
+        try {
 
-        try (Session session = sessionFactory.openSession()) {
-
-            transaction = session.beginTransaction();
+            Session session = sessionFactory.getCurrentSession();
 
             String hql =
                     "UPDATE Student SET "
@@ -276,15 +262,9 @@ public class StudentDaoImpl implements StudentDao {
                     .setParameter("studentId", studentId)
                     .executeUpdate();
 
-            transaction.commit();
-
             return updatedRows > 0;
 
         } catch (Exception e) {
-
-            if (transaction != null) {
-                transaction.rollback();
-            }
 
             throw new RuntimeException(
                     "Failed to update password for student ID: "

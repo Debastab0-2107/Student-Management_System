@@ -1,4 +1,3 @@
-
 package com.example.demo.config;
 
 import java.util.Properties;
@@ -8,9 +7,10 @@ import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.orm.jpa.hibernate.HibernateTransactionManager;
+import org.springframework.orm.jpa.hibernate.SpringSessionContext;
 
 /**
  * Configures the native Hibernate SessionFactory and Spring transaction
@@ -25,19 +25,27 @@ public class HibernateConfig {
     /**
      * Builds the Hibernate SessionFactory using the configured DataSource.
      */
-    @Bean
+	@Bean
     public SessionFactory sessionFactory(DataSource dataSource) {
 
         Properties properties = new Properties();
 
         properties.put("hibernate.connection.datasource", dataSource);
+
         properties.put(
                 "hibernate.dialect",
                 "org.hibernate.dialect.MySQLDialect"
         );
+
         properties.put("hibernate.show_sql", "true");
         properties.put("hibernate.format_sql", "true");
         properties.put("hibernate.hbm2ddl.auto", "none");
+
+        // Connect Hibernate's current session to Spring transactions.
+        properties.put(
+                "hibernate.current_session_context_class",
+                SpringSessionContext.class.getName()
+        );
 
         Configuration configuration = new Configuration();
         configuration.setProperties(properties);
@@ -55,10 +63,10 @@ public class HibernateConfig {
     /**
      * Creates the Spring transaction manager for JDBC operations.
      */
-    @Bean
-    public PlatformTransactionManager transactionManager(
-            DataSource dataSource) {
+	 @Bean
+	    public PlatformTransactionManager transactionManager(
+	            SessionFactory sessionFactory) {
 
-        return new DataSourceTransactionManager(dataSource);
-    }
+	        return new HibernateTransactionManager(sessionFactory);
+	    }
 }
