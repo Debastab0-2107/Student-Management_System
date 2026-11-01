@@ -141,7 +141,7 @@ public class StudentServiceImpl implements StudentService {
         /*
          * Do not allow duplicate authority-assigned student IDs.
          */
-        if (studentDao.existsByStudentId(student.getStudentId())) {
+        if (studentDao.existsByStudentId(student)) {
             throw new IllegalArgumentException(
                     "Student with ID "
                             + student.getStudentId()
@@ -207,8 +207,10 @@ public class StudentServiceImpl implements StudentService {
         if (isBlank(studentId)) {
             return null;
         }
+        Student student = new Student();
+        student.setStudentId(studentId);
 
-        return studentDao.findByStudentId(studentId);
+        return studentDao.findByStudentId(student);
     }
 
     /**
@@ -224,8 +226,9 @@ public class StudentServiceImpl implements StudentService {
         if (isBlank(studentId)) {
             return false;
         }
-
-        return studentDao.existsByStudentId(studentId);
+        Student student = new Student();
+        student.setStudentId(studentId);
+        return studentDao.existsByStudentId(student);
     }
 
     /**
@@ -339,8 +342,10 @@ public class StudentServiceImpl implements StudentService {
          * Retrieve the student so that the stored BCrypt hash
          * can be used to verify the current password.
          */
+        Student searchStudent = new Student();
+        searchStudent.setStudentId(studentId);
         Student student =
-                studentDao.findByStudentId(studentId);
+                studentDao.findByStudentId(searchStudent);
 
         if (student == null) {
             throw new IllegalArgumentException(

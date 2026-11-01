@@ -54,7 +54,7 @@ public interface StudentDao {
      * @param studentId authority-assigned student ID
      * @return matching student, or null if no student exists
      */
-    Student findByStudentId(String studentId);
+    Student findByStudentId(Student student);
 
     /**
      * Checks whether a student already exists with the supplied
@@ -66,7 +66,7 @@ public interface StudentDao {
      * @param studentId authority-assigned student ID
      * @return true if the student exists, otherwise false
      */
-    boolean existsByStudentId(String studentId);
+    boolean existsByStudentId(Student student);
 
     /**
      * Retrieves all students.
