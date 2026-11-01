@@ -7,6 +7,10 @@ import com.example.demo.model.Student;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.StudentService;
 import com.example.demo.util.JwtUtil;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.dao.AdminCredentialsDao;
+import com.example.demo.model.AdminCredentials;
 
 /**
  * AuthServiceImpl
@@ -57,9 +61,9 @@ public class AuthServiceImpl implements AuthService {
      * This is the existing application-level admin authentication
      * mechanism. Student passwords are stored separately as BCrypt
      * hashes in the student table.
+     * This allows the password hash to be updated while the application is running.
      */
-    private final String adminPassword;
-
+    private volatile String adminPassword;
     /*
      * Configured administrator role.
      */
@@ -75,16 +79,23 @@ public class AuthServiceImpl implements AuthService {
      * @param adminPassword configured administrator password
      * @param adminRole configured administrator role
      */
+    
+    private final AdminCredentialsDao adminCredentialsDao;
+    
     public AuthServiceImpl(
             StudentService studentService,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
+            AdminCredentialsDao adminCredentialsDao,
+
             @org.springframework.beans.factory.annotation.Value(
                     "${auth.admin.username:admin}")
             String adminUsername,
+
             @org.springframework.beans.factory.annotation.Value(
                     "${auth.admin.password}")
             String adminPassword,
+
             @org.springframework.beans.factory.annotation.Value(
                     "${auth.admin.role:ADMIN}")
             String adminRole) {
@@ -92,6 +103,8 @@ public class AuthServiceImpl implements AuthService {
         this.studentService = studentService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.adminCredentialsDao = adminCredentialsDao;
+
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
         this.adminRole = adminRole;
@@ -107,34 +120,83 @@ public class AuthServiceImpl implements AuthService {
      * @return JWT token when authentication succeeds
      */
     @Override
-    public String loginAdmin(
-            String username,
-            String password) {
+    @Transactional
+    public String loginAdmin(String username, String password) {
 
         if (isBlank(username) || isBlank(password)) {
             throw new IllegalArgumentException(
                     "Username and password are required");
         }
 
-        /*
-         * Compare the supplied credentials with the configured
-         * administrator credentials.
-         */
-        if (!adminUsername.equals(username)
-                || !adminPassword.equals(password)) {
-
+        if (!adminUsername.equals(username)) {
             throw new IllegalArgumentException(
                     "Invalid admin username or password");
         }
 
+        AdminCredentials credentials =
+                adminCredentialsDao.findByUsername(username);
+
         /*
-         * Generate an ADMIN JWT.
+         * First successful login:
+         * initialize the database record from the configured credentials.
          */
-        return jwtUtil.generateToken(
-                username,
-                adminRole);
+        if (credentials == null) {
+
+            if (!isConfiguredAdminPasswordValid(password)) {
+                throw new IllegalArgumentException(
+                        "Invalid admin username or password");
+            }
+
+            String initialHash;
+
+            if (isBcryptHash(adminPassword)) {
+                initialHash = adminPassword;
+            } else {
+                initialHash = passwordEncoder.encode(adminPassword);
+            }
+
+            credentials = new AdminCredentials(
+                    username,
+                    initialHash,
+                    false
+            );
+
+            adminCredentialsDao.save(credentials);
+
+        } else {
+
+            if (!passwordEncoder.matches(
+                    password,
+                    credentials.getPasswordHash())) {
+
+                throw new IllegalArgumentException(
+                        "Invalid admin username or password");
+            }
+        }
+
+        return jwtUtil.generateToken(username, adminRole);
+    }
+    
+    private boolean isConfiguredAdminPasswordValid(String rawPassword) {
+
+        if (isBlank(rawPassword) || isBlank(adminPassword)) {
+            return false;
+        }
+
+        if (isBcryptHash(adminPassword)) {
+            return passwordEncoder.matches(rawPassword, adminPassword);
+        }
+
+        return adminPassword.equals(rawPassword);
     }
 
+    private boolean isBcryptHash(String value) {
+
+        return value != null
+                && (value.startsWith("$2a$")
+                    || value.startsWith("$2b$")
+                    || value.startsWith("$2y$"));
+    }
     /**
      * Authenticates a student using studentId and password.
      *
@@ -235,5 +297,118 @@ public class AuthServiceImpl implements AuthService {
 
         return value == null
                 || value.trim().isEmpty();
+    }
+    /**
+     * Changes the configured administrator's password.
+     *
+     * The new password is stored as a BCrypt hash in application memory.
+     * This implementation does not persist changes across application restarts.
+     *
+     * @param username authenticated administrator username
+     * @param currentPassword current administrator password
+     * @param newPassword new administrator password
+     */
+    @Override
+    @Transactional
+    public synchronized void changeAdminPassword(
+            String username,
+            String currentPassword,
+            String newPassword) {
+
+        if (isBlank(username)
+                || isBlank(currentPassword)
+                || isBlank(newPassword)) {
+
+            throw new IllegalArgumentException(
+                    "Username, current password, and new password are required");
+        }
+
+        if (!adminUsername.equals(username)) {
+            throw new IllegalArgumentException(
+                    "Invalid administrator username");
+        }
+
+        if (currentPassword.equals(newPassword)) {
+            throw new IllegalArgumentException(
+                    "New password must differ from the current password");
+        }
+
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException(
+                    "New password must contain at least 8 characters");
+        }
+
+        AdminCredentials credentials =
+                adminCredentialsDao.findByUsername(username);
+
+        /*
+         * If no record exists yet, authenticate against the initial
+         * configured password and create the database record.
+         */
+        if (credentials == null) {
+
+            if (!isConfiguredAdminPasswordValid(currentPassword)) {
+                throw new IllegalArgumentException(
+                        "Current password is incorrect");
+            }
+
+            credentials = new AdminCredentials(
+                    username,
+                    passwordEncoder.encode(newPassword),
+                    true
+            );
+
+            adminCredentialsDao.save(credentials);
+
+        } else {
+
+            if (!passwordEncoder.matches(
+                    currentPassword,
+                    credentials.getPasswordHash())) {
+
+                throw new IllegalArgumentException(
+                        "Current password is incorrect");
+            }
+
+            credentials.setPasswordHash(
+                    passwordEncoder.encode(newPassword));
+
+            credentials.setPasswordChanged(true);
+
+            adminCredentialsDao.update(credentials);
+        }
+    }
+
+    /**
+     * Verifies the supplied password against the current admin password.
+     *
+     * Supports the initial plain-text configuration value and a BCrypt
+     * hash created by changeAdminPassword().
+     *
+     * @param rawPassword password supplied by the caller
+     * @return true when the password matches
+     */
+    private boolean isAdminPasswordValid(String rawPassword) {
+
+        if (isBlank(rawPassword) || isBlank(adminPassword)) {
+            return false;
+        }
+
+        /*
+         * BCrypt hashes normally begin with one of these prefixes.
+         */
+        if (adminPassword.startsWith("$2a$")
+                || adminPassword.startsWith("$2b$")
+                || adminPassword.startsWith("$2y$")) {
+
+            return passwordEncoder.matches(
+                    rawPassword,
+                    adminPassword);
+        }
+
+        /*
+         * Preserve compatibility with the initial configuration password.
+         */
+        return adminPassword.equals(rawPassword);
     }
 }

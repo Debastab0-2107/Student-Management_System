@@ -56,6 +56,7 @@ public class HibernateConfig {
         configuration.addResource("Subject.hbm.xml");
         configuration.addResource("Marks.hbm.xml");
         configuration.addResource("CAMarks.hbm.xml");
+        configuration.addResource("AdminCredentials.hbm.xml");
 
         return configuration.buildSessionFactory();
     }

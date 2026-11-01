@@ -55,6 +55,21 @@ public class CAMarksDaoImpl implements CAMarksDao {
             return session.get(CAMarks.class, marksId);
         }
     }
+    
+    /**
+    Retrieves all CA marks records belonging to a specific student.
+    */
+    @Override
+    public List<CAMarks> findByStudentId(String studentId) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery(
+                    "FROM CAMarks c WHERE c.studentId = :studentId",
+                    CAMarks.class
+            )
+            .setParameter("studentId", studentId)
+            .getResultList();
+        }
+    }
 
     /**
      * Executes a database operation inside an explicit Hibernate transaction.

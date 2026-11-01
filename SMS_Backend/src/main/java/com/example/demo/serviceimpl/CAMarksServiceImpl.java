@@ -82,7 +82,17 @@ public class CAMarksServiceImpl implements CAMarksService {
         return caMarksDao.findById(marksId);
     }
     
+    @Override
+    @Transactional(readOnly = true)
+    public List<CAMarks> getCAMarksByStudentId(String studentId) {
 
+        if (studentId == null || studentId.isBlank()) {
+            throw new IllegalArgumentException("Student ID is required");
+        }
+
+        return caMarksDao.findByStudentId(studentId);
+    }
+    
 	@Override
 	public void saveAllCAMarks(List<CAMarks> records) {
 	    if (records == null || records.isEmpty()) {
@@ -93,5 +103,7 @@ public class CAMarksServiceImpl implements CAMarksService {
 	        saveCAMarks(record);
 	    }
 	}
+	
+	
 
 }

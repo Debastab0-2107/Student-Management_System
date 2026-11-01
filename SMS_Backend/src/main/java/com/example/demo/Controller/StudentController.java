@@ -16,6 +16,11 @@ import com.example.demo.dto.request.ChangePasswordRequest;
 import com.example.demo.dto.request.StudentProfileUpdateRequest;
 import com.example.demo.model.Student;
 import com.example.demo.service.StudentService;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.demo.model.CAMarks;
+import com.example.demo.service.CAMarksService;
 
 /**
  * StudentController
@@ -24,23 +29,13 @@ import com.example.demo.service.StudentService;
  *
  * Student identity is obtained from the authenticated JWT.
  *
- * Authority-controlled fields:
- * - studentId
- * - name
- * - phoneNumber
- * - courseId
- * - sessionId
+ * Authority-controlled fields: - studentId - name - phoneNumber - courseId -
+ * sessionId
  *
  * These fields cannot be modified through this controller.
  *
- * Student-editable fields:
- * - email
- * - dateOfBirth
- * - fatherName
- * - fatherPhoneNumber
- * - motherName
- * - motherPhoneNumber
- * - password
+ * Student-editable fields: - email - dateOfBirth - fatherName -
+ * fatherPhoneNumber - motherName - motherPhoneNumber - password
  *
  * The controller does not expose the student's password hash.
  */
@@ -48,304 +43,262 @@ import com.example.demo.service.StudentService;
 @RequestMapping("/student")
 public class StudentController {
 
-    /*
-     * Service layer responsible for student business operations.
-     */
-    private final StudentService studentService;
+	/*
+	 * Service layer responsible for student business operations.
+	 */
+	private final StudentService studentService;
 
-    /**
-     * Creates the StudentController.
-     *
-     * @param studentService student service implementation
-     */
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
-    }
+	/**
+	 * Creates the StudentController.
+	 *
+	 * @param studentService student service implementation
+	 */
+	private final CAMarksService caMarksService;
 
-    /**
-     * Returns the profile of the currently authenticated student.
-     *
-     * Endpoint:
-     *
-     * GET /student/profile
-     *
-     * The student does not provide a studentId.
-     * The ID is extracted from the authenticated JWT.
-     *
-     * @param authentication authenticated Spring Security context
-     * @return student profile without passwordHash
-     */
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(
-            Authentication authentication) {
+	public StudentController(StudentService studentService, CAMarksService caMarksService) {
 
-        String studentId =
-                getAuthenticatedStudentId(authentication);
+		this.studentService = studentService;
+		this.caMarksService = caMarksService;
+	}
 
-        if (studentId == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(
-                            "message",
-                            "Student authentication is required"));
-        }
+	/**
+	 * Returns the profile of the currently authenticated student.
+	 *
+	 * Endpoint:
+	 *
+	 * GET /student/profile
+	 *
+	 * The student does not provide a studentId. The ID is extracted from the
+	 * authenticated JWT.
+	 *
+	 * @param authentication authenticated Spring Security context
+	 * @return student profile without passwordHash
+	 */
+	@GetMapping("/profile")
+	public ResponseEntity<?> getProfile(Authentication authentication) {
 
-        Student student =
-                studentService.findByStudentId(studentId);
+		String studentId = getAuthenticatedStudentId(authentication);
 
-        if (student == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                            "message",
-                            "Student not found"));
-        }
+		if (studentId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("message", "Student authentication is required"));
+		}
 
-        /*
-         * Build the response explicitly so passwordHash is never
-         * returned to the client.
-         */
-        return ResponseEntity.ok(
-                buildStudentProfileResponse(student));
-    }
+		Student student = studentService.findByStudentId(studentId);
 
-    /**
-     * Updates the currently authenticated student's editable profile.
-     *
-     * Endpoint:
-     *
-     * PUT /student/profile
-     *
-     * Request body:
-     *
-     * {
-     *     "email": "student@example.com",
-     *     "dateOfBirth": "2002-05-10",
-     *     "fatherName": "Father Name",
-     *     "fatherPhoneNumber": "9876543211",
-     *     "motherName": "Mother Name",
-     *     "motherPhoneNumber": "9876543212"
-     * }
-     *
-     * The request DTO does not contain authority-controlled fields.
-     *
-     * @param authentication authenticated Spring Security context
-     * @param request editable profile information
-     * @return updated student profile
-     */
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(
-            Authentication authentication,
-            @RequestBody StudentProfileUpdateRequest request) {
+		if (student == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Student not found"));
+		}
 
-        String studentId =
-                getAuthenticatedStudentId(authentication);
+		/*
+		 * Build the response explicitly so passwordHash is never returned to the
+		 * client.
+		 */
+		return ResponseEntity.ok(buildStudentProfileResponse(student));
+	}
 
-        if (studentId == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(
-                            "message",
-                            "Student authentication is required"));
-        }
+	/**
+	 * Updates the currently authenticated student's editable profile.
+	 *
+	 * Endpoint:
+	 *
+	 * PUT /student/profile
+	 *
+	 * Request body:
+	 *
+	 * { "email": "student@example.com", "dateOfBirth": "2002-05-10", "fatherName":
+	 * "Father Name", "fatherPhoneNumber": "9876543211", "motherName": "Mother
+	 * Name", "motherPhoneNumber": "9876543212" }
+	 *
+	 * The request DTO does not contain authority-controlled fields.
+	 *
+	 * @param authentication authenticated Spring Security context
+	 * @param request        editable profile information
+	 * @return updated student profile
+	 */
+	@PutMapping("/profile")
+	public ResponseEntity<?> updateProfile(Authentication authentication,
+			@RequestBody StudentProfileUpdateRequest request) {
 
-        if (request == null) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of(
-                            "message",
-                            "Profile request cannot be null"));
-        }
+		String studentId = getAuthenticatedStudentId(authentication);
 
-        try {
+		if (studentId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("message", "Student authentication is required"));
+		}
 
-            boolean updated =
-                    studentService.updateStudentProfile(
-                            studentId,
-                            request.getEmail(),
-                            request.getDateOfBirth(),
-                            request.getFatherName(),
-                            request.getFatherPhoneNumber(),
-                            request.getMotherName(),
-                            request.getMotherPhoneNumber());
+		if (request == null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "Profile request cannot be null"));
+		}
 
-            if (!updated) {
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(Map.of(
-                                "message",
-                                "Student not found"));
-            }
+		try {
 
-            Student updatedStudent =
-                    studentService.findByStudentId(studentId);
+			boolean updated = studentService.updateStudentProfile(studentId, request.getEmail(),
+					request.getDateOfBirth(), request.getFatherName(), request.getFatherPhoneNumber(),
+					request.getMotherName(), request.getMotherPhoneNumber());
 
-            return ResponseEntity.ok(
-                    buildStudentProfileResponse(updatedStudent));
+			if (!updated) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Student not found"));
+			}
 
-        } catch (IllegalArgumentException e) {
+			Student updatedStudent = studentService.findByStudentId(studentId);
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of(
-                            "message",
-                            e.getMessage()));
-        }
-    }
+			return ResponseEntity.ok(buildStudentProfileResponse(updatedStudent));
 
-    /**
-     * Changes the password of the currently authenticated student.
-     *
-     * Endpoint:
-     *
-     * PUT /student/password
-     *
-     * Request body:
-     *
-     * {
-     *     "currentPassword": "9876543210",
-     *     "newPassword": "MyNewPassword123"
-     * }
-     *
-     * The studentId is taken from the JWT and is never accepted
-     * from the request body.
-     *
-     * @param authentication authenticated Spring Security context
-     * @param request password change request
-     * @return password change result
-     */
-    @PutMapping("/password")
-    public ResponseEntity<?> changePassword(
-            Authentication authentication,
-            @RequestBody ChangePasswordRequest request) {
+		} catch (IllegalArgumentException e) {
 
-        String studentId =
-                getAuthenticatedStudentId(authentication);
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		}
+	}
 
-        if (studentId == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(
-                            "message",
-                            "Student authentication is required"));
-        }
+	/**
+	 * Changes the password of the currently authenticated student.
+	 *
+	 * Endpoint:
+	 *
+	 * PUT /student/password
+	 *
+	 * Request body:
+	 *
+	 * { "currentPassword": "9876543210", "newPassword": "MyNewPassword123" }
+	 *
+	 * The studentId is taken from the JWT and is never accepted from the request
+	 * body.
+	 *
+	 * @param authentication authenticated Spring Security context
+	 * @param request        password change request
+	 * @return password change result
+	 */
+	@PutMapping("/password")
+	public ResponseEntity<?> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest request) {
 
-        if (request == null) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of(
-                            "message",
-                            "Password request cannot be null"));
-        }
+		String studentId = getAuthenticatedStudentId(authentication);
 
-        try {
+		if (studentId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("message", "Student authentication is required"));
+		}
 
-            boolean changed =
-                    studentService.changePassword(
-                            studentId,
-                            request.getCurrentPassword(),
-                            request.getNewPassword());
+		if (request == null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "Password request cannot be null"));
+		}
 
-            if (!changed) {
-                return ResponseEntity
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of(
-                                "message",
-                                "Password could not be changed"));
-            }
+		try {
 
-            return ResponseEntity.ok(
-                    Map.of(
-                            "message",
-                            "Password changed successfully"));
+			boolean changed = studentService.changePassword(studentId, request.getCurrentPassword(),
+					request.getNewPassword());
 
-        } catch (IllegalArgumentException e) {
+			if (!changed) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body(Map.of("message", "Password could not be changed"));
+			}
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of(
-                            "message",
-                            e.getMessage()));
+			return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
 
-        } catch (IllegalStateException e) {
+		} catch (IllegalArgumentException e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "message",
-                            e.getMessage()));
-        }
-    }
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
 
-    /**
-     * Extracts the student ID from the authenticated JWT.
-     *
-     * JwtUtil creates the JWT subject using the student's studentId.
-     * Therefore Spring Security's Authentication.getName() contains
-     * the student ID after successful authentication.
-     *
-     * @param authentication authenticated security context
-     * @return authenticated student ID, or null when unavailable
-     */
-    private String getAuthenticatedStudentId(
-            Authentication authentication) {
+		} catch (IllegalStateException e) {
 
-        if (authentication == null
-                || !authentication.isAuthenticated()) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
+		}
+	}
 
-            return null;
-        }
+	/**
+	 * Extracts the student ID from the authenticated JWT.
+	 *
+	 * JwtUtil creates the JWT subject using the student's studentId. Therefore
+	 * Spring Security's Authentication.getName() contains the student ID after
+	 * successful authentication.
+	 *
+	 * @param authentication authenticated security context
+	 * @return authenticated student ID, or null when unavailable
+	 */
+	private String getAuthenticatedStudentId(Authentication authentication) {
 
-        String studentId = authentication.getName();
+		if (authentication == null || !authentication.isAuthenticated()) {
 
-        if (studentId == null
-                || studentId.trim().isEmpty()) {
+			return null;
+		}
 
-            return null;
-        }
+		String studentId = authentication.getName();
 
-        return studentId;
-    }
+		if (studentId == null || studentId.trim().isEmpty()) {
 
-    /**
-     * Builds the student profile response.
-     *
-     * passwordHash is deliberately excluded.
-     *
-     * @param student student database object
-     * @return safe profile response map
-     */
-    private Map<String, Object> buildStudentProfileResponse(
-            Student student) {
+			return null;
+		}
 
-        Map<String, Object> response =
-                new LinkedHashMap<>();
+		return studentId;
+	}
 
-        response.put("studentId", student.getStudentId());
-        response.put("name", student.getName());
-        response.put("phoneNumber", student.getPhoneNumber());
-        response.put("email", student.getEmail());
-        response.put("dateOfBirth", student.getDateOfBirth());
-        response.put("courseId", student.getCourseId());
-        response.put("sessionId", student.getSessionId());
-        response.put("fatherName", student.getFatherName());
-        response.put(
-                "fatherPhoneNumber",
-                student.getFatherPhoneNumber());
-        response.put("motherName", student.getMotherName());
-        response.put(
-                "motherPhoneNumber",
-                student.getMotherPhoneNumber());
+	/**
+	 * Builds the student profile response.
+	 *
+	 * passwordHash is deliberately excluded.
+	 *
+	 * @param student student database object
+	 * @return safe profile response map
+	 */
+	private Map<String, Object> buildStudentProfileResponse(Student student) {
 
-        /*
-         * This flag is useful to the frontend because it tells the
-         * student whether the initial password still needs to be
-         * changed.
-         */
-        response.put(
-                "mustChangePassword",
-                student.isMustChangePassword());
+		Map<String, Object> response = new LinkedHashMap<>();
 
-        return response;
-    }
+		response.put("studentId", student.getStudentId());
+		response.put("name", student.getName());
+		response.put("phoneNumber", student.getPhoneNumber());
+		response.put("email", student.getEmail());
+		response.put("dateOfBirth", student.getDateOfBirth());
+		response.put("courseId", student.getCourseId());
+		response.put("sessionId", student.getSessionId());
+		response.put("fatherName", student.getFatherName());
+		response.put("fatherPhoneNumber", student.getFatherPhoneNumber());
+		response.put("motherName", student.getMotherName());
+		response.put("motherPhoneNumber", student.getMotherPhoneNumber());
+
+		/*
+		 * This flag is useful to the frontend because it tells the student whether the
+		 * initial password still needs to be changed.
+		 */
+		response.put("mustChangePassword", student.isMustChangePassword());
+
+		return response;
+	}
+
+	/**
+	 * Returns CA marks for the currently authenticated student.
+	 *
+	 * Endpoint: GET /student/ca-marks
+	 *
+	 * The student ID is extracted from the authenticated JWT. The client cannot
+	 * specify another student's ID.
+	 */
+	@GetMapping("/ca-marks")
+	public ResponseEntity<?> getMyCAMarks(Authentication authentication) {
+
+		String studentId = getAuthenticatedStudentId(authentication);
+
+		if (studentId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("message", "Student authentication is required"));
+		}
+
+		List<CAMarks> marks = caMarksService.getCAMarksByStudentId(studentId);
+
+		List<Map<String, Object>> response = new ArrayList<>();
+
+		for (CAMarks mark : marks) {
+			Map<String, Object> item = new LinkedHashMap<>();
+
+			item.put("marksId", mark.getMarksId());
+			item.put("subjectId", mark.getSubjectId());
+			item.put("totalMarks", mark.getTotalMarks());
+			item.put("sem", mark.getSem());
+			item.put("caNo", mark.getCaNo());
+
+			response.add(item);
+		}
+
+		return ResponseEntity.ok(response);
+	}
 }

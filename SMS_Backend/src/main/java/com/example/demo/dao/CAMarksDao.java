@@ -12,4 +12,7 @@ public interface CAMarksDao {
     List<CAMarks> findAll();
 
     CAMarks findById(String marksId);
+    
+ // Find CA marks belonging to a specific student
+    List<CAMarks> findByStudentId(String studentId);
 }
