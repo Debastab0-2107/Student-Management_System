@@ -1,4 +1,5 @@
-
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -18,13 +19,40 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(event) {
+  event.preventDefault();
+  setNotice("");
+  setLoading(true);
+
+  try {
+    const response = await api.post("/auth/login", {
+      username: identifier.trim(),
+      password,
+    });
+
+    const { token, role } = response.data;
+
+    if (!token || role !== "ADMIN") {
+      throw new Error("Invalid Admin login response from server.");
+    }
+
+    localStorage.setItem("sms_token", token);
+    localStorage.setItem("sms_role", "ADMIN");
+
+    navigate("/admin/dashboard", { replace: true });
+  } catch (error) {
     setNotice(
-      "The Admin Portal design is ready. Authentication will be connected when the backend endpoint is implemented."
+      error.response?.data?.message ||
+      error.message ||
+      "Admin login failed. Please check your credentials."
     );
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="al-page">
@@ -223,8 +251,9 @@ export default function AdminLogin() {
                 </button>
               </div>
 
-              <button className="al-submit" type="submit">
-                Continue to admin portal <ArrowRight size={17} />
+              <button className="al-submit" type="submit" disabled={loading}>
+                 {loading ? "Signing in..." : "Continue to admin portal"}
+                 {!loading && <ArrowRight size={17} />}
               </button>
             </form>
 
@@ -232,7 +261,7 @@ export default function AdminLogin() {
 
             <div className="al-security">
               <ShieldCheck size={18} />
-              <span><strong>Administrator access</strong><br />Backend authentication has not been connected yet.</span>
+              <span><strong>Administrator access</strong><br /> Protected by backend authentication and JWT.</span>
             </div>
 
             <p className="al-help">

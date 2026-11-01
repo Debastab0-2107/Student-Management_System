@@ -20,6 +20,15 @@ import {
 } from "lucide-react";
 
 const roles = [
+    {
+    role: "admin",
+    title: "Administrator Portal",
+    description:
+      "Manage student records, academic information, and institutional activities.",
+    to: "/login/admin",
+    icon: ShieldCheck,
+    number: "02",
+  },
   {
     role: "student",
     title: "Student Portal",
@@ -28,15 +37,6 @@ const roles = [
     to: "/login/student",
     icon: GraduationCap,
     number: "01",
-  },
-  {
-    role: "admin",
-    title: "Administrator Portal",
-    description:
-      "Manage student records, academic information, and institutional activities.",
-    to: "/login/admin",
-    icon: ShieldCheck,
-    number: "02",
   },
   {
     role: "permanent",
@@ -2010,7 +2010,7 @@ function LandingPage() {
               <div className="rp-footer-column">
                 <h4>Portals</h4>
                 <Link to="/login/student">Student</Link>
-                <Link to="/login/admin">Administrator</Link>
+                <Link to="/login/admin">Admin Portal</Link>
                 <Link to="/login/permanent-faculty">Permanent Faculty</Link>
                 <Link to="/login/visiting-faculty">Visiting Faculty</Link>
               </div>

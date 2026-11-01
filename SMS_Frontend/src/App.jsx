@@ -1,28 +1,41 @@
 
 import { Route, Routes } from "react-router-dom";
 
+// Public pages
 import LandingPage from "./pages/landing/LandingPage";
 import ProgramsPage from "./pages/programs/ProgramsPage";
 import ContactPage from "./pages/contact/ContactPage";
 
+// Login pages
 import StudentLogin from "./pages/auth/StudentLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
 import PermanentFacultyLogin from "./pages/auth/PermanentFacultyLogin";
 import VisitingFacultyLogin from "./pages/auth/VisitingFacultyLogin";
 
+// Student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentFeaturePage from "./pages/student/StudentFeaturePage";
-import ClassRoutine from "./pages/student/ClassRoutine";
-import StudentLayout from "./components/layout/StudentLayout";
-import CourseOverview from "./pages/student/CourseOverview";
 import StudentProfile from "./pages/student/StudentProfile";
+import ClassRoutine from "./pages/student/ClassRoutine";
+import CourseOverview from "./pages/student/CourseOverview";
+import StudentLayout from "./components/layout/StudentLayout";
+
+// Admin pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import FacultyManagement from "./pages/admin/FacultyManagement";
+import AdminChangePassword from "./pages/admin/AdminChangePassword";
 
 export default function App() {
   return (
     <Routes>
+      {/* ================= PUBLIC PAGES ================= */}
+
       <Route path="/" element={<LandingPage />} />
       <Route path="/programs" element={<ProgramsPage />} />
       <Route path="/contact" element={<ContactPage />} />
+
+      {/* ================= LOGIN PAGES ================= */}
 
       <Route path="/login/student" element={<StudentLogin />} />
       <Route path="/login/admin" element={<AdminLogin />} />
@@ -37,15 +50,61 @@ export default function App() {
         element={<VisitingFacultyLogin />}
       />
 
+      {/* ================= STUDENT SECTION ================= */}
+
       <Route path="/student" element={<StudentLayout />}>
-        <Route path="dashboard" element={<StudentDashboard />} />
-        <Route path="routine" element={<ClassRoutine />} />
-        <Route path="course-overview" element={<CourseOverview />} />
-        <Route path="profile" element={<StudentProfile />} />
-        <Route path=":feature" element={<StudentFeaturePage />} />
+        <Route
+          path="dashboard"
+          element={<StudentDashboard />}
+        />
+
+        <Route
+          path="profile"
+          element={<StudentProfile />}
+        />
+
+        <Route
+          path="routine"
+          element={<ClassRoutine />}
+        />
+
+        <Route
+          path="course-overview"
+          element={<CourseOverview />}
+        />
+
+        {/* CA Marks, University Marks, Announcements, Payments, etc. */}
+        <Route
+          path=":feature"
+          element={<StudentFeaturePage />}
+        />
       </Route>
 
-      <Route path="*" element={<LandingPage />} />
+      {/* ================= ADMIN SECTION ================= */}
+
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="dashboard"
+          element={<AdminDashboard />}
+        />
+
+        <Route
+          path="faculty"
+          element={<FacultyManagement />}
+        />
+
+        <Route
+          path="password"
+          element={<AdminChangePassword />}
+        />
+      </Route>
+
+      {/* ================= FALLBACK ================= */}
+
+      <Route
+        path="*"
+        element={<LandingPage />}
+      />
     </Routes>
   );
 }
