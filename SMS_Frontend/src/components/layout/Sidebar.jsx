@@ -1,6 +1,5 @@
 
-// src/components/layout/Sidebar.jsx
-
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
@@ -43,8 +42,18 @@ const NAV_GROUPS = [
   {
     heading: "MORE",
     items: [
-      { label: "Payments", to: "/student/payments", icon: CreditCard, soon: true },
-      { label: "Activities", to: "/student/activities", icon: Sparkles, soon: true },
+      {
+        label: "Payments",
+        to: "/student/payments",
+        icon: CreditCard,
+        soon: true,
+      },
+      {
+        label: "Activities",
+        to: "/student/activities",
+        icon: Sparkles,
+        soon: true,
+      },
     ],
   },
 ];
@@ -57,11 +66,30 @@ export default function Sidebar({
 }) {
   const location = useLocation();
 
+  // Close the sidebar when Escape is pressed.
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setMobileNavOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [mobileNavOpen, setMobileNavOpen]);
+
+  // Close navigation after selecting an item.
   function handleNavigation(event, item) {
     setMobileNavOpen(false);
 
     if (item.soon) {
       event.preventDefault();
+
       onNotice(
         `${item.label} is coming soon. This feature is currently in progress.`
       );
@@ -73,36 +101,57 @@ export default function Sidebar({
       <style>{`
         .shared-sidebar,
         .shared-sidebar *,
-        .shared-sidebar-overlay,
-        .shared-sidebar-overlay * {
+        .shared-sidebar-overlay {
           box-sizing: border-box;
         }
+
+        /* =====================================
+           SIDEBAR
+        ===================================== */
 
         .shared-sidebar {
           --navy: #202945;
           --gold: #e6c47f;
 
-          position: sticky;
-          top: 0;
-          z-index: 50;
+          position: fixed;
+          inset: 0 auto 0 0;
+          z-index: 301;
           display: flex;
-          flex: 0 0 252px;
           flex-direction: column;
-          width: 252px;
+          width: 270px;
+          max-width: 86vw;
           height: 100vh;
           height: 100dvh;
           padding: 23px 15px 15px;
           overflow-x: hidden;
           overflow-y: auto;
+
           color: #f4f5fa;
           background: var(--navy);
+
+          transform: translateX(-105%);
+          visibility: hidden;
+          pointer-events: none;
+
+          box-shadow: 15px 0 45px rgba(10, 20, 40, .18);
+
+          transition:
+            transform .34s cubic-bezier(.22, 1, .36, 1),
+            visibility .34s ease;
+
           scrollbar-width: thin;
           scrollbar-color: #46516f transparent;
+          will-change: transform;
+        }
+
+        .shared-sidebar.shared-sidebar-open {
+          transform: translateX(0);
+          visibility: visible;
+          pointer-events: auto;
         }
 
         .shared-sidebar button,
-        .shared-sidebar a,
-        .shared-sidebar-overlay button {
+        .shared-sidebar a {
           font: inherit;
         }
 
@@ -113,6 +162,10 @@ export default function Sidebar({
         .shared-sidebar button {
           cursor: pointer;
         }
+
+        /* =====================================
+           BRAND
+        ===================================== */
 
         .shared-sidebar-brand {
           display: flex;
@@ -130,7 +183,7 @@ export default function Sidebar({
           border: 1px solid rgba(235, 201, 139, .42);
           border-radius: 14px;
           color: var(--gold);
-          background: rgba(255,255,255,.055);
+          background: rgba(255, 255, 255, .055);
         }
 
         .shared-sidebar-brand-copy {
@@ -151,6 +204,30 @@ export default function Sidebar({
           color: #aeb6cb;
           font-size: 11px;
         }
+
+        .shared-sidebar-close {
+          display: grid;
+          place-items: center;
+          width: 34px;
+          height: 34px;
+          flex-shrink: 0;
+          border: 1px solid rgba(255, 255, 255, .12);
+          border-radius: 10px;
+          color: white;
+          background: rgba(255, 255, 255, .06);
+          transition:
+            background .25s ease,
+            transform .25s ease;
+        }
+
+        .shared-sidebar-close:hover {
+          background: rgba(255, 255, 255, .13);
+          transform: rotate(4deg);
+        }
+
+        /* =====================================
+           NAVIGATION GROUPS
+        ===================================== */
 
         .shared-sidebar-group {
           margin-bottom: 23px;
@@ -180,16 +257,17 @@ export default function Sidebar({
           border-radius: 11px;
           color: #c6ccdb;
           font-size: 12px;
+
           transition:
-            background .2s ease,
-            color .2s ease,
-            transform .2s ease,
-            border-color .2s ease;
+            background .22s ease,
+            color .22s ease,
+            transform .22s ease,
+            border-color .22s ease;
         }
 
         .shared-sidebar-link:hover {
           color: white;
-          background: rgba(255,255,255,.07);
+          background: rgba(255, 255, 255, .07);
           transform: translateX(2px);
         }
 
@@ -198,8 +276,8 @@ export default function Sidebar({
           border-color: rgba(222, 190, 126, .17);
           background: linear-gradient(
             100deg,
-            rgba(194,154,82,.24),
-            rgba(255,255,255,.045)
+            rgba(194, 154, 82, .24),
+            rgba(255, 255, 255, .045)
           );
         }
 
@@ -216,10 +294,14 @@ export default function Sidebar({
           padding: 4px 5px;
           border-radius: 5px;
           color: #d9c18e;
-          background: rgba(217,193,142,.12);
+          background: rgba(217, 193, 142, .12);
           font-size: 8px;
           font-weight: 800;
         }
+
+        /* =====================================
+           SIDEBAR BOTTOM
+        ===================================== */
 
         .shared-sidebar-bottom {
           margin-top: auto;
@@ -228,9 +310,9 @@ export default function Sidebar({
         .shared-sidebar-help {
           padding: 14px;
           margin: 10px 0 16px;
-          border: 1px solid rgba(255,255,255,.09);
+          border: 1px solid rgba(255, 255, 255, .09);
           border-radius: 14px;
-          background: rgba(255,255,255,.045);
+          background: rgba(255, 255, 255, .045);
         }
 
         .shared-sidebar-help-icon {
@@ -241,7 +323,7 @@ export default function Sidebar({
           margin-bottom: 11px;
           border-radius: 9px;
           color: var(--gold);
-          background: rgba(228,195,127,.12);
+          background: rgba(228, 195, 127, .12);
         }
 
         .shared-sidebar-help strong {
@@ -277,12 +359,15 @@ export default function Sidebar({
           color: #d2d6e1;
           background: transparent;
           text-align: left;
-          transition: color .2s, background .2s;
+
+          transition:
+            color .22s ease,
+            background .22s ease;
         }
 
         .shared-sidebar-signout:hover {
           color: white;
-          background: rgba(255,255,255,.07);
+          background: rgba(255, 255, 255, .07);
         }
 
         .shared-sidebar-foot {
@@ -295,70 +380,45 @@ export default function Sidebar({
           letter-spacing: .5px;
         }
 
-        .shared-sidebar-close {
-          display: none;
-          place-items: center;
-          width: 34px;
-          height: 34px;
-          flex-shrink: 0;
-          border: 1px solid rgba(255,255,255,.12);
-          border-radius: 10px;
-          color: white;
-          background: rgba(255,255,255,.06);
-        }
+        /* =====================================
+           OUTSIDE OVERLAY
+        ===================================== */
 
         .shared-sidebar-overlay {
-          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 300;
+          display: block;
+          width: 100%;
+          height: 100%;
+          padding: 0;
+          border: 0;
+          background: rgba(15, 22, 39, .48);
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+
+          transition:
+            opacity .28s ease,
+            visibility .28s ease;
         }
 
-        @media (max-width: 850px) {
-          .shared-sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            z-index: 101;
-            width: min(285px, 86vw);
-            height: 100vh;
-            height: 100dvh;
-            flex-basis: auto;
-            transform: translateX(-105%);
-            visibility: hidden;
-            pointer-events: none;
-            transition:
-              transform .32s cubic-bezier(.22, 1, .36, 1),
-              visibility .32s ease;
-            box-shadow: 15px 0 45px rgba(10,20,40,.18);
-            will-change: transform;
-          }
-
-          .shared-sidebar.shared-sidebar-open {
-            transform: translateX(0);
-            visibility: visible;
-            pointer-events: auto;
-          }
-
-          .shared-sidebar-close {
-            display: grid;
-          }
-
-          .shared-sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: block;
-            border: 0;
-            background: rgba(15,22,39,.48);
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity .25s ease, visibility .25s ease;
-          }
-
-          .shared-sidebar-overlay.is-visible {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-          }
+        .shared-sidebar-overlay.is-visible {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
         }
+
+        .shared-sidebar button:focus-visible,
+        .shared-sidebar a:focus-visible,
+        .shared-sidebar-overlay:focus-visible {
+          outline: 2px solid #e6c47f;
+          outline-offset: 3px;
+        }
+
+        /* =====================================
+           REDUCED MOTION
+        ===================================== */
 
         @media (prefers-reduced-motion: reduce) {
           .shared-sidebar,
@@ -370,12 +430,26 @@ export default function Sidebar({
         }
       `}</style>
 
+      {/* DARK OUTSIDE OVERLAY */}
+      <button
+        type="button"
+        className={`shared-sidebar-overlay ${
+          mobileNavOpen ? "is-visible" : ""
+        }`}
+        aria-label="Close navigation"
+        aria-hidden={!mobileNavOpen}
+        tabIndex={mobileNavOpen ? 0 : -1}
+        onClick={() => setMobileNavOpen(false)}
+      />
+
+      {/* SIDEBAR PANEL */}
       <aside
         id="student-navigation"
         className={`shared-sidebar ${
           mobileNavOpen ? "shared-sidebar-open" : ""
         }`}
         aria-label="Student navigation"
+        aria-hidden={!mobileNavOpen}
       >
         <div className="shared-sidebar-brand">
           <div className="shared-sidebar-brand-mark">
@@ -399,7 +473,9 @@ export default function Sidebar({
 
         {NAV_GROUPS.map((group) => (
           <div className="shared-sidebar-group" key={group.heading}>
-            <div className="shared-sidebar-heading">{group.heading}</div>
+            <div className="shared-sidebar-heading">
+              {group.heading}
+            </div>
 
             <nav
               className="shared-sidebar-nav"
@@ -407,6 +483,7 @@ export default function Sidebar({
             >
               {group.items.map((item) => {
                 const Icon = item.icon;
+
                 const isActive =
                   !item.soon &&
                   (location.pathname === item.to ||
@@ -421,14 +498,20 @@ export default function Sidebar({
                     className={`shared-sidebar-link ${
                       isActive ? "active" : ""
                     }`}
-                    onClick={(event) => handleNavigation(event, item)}
+                    onClick={(event) =>
+                      handleNavigation(event, item)
+                    }
                   >
                     <Icon size={18} />
+
                     <span className="shared-sidebar-link-label">
                       {item.label}
                     </span>
+
                     {item.soon && (
-                      <span className="shared-sidebar-soon">SOON</span>
+                      <span className="shared-sidebar-soon">
+                        SOON
+                      </span>
                     )}
                   </Link>
                 );
@@ -442,9 +525,17 @@ export default function Sidebar({
             <div className="shared-sidebar-help-icon">
               <CircleHelp size={17} />
             </div>
+
             <strong>Need assistance?</strong>
-            <p>Contact your department administrator for account support.</p>
-            <Link to="/contact" onClick={() => setMobileNavOpen(false)}>
+
+            <p>
+              Contact your department administrator for account support.
+            </p>
+
+            <Link
+              to="/contact"
+              onClick={() => setMobileNavOpen(false)}
+            >
               Get help <ArrowRight size={14} />
             </Link>
           </div>
@@ -467,17 +558,6 @@ export default function Sidebar({
           </div>
         </div>
       </aside>
-
-      <button
-        type="button"
-        className={`shared-sidebar-overlay ${
-          mobileNavOpen ? "is-visible" : ""
-        }`}
-        aria-label="Close navigation"
-        aria-hidden={!mobileNavOpen}
-        tabIndex={mobileNavOpen ? 0 : -1}
-        onClick={() => setMobileNavOpen(false)}
-      />
     </>
   );
 }

@@ -14,8 +14,8 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentFeaturePage from "./pages/student/StudentFeaturePage";
 import ClassRoutine from "./pages/student/ClassRoutine";
 import StudentLayout from "./components/layout/StudentLayout";
-
 import CourseOverview from "./pages/student/CourseOverview";
+import StudentProfile from "./pages/student/StudentProfile";
 
 export default function App() {
   return (
@@ -41,6 +41,7 @@ export default function App() {
         <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="routine" element={<ClassRoutine />} />
         <Route path="course-overview" element={<CourseOverview />} />
+        <Route path="profile" element={<StudentProfile />} />
         <Route path=":feature" element={<StudentFeaturePage />} />
       </Route>
 
