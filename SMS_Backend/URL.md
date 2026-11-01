@@ -17,6 +17,18 @@
 - `PUT http://localhost:8080/admin/faculty/visiting/{teacherId}/deactivate`
 - `POST http://localhost:8080/admin/teacher-credentials`
 
+## Admin Password Changing URL:---------------
+- `http://localhost:8080/admin/password`
+
+Select Bearer Token then paste token (obtained after Admin login).
+Content-Type: application/json
+
+json 
+{
+    "currentPassword": "admin_current_password",
+    "newPassword": "admin_new_password"
+}
+
 ## CA Marks
 
 - `POST http://localhost:8080/ca-marks/upload/{semesterId}/{caCode}`

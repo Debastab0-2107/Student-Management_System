@@ -13,6 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.example.demo.dto.request.AdminChangePasswordRequest;
+import com.example.demo.service.AuthService;
+
 import com.example.demo.model.Student;
 import com.example.demo.service.AdminService;
 
@@ -55,14 +61,24 @@ public class AdminController {
      */
     private final AdminService adminService;
 
+    
+    private final AuthService authService;
+    
+    
+    
     /**
      * Constructor-based dependency injection.
      *
      * @param adminService administrator service
      */
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService ,  AuthService authService) {
         this.adminService = adminService;
+        this.authService = authService;
     }
+    
+    
+    
+   
 
     /**
      * Uploads the authority-provided Student Excel file.
@@ -319,4 +335,38 @@ public class AdminController {
                     .body(Map.of("message", e.getMessage()));
         }
     }
+    
+    @PutMapping("/password")
+    public ResponseEntity<?> changeAdminPassword(
+            Authentication authentication,
+            @RequestBody AdminChangePasswordRequest request) {
+
+        try {
+
+            String username = authentication.getName();
+
+            authService.changeAdminPassword(
+                    username,
+                    request.getCurrentPassword(),
+                    request.getNewPassword());
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "message",
+                            "Admin password changed successfully"
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "message",
+                            e.getMessage()
+                    ));
+        }
+    }
+    
+    
 }
