@@ -272,4 +272,28 @@ public class StudentDaoImpl implements StudentDao {
                     e);
         }
     }
+    /*Here implement student de-activation feature if any student leave the course/college
+     * */
+    @Override
+    public boolean updateStudentStatus(
+            String studentId,
+            boolean active) {
+
+        Session session = sessionFactory.getCurrentSession();
+
+        String hql =
+                "UPDATE Student s "
+                + "SET s.active = :active "
+                + "WHERE s.studentId = :studentId";
+
+        int updatedRows = session.createMutationQuery(hql)
+                .setParameter("active", active)
+                .setParameter("studentId", studentId)
+                .executeUpdate();
+
+        return updatedRows > 0;
+    }
+    
+    
+    
 }

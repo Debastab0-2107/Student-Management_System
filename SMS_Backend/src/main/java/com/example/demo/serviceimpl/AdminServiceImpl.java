@@ -383,4 +383,13 @@ public class AdminServiceImpl implements AdminService {
 
         return facultyService.deactivateById(teacherId);
     }
+    
+    //return the de-activated student
+    @Override
+    public boolean deactivateStudent(String studentId) {
+
+        return studentService.deactivateStudent(studentId);
+    }
+    
+    
 }

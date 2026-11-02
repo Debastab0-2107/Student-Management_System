@@ -81,4 +81,6 @@ public interface AdminService {
     
     boolean deactivateRegularFacultyById(String teacherId);
     
+    boolean deactivateStudent(String studentId);//student de-activation controlled by admin
+    
 }

@@ -126,4 +126,10 @@ public interface StudentService {
             String studentId,
             String currentPassword,
             String newPassword);
+    
+    
+    boolean deactivateStudent(String studentId); //for de-active student
+
+    boolean isStudentActive(String studentId); //for checking the status of student
+    
 }

@@ -145,7 +145,12 @@
         <property name="mustChangePassword"
                   column="must_change_password"
                   not-null="true"/>
-
+		
+		
+		<property name="active"
+          column="is_active"
+          not-null="true"/>
+		
     </class>
 
 </hibernate-mapping>
