@@ -88,3 +88,11 @@
 	    CONSTRAINT chk_admin_password_changed
 	        CHECK (password_changed IN (0, 1))
 	);
+
+### MySql Student table update for student De-Activation :----- [Parambrata , 02/11/2026 at 17:33 pm]
+		##Update Student Table:[run below SQL command]
+		ALTER TABLE student ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
+		
+		
+		
+		

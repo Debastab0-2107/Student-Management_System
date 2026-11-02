@@ -54,3 +54,8 @@
 - `GET http://localhost:8080/test-env`
 - `GET http://localhost:8080/git-test-friend1`
 
+##De-activation of student by Admin
+	Admin should login first then by using JWT token run below url
+	http://localhost:8080/admin/students/MCA2026007/deactivate
+	method[PUT]
+

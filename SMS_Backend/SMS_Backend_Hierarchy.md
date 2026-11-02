@@ -210,3 +210,8 @@
 	        "caNo": 1
 	    }
 	]
+	
+	
+##UPDATED CLASS for student De-Activation:--
+		[Student.java,Student.hbm.xml,StudentDao.java,StudentDaoImpl.java,StudentService.java,StudentServiceImpl.java,AdminService.java,AdminServiceImpl.java,AdminController.java, AuthServiceImpl.java,JwtAuthenticationFilter.java
+		Create a class :PasswordEncoderConfig and Modify SecurityConfig.java]
