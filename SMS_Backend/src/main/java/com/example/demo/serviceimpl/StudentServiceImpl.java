@@ -187,11 +187,15 @@ public class StudentServiceImpl implements StudentService {
          * phone-number password after first login.
          */
         student.setMustChangePassword(true);
+        
+        student.setActive(true);
 
         /*
          * Save the fully prepared student.
          */
         return studentDao.save(student);
+        
+        
     }
 
     /**
@@ -414,4 +418,38 @@ public class StudentServiceImpl implements StudentService {
 
         return value == null ? "" : value;
     }
+    
+    /*implement the de-active student method*/
+    @Override
+    @Transactional
+    public boolean deactivateStudent(String studentId) {
+
+        if (isBlank(studentId)) {
+            throw new IllegalArgumentException(
+                    "Student ID is required");
+        }
+
+        Student student = findByStudentId(studentId);
+
+        if (student == null || !student.isActive()) {
+            return false;
+        }
+
+        return studentDao.updateStudentStatus(
+                studentId,
+                false);
+    }
+    
+    /*check status of student*/
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isStudentActive(String studentId) {
+
+        Student student = findByStudentId(studentId);
+
+        return student != null && student.isActive();
+    }
+    
+    
+    
 }

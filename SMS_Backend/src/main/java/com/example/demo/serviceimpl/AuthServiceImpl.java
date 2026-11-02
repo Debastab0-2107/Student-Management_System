@@ -234,6 +234,12 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException(
                     "Invalid student ID or password");
         }
+        
+        //CHECK Student id is ACTIVE OR NOT
+        if (!student.isActive()) {
+            throw new IllegalArgumentException(
+                    "Your student account is inactive. Please contact the administration.");
+        }
 
         /*
          * A valid student record must contain a password hash.
@@ -411,4 +417,7 @@ public class AuthServiceImpl implements AuthService {
          */
         return adminPassword.equals(rawPassword);
     }
+    
+    
+    
 }

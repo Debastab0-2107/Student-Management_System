@@ -119,4 +119,12 @@ public interface StudentDao {
             String studentId,
             String passwordHash,
             boolean mustChangePassword);
+    
+    
+    /*Method for implement student de-activation if any student leave the course/college
+     * */
+    boolean updateStudentStatus(
+            String studentId,
+            boolean active);
+    
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.demo.util.JwtUtil;
-
+import com.example.demo.service.StudentService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,12 +45,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * information from JWT tokens.
      */
     private final JwtUtil jwtUtil;
+    
+    private final StudentService studentService;
 
     /*
      * Constructor-based dependency injection.
      */
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(
+            JwtUtil jwtUtil,
+            StudentService studentService) {
+
         this.jwtUtil = jwtUtil;
+        this.studentService = studentService;
     }
 
     /*
@@ -106,7 +112,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
              */
             String role =
                     jwtUtil.extractRole(token);
+            
+            /*
+             * Check the latest database status for every
+             * request authenticated using a STUDENT JWT.
+             */
+            if ("STUDENT".equalsIgnoreCase(role)
+                    && !studentService.isStudentActive(username)) {
 
+                SecurityContextHolder.clearContext();
+
+                response.sendError(
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "Student account is inactive");
+
+                return;
+            }
+            
             /*
              * Create a Spring Security authority.
              *

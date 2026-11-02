@@ -368,5 +368,42 @@ public class AdminController {
         }
     }
     
+    //DEACTIVE student URL MAPPING
+    @PutMapping("/students/{studentId}/deactivate")
+    public ResponseEntity<?> deactivateStudent(
+            @PathVariable String studentId) {
+
+        try {
+
+            boolean deactivated =
+                    adminService.deactivateStudent(studentId);
+
+            if (!deactivated) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of(
+                                "message",
+                                "Student not found or already deactivated"
+                        ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message",
+                    "Student deactivated successfully",
+                    "studentId",
+                    studentId,
+                    "active",
+                    false
+            ));
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "message",
+                            e.getMessage()
+                    ));
+        }
+    }
+    
     
 }

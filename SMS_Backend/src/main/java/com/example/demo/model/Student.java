@@ -140,6 +140,9 @@ public class Student {
      *
      * Required by Hibernate for creating Student objects.
      */
+    
+    private boolean active = true;
+    
     public Student() {
     }
 
@@ -449,6 +452,15 @@ public class Student {
      *
      * @return readable Student representation
      */
+    
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    
     @Override
     public String toString() {
         return "Student [studentId=" + studentId
