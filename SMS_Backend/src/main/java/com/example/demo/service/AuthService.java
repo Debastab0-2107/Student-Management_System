@@ -60,4 +60,16 @@ public interface AuthService {
      * @return matching student, or null when not found
      */
     Student findStudentById(String studentId);
+    
+    /**
+     * Changes the configured administrator's password.
+     *
+     * @param username authenticated administrator username
+     * @param currentPassword current password
+     * @param newPassword new password
+     */
+    void changeAdminPassword(
+            String username,
+            String currentPassword,
+            String newPassword);
 }

@@ -180,11 +180,33 @@
 ### Set MarksId in MarksController.java	[Priyanshu]
 	marks.setMarksId(java.util.UUID.randomUUID().toString());
 	
-	
 ### Teacher upload numbers through his JWt login token (.xl)	[Priyanshu]
 	key:			Type:		Value:
 	file			File		.xlsx file
 	semesterId		Text		real sem id
 	
+### New table creation for admin password changes	[Priyanshu, 02/11/26]
+	  Select Bearer Token then paste token (obtained after Admin login).
 
+### Admin Password Changing [Priyanshu, 02/11/26]
+	JSON request body:
+	{
+	    "currentPassword": "admin_current_password",
+	    "newPassword": "admin_new_password"
+	}
 	
+### Admin NEW Password	[Priyanshu, 02/11/26]
+	username: admin
+	old password: admin123
+	new password: admin456
+	
+### Student successfully seen the Ca marks
+	[
+	    {
+	        "marksId": "TEST_MARKS_001",
+	        "subjectId": "MCAN-101",
+	        "totalMarks": 24.50,
+	        "sem": "SEM1",
+	        "caNo": 1
+	    }
+	]

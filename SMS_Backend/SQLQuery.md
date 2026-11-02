@@ -79,3 +79,12 @@
 	ON DUPLICATE KEY UPDATE sequence_name = VALUES(sequence_name);
 	
 	SELECT * FROM marks_id_sequence;
+	
+### Mysql ADMIN_CREDENTIALS table creation query	[Priyanshu, 02/11/26]
+	CREATE TABLE ADMIN_CREDENTIALS (
+	    username VARCHAR(100) NOT NULL PRIMARY KEY,
+	    password_hash VARCHAR(100) NOT NULL,
+	    password_changed TINYINT(1) NOT NULL DEFAULT 0,
+	    CONSTRAINT chk_admin_password_changed
+	        CHECK (password_changed IN (0, 1))
+	);

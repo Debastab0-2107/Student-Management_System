@@ -18,18 +18,10 @@
 - `POST http://localhost:8080/admin/teacher-credentials`
 
 ## Admin Password Changing URL:---------------
-- `http://localhost:8080/admin/password`
 
-Select Bearer Token then paste token (obtained after Admin login).
-Content-Type: application/json
+- `PUT http://localhost:8080/admin/password`
 
-json 
-{
-    "currentPassword": "admin_current_password",
-    "newPassword": "admin_new_password"
-}
-
-## CA Marks
+## CA Marks Uploaded by Teacher
 
 - `POST http://localhost:8080/ca-marks/upload/{semesterId}/{caCode}`
 
@@ -47,6 +39,7 @@ json
 - `GET http://localhost:8080/student/profile`
 - `PUT http://localhost:8080/student/profile`
 - `PUT http://localhost:8080/student/password`
+- `GEt http://localhost:8080/student/ca-marks`
 
 ## Subject Management
 

@@ -15,4 +15,6 @@ public interface CAMarksService {
     
     void saveAllCAMarks(List<CAMarks> records);
 
+ // Retrieve CA marks belonging to a specific student
+    List<CAMarks> getCAMarksByStudentId(String studentId);
 }
