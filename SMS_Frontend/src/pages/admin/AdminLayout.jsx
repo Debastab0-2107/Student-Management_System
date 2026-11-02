@@ -7,24 +7,75 @@ import {
   Users,
   GraduationCap,
   KeyRound,
+  BookPlus,
   Menu,
   X,
   LogOut,
   ShieldCheck,
   ChevronRight,
+  CheckCircle2,
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Faculty Management", path: "/admin/faculty", icon: Users },
-  { label: "Student Operations", path: "/admin/students", icon: GraduationCap },
-  { label: "Change Password", path: "/admin/password", icon: KeyRound },
+  {
+    label: "Dashboard",
+    path: "/admin/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Student Section",
+    path: "/admin/students",
+    icon: GraduationCap,
+  },
+  {
+    label: "Faculty Section",
+    path: "/admin/faculty",
+    icon: Users,
+  },
+  {
+    label: "Update Password",
+    path: "/admin/password",
+    icon: KeyRound,
+  },
+  {
+    label: "Add Course",
+    path: "/admin/course",
+    icon: BookPlus,
+  },
 ];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [headerNotification, setHeaderNotification] = useState(null);
+  useEffect(() => {
+  let notificationTimer;
 
+  function showAdminNotification(event) {
+    setHeaderNotification(event.detail);
+
+    clearTimeout(notificationTimer);
+
+    notificationTimer = setTimeout(() => {
+      setHeaderNotification(null);
+    }, 5000);
+  }
+
+  window.addEventListener(
+    "admin:notification",
+    showAdminNotification
+  );
+
+  return () => {
+    window.removeEventListener(
+      "admin:notification",
+      showAdminNotification
+    );
+
+    clearTimeout(notificationTimer);
+  };
+}, []);
+  
   useEffect(() => {
     const token = localStorage.getItem("sms_token");
     const role = localStorage.getItem("sms_role");
@@ -396,7 +447,69 @@ export default function AdminLayout() {
           color: white;
           background: #ffffff10;
         }
+        
+        .admin-header-notification {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 360px;
+  padding: 9px 12px;
+  border: 1px solid #b8ddc9;
+  border-radius: 10px;
+  color: #d9f5e5;
+  background: #23644735;
+  font-size: 10px;
+  font-weight: 700;
+  animation: admin-notification-in .3s ease both;
+}
 
+.admin-header-notification > svg {
+  flex-shrink: 0;
+  color: #8fe0b1;
+}
+
+.admin-header-notification span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-header-notification button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-header-notification button:hover {
+  background: #ffffff20;
+}
+
+@keyframes admin-notification-in {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media(max-width: 650px) {
+  .admin-header-notification {
+    max-width: 175px;
+    padding: 7px;
+    font-size: 9px;
+  }
+}
         /* RESPONSIVE */
         @media(max-width: 650px) {
           .admin-topbar {
@@ -450,9 +563,24 @@ export default function AdminLayout() {
           <span>DPP INSTITUTE OF TECHNOLOGY</span>
         </div>
 
-        <div className="admin-top-spacer" />
-        <span className="admin-top-label">Administrator Portal</span>
-        <div className="admin-top-avatar">A</div>
+<div className="admin-top-spacer" />
+
+{headerNotification && (
+  <div className="admin-header-notification">
+    <CheckCircle2 size={17} />
+    <span>{headerNotification.message}</span>
+    <button
+      type="button"
+      onClick={() => setHeaderNotification(null)}
+      aria-label="Dismiss notification"
+    >
+      <X size={15} />
+    </button>
+  </div>
+)}
+
+<span className="admin-top-label">Administrator Portal</span>
+<div className="admin-top-avatar">A</div>
       </header>
 
       {sidebarOpen && (

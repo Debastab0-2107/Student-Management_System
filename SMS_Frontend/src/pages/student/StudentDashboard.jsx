@@ -84,11 +84,11 @@ export default function StudentDashboard() {
       }
 
       try {
-        const response = await api.get("/student/profile");
+const response = await api.get("/student/profile");
 
-        if (active) {
-          setProfile(response.data);
-        }
+console.log("STUDENT PROFILE RESPONSE:", response.data);
+
+if (active) setProfile(response.data);
       } catch (error) {
         if (!active) return;
 
@@ -131,11 +131,82 @@ export default function StudentDashboard() {
     localStorage.getItem("sms_student_id") ||
     "Student ID pending";
 
-  const session =
-    shownProfile.sessionId ||
-    shownProfile.session ||
-    "Session not available";
+const session =
+  shownProfile.sessionId ||
+  shownProfile.session ||
+  "Session not available";
 
+// PASTE THE SEMESTER CODE HERE
+const semesterValue =
+  shownProfile.currentSemesterName ||
+  shownProfile.semesterName ||
+  shownProfile.currentSemester ||
+  shownProfile.currentSemesterId ||
+  shownProfile.semesterId ||
+  null;
+
+const getSemesterLabel = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return "Semester not assigned";
+  }
+
+  if (typeof value === "string" && /semester/i.test(value)) {
+    return value;
+  }
+
+  const semesterNumber = Number(value);
+
+  if (!Number.isInteger(semesterNumber) || semesterNumber < 1) {
+    return String(value);
+  }
+
+  const suffix =
+    semesterNumber % 100 >= 11 && semesterNumber % 100 <= 13
+      ? "th"
+      : semesterNumber % 10 === 1
+      ? "st"
+      : semesterNumber % 10 === 2
+      ? "nd"
+      : semesterNumber % 10 === 3
+      ? "rd"
+      : "th";
+
+  return `${semesterNumber}${suffix} Semester`;
+};
+
+const currentSemesterLabel = getSemesterLabel(semesterValue);
+  
+    
+
+    
+    const courseCode = String(
+  shownProfile.courseId ||
+  shownProfile.courseCode ||
+  shownProfile.course?.courseId ||
+  shownProfile.course?.courseCode ||
+  ""
+).trim().toUpperCase();
+
+const courseDetails = {
+  MCA: {
+    name: "MCA",
+    fullName: "Master of Computer Applications",
+    department: "MCA DEPARTMENT",
+  },
+  BCA: {
+    name: "BCA",
+    fullName: "Bachelor of Computer Applications",
+    department: "BCA DEPARTMENT",
+  },
+};
+
+const course = courseDetails[courseCode] || {
+  name: courseCode || "Course",
+  fullName: "Course details unavailable",
+  department: "STUDENT DEPARTMENT",
+};
+
+const courseDisplay = `${course.name} — ${course.fullName}`;
   // Calendar calculations
   const monthStart = new Date(
     calendarDate.getFullYear(),
@@ -2096,8 +2167,8 @@ export default function StudentDashboard() {
               </h1>
 
               <p>
-                Everything you need for your MCA journey, thoughtfully
-                brought together in one place.
+                Everything you need for your {course.name} journey, thoughtfully
+brought together in one place.
               </p>
 
               <div className="sd-welcome-meta">
@@ -2110,7 +2181,7 @@ export default function StudentDashboard() {
 
                 <span>
                   <GraduationCap size={17} />
-                  MCA — Master of Computer Applications
+                  {courseDisplay}
                 </span>
               </div>
             </div>
@@ -2127,7 +2198,7 @@ export default function StudentDashboard() {
 
             <div className="sd-welcome-ribbon">
               <span className="sd-ribbon-dot" />
-              MCA DEPARTMENT
+              {course.department}
             </div>
           </section>
 
@@ -2140,8 +2211,8 @@ export default function StudentDashboard() {
 
               <div className="sd-stat-copy">
                 <span>Current semester</span>
-                <strong>3rd Semester</strong>
-                <small>Master of Computer Applications</small>
+                <strong>{currentSemesterLabel}</strong>
+                <small>{course.fullName}</small>
               </div>
 
               <span className="sd-status-pulse" />
@@ -2206,7 +2277,8 @@ export default function StudentDashboard() {
                   {SECTION_NAMES.map((section) => {
                     const classes = getClassesForDay(
                       today.getDay(),
-                      section
+                      section,
+                      courseCode
                     );
 
                     return (
@@ -2617,7 +2689,7 @@ export default function StudentDashboard() {
             <span>© {today.getFullYear()} DPP Institute</span>
 
             <span>
-              MCA Department Student Portal{" "}
+              {course.name} Department Student Portal{" "}
               <span className="sd-footer-star">✦</span>
             </span>
 

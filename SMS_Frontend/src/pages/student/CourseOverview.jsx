@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../../services/api";
+import bcaSemesterData from "./bcaSyllabusData";
 
-const FULL_SYLLABUS_URL =
+const MCA_SYLLABUS_URL =
   "https://makautexam.net/aicte_details/Syllabus/MCA/AllSem.pdf";
 
+const BCA_SYLLABUS_URL =
+  "https://makautexam.net/aicte_details/CourseStructure4/CURRICULUM_BCA.pdf";
+
+// Existing MCA syllabus data — kept unchanged.
 const semesterData = {
   I: {
     title: "Semester I",
@@ -51,7 +58,8 @@ const semesterData = {
         ],
       },
     ],
-    bridge: "A minimum 8-week Online Course on Fundamentals of ‘Computer Science’ or ‘Computer Application’ or ‘Information Technology’ or so.",
+    bridge:
+      "A minimum 8-week Online Course on Fundamentals of ‘Computer Science’ or ‘Computer Application’ or ‘Information Technology’ or so.",
   },
 
   II: {
@@ -98,7 +106,8 @@ const semesterData = {
         ],
       },
     ],
-    bridge: "A minimum 8-week Online Course on Fundamentals of ‘Software Engineering’ or ‘Systems Analysis and Design’ or ‘Business Systems Applications’ or so.",
+    bridge:
+      "A minimum 8-week Online Course on Fundamentals of ‘Software Engineering’ or ‘Systems Analysis and Design’ or ‘Business Systems Applications’ or so.",
   },
 
   III: {
@@ -195,7 +204,64 @@ const semesterData = {
 
 function CourseOverview() {
   const [selectedSemester, setSelectedSemester] = useState("I");
-  const currentSemester = semesterData[selectedSemester];
+  const [courseId, setCourseId] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadStudentCourse = async () => {
+      try {
+        const response = await api.get("/student/profile");
+
+        if (isMounted) {
+          const studentCourse = String(
+            response.data?.courseId || ""
+          ).trim().toUpperCase();
+
+          if (studentCourse === "BCA" || studentCourse === "MCA") {
+            setCourseId(studentCourse);
+          } else {
+            setProfileError(true);
+          }
+        }
+      } catch (error) {
+        console.error("Unable to load student course:", error);
+
+        if (isMounted) {
+          setProfileError(true);
+        }
+      } finally {
+        if (isMounted) {
+          setProfileLoading(false);
+        }
+      }
+    };
+
+    loadStudentCourse();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const isBCA = courseId === "BCA";
+  const activeSemesterData = isBCA ? bcaSemesterData : semesterData;
+  const currentSemester = activeSemesterData[selectedSemester];
+
+  const syllabusUrl = isBCA
+    ? BCA_SYLLABUS_URL
+    : MCA_SYLLABUS_URL;
+
+  const courseName = isBCA
+    ? "Bachelor of Computer Applications (BCA)"
+    : "Master of Computer Applications (MCA)";
+
+  // Reset to Semester I when switching between course datasets.
+  useEffect(() => {
+    setSelectedSemester("I");
+  }, [courseId]);
 
   return (
     <div className="course-page">
@@ -219,39 +285,32 @@ function CourseOverview() {
           font-family: "Segoe UI", Arial, sans-serif;
           box-sizing: border-box;
         }
-        
-        .course-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
 
-.course-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #86632c;
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.course-back:hover {
-  color: #202945;
-}
-
-@media (max-width: 650px) {
-  .course-topline {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-} 
-  
         .course-page * {
           box-sizing: border-box;
+        }
+
+        .course-topline {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+
+        .course-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #86632c;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+
+        .course-back:hover {
+          color: #202945;
         }
 
         .course-orb {
@@ -505,6 +564,7 @@ function CourseOverview() {
           border-radius: 50%;
           background: var(--gold);
           box-shadow: 0 0 0 4px rgba(193,154,82,.13);
+          flex-shrink: 0;
         }
 
         .table-wrap {
@@ -572,6 +632,12 @@ function CourseOverview() {
 
         .course-table .credit-cell {
           color: #98763D;
+          font-weight: 800;
+        }
+
+        .course-table tfoot td {
+          background: #F6F4EF;
+          border-top: 1px solid #EAE5DA;
           font-weight: 800;
         }
 
@@ -688,6 +754,13 @@ function CourseOverview() {
           }
         }
 
+        @media (max-width: 650px) {
+          .course-topline {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .section-card {
             animation: none;
@@ -704,154 +777,255 @@ function CourseOverview() {
 
       <main className="course-content">
         <div className="course-topline">
-  <div>
-    <span className="course-eyebrow">MCA DEPARTMENT</span>
-  </div>
+          <span className="course-eyebrow">
+            {profileLoading ? "Loading Department" : `${courseId} Department`}
+          </span>
 
-  <Link
-    className="course-back"
-    to="/student/dashboard"
-  >
-    <ArrowLeft size={15} />
-    Back to dashboard
-  </Link>
-</div>
+          <Link className="course-back" to="/student/dashboard">
+            <ArrowLeft size={15} />
+            Back to dashboard
+          </Link>
+        </div>
+
         <header className="course-heading">
           <span className="course-eyebrow">
             <span>✦</span> Academic Programme
           </span>
+
           <h1>Course Overview</h1>
+
           <p>
-            Master of Computer Applications (MCA) — explore your semester-wise
-            subjects, practicals, electives and academic structure.
+            {profileLoading
+              ? "Loading your course information..."
+              : `${courseName} — explore your semester-wise subjects, practicals, electives and academic structure.`}
           </p>
         </header>
 
-        <div className="course-top-grid">
-          <div className="semester-selector">
-            <label className="field-label" htmlFor="semesterChoice">
-              Select Semester
-            </label>
-            <select
-              id="semesterChoice"
-              className="semester-select"
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-            >
-              <option value="I">Semester I</option>
-              <option value="II">Semester II</option>
-              <option value="III">Semester III</option>
-              <option value="IV">Semester IV</option>
-            </select>
-          </div>
-
-          <div className="course-info-card">
-            <h2>{currentSemester.title}</h2>
-            <p>{currentSemester.subtitle}</p>
-            <div className="course-stats">
-              <span className="course-stat">
-                Weekly Contact Hours:
-                <strong>{currentSemester.totalHours}</strong>
-              </span>
-              <span className="course-stat">
-                Total Credits:
-                <strong>{currentSemester.totalCredits}</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="syllabus-notice">
-          <div className="notice-text">
-            <strong>Want to explore the detailed syllabus?</strong>
-            <span>
-              View the complete official MAKAUT MCA syllabus, including
-              detailed subject-wise syllabus information.
-            </span>
-          </div>
-          <a
-            className="syllabus-link"
-            href={FULL_SYLLABUS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View Detailed Syllabus <span>↗</span>
-          </a>
-        </div>
-
-        {currentSemester.sections.map((section, sectionIndex) => (
-          <section className="section-card" key={section.name}>
+        {profileLoading ? (
+          <section className="section-card">
             <div className="section-title">
               <span className="section-dot" />
-              {section.name}
+              Loading Course Details
             </div>
-
-            <div className="table-wrap">
-              <table className="course-table">
-                <thead>
-                  <tr>
-                    <th>Sl. No.</th>
-                    <th>Paper Code</th>
-                    <th>Paper Name</th>
-                    <th>L</th>
-                    <th>T</th>
-                    <th>P</th>
-                    <th>Total Hours</th>
-                    <th>Credit</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {section.rows.map((row, rowIndex) => (
-                    <tr key={`${row.code}-${rowIndex}`}>
-                      <td className="number-cell">{row.no}</td>
-                      <td className="code-cell">{row.code}</td>
-                      <td className="subject-cell">
-                        {row.name}
-
-                        {row.options && (
-                          <div className="elective-options">
-                            <span className="elective-label">
-                              Available options
-                            </span>
-                            {row.options.map(([code, name]) => (
-                              <div className="elective-option" key={code}>
-                                <b>{code}</b>
-                                <span>{name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                      <td className="hours-cell">{row.l}</td>
-                      <td className="hours-cell">{row.t}</td>
-                      <td className="hours-cell">{row.p}</td>
-                      <td className="hours-cell">{row.total}</td>
-                      <td className="credit-cell">{row.credit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ padding: "25px", color: "#73798D" }}>
+              Please wait while we load your course syllabus...
             </div>
           </section>
-        ))}
+        ) : profileError ? (
+          <section className="section-card">
+            <div className="section-title">
+              <span className="section-dot" />
+              Course Details Unavailable
+            </div>
+            <div style={{ padding: "25px", color: "#73798D" }}>
+              Unable to identify your course. Please refresh the page or
+              contact the administrator.
+            </div>
+          </section>
+        ) : (
+          <>
+            <div className="course-top-grid">
+              <div className="semester-selector">
+                <label className="field-label" htmlFor="semesterChoice">
+                  Select Semester
+                </label>
 
-        {currentSemester.bridge && (
-          <div className="bridge-card">
-            <h3>Bridge Course</h3>
-            <p>
-              <strong>
-                Only for students of Category “B” stated in the Eligibility
-                Section.
-              </strong>
-              <br />
-              {currentSemester.bridge}
-            </p>
-          </div>
+                <select
+                  id="semesterChoice"
+                  className="semester-select"
+                  value={selectedSemester}
+                  onChange={(event) =>
+                    setSelectedSemester(event.target.value)
+                  }
+                >
+                  {Object.keys(activeSemesterData).map((semester) => (
+                    <option key={semester} value={semester}>
+                      Semester {semester}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="course-info-card">
+                <h2>{currentSemester.title}</h2>
+                <p>{currentSemester.subtitle}</p>
+
+                <div className="course-stats">
+                  {isBCA ? (
+                    <span className="course-stat">
+                      Total Credits:
+                      <strong>{currentSemester.totalCredits}</strong>
+                    </span>
+                  ) : (
+                    <>
+                      <span className="course-stat">
+                        Weekly Contact Hours:
+                        <strong>{currentSemester.totalHours}</strong>
+                      </span>
+
+                      <span className="course-stat">
+                        Total Credits:
+                        <strong>{currentSemester.totalCredits}</strong>
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="syllabus-notice">
+              <div className="notice-text">
+                <strong>Want to explore the detailed syllabus?</strong>
+                <span>
+                  View the complete official MAKAUT {courseId} syllabus,
+                  including detailed subject-wise syllabus information.
+                </span>
+              </div>
+
+              <a
+                className="syllabus-link"
+                href={syllabusUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Detailed Syllabus <span>↗</span>
+              </a>
+            </div>
+
+            {isBCA ? (
+              <section className="section-card">
+                <div className="section-title">
+                  <span className="section-dot" />
+                  Curriculum Structure — {currentSemester.title}
+                </div>
+
+                <div className="table-wrap">
+                  <table className="course-table">
+                    <thead>
+                      <tr>
+                        <th>Sl. No.</th>
+                        <th>Subject Type</th>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>L</th>
+                        <th>P</th>
+                        <th>T</th>
+                        <th>Credit Point</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {currentSemester.rows.map((row) => (
+                        <tr key={`${row.no}-${row.code}`}>
+                          <td className="number-cell">{row.no}</td>
+                          <td className="code-cell">{row.type}</td>
+                          <td className="code-cell">{row.code}</td>
+                          <td className="subject-cell">{row.name}</td>
+                          <td className="hours-cell">{row.l || "—"}</td>
+                          <td className="hours-cell">{row.p || "—"}</td>
+                          <td className="hours-cell">{row.t || "—"}</td>
+                          <td className="credit-cell">{row.credit}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+
+                    <tfoot>
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: "right" }}>
+                          Total Credit
+                        </td>
+                        <td className="credit-cell">
+                          {currentSemester.totalCredits}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </section>
+            ) : (
+              <>
+                {currentSemester.sections.map((section) => (
+                  <section className="section-card" key={section.name}>
+                    <div className="section-title">
+                      <span className="section-dot" />
+                      {section.name}
+                    </div>
+
+                    <div className="table-wrap">
+                      <table className="course-table">
+                        <thead>
+                          <tr>
+                            <th>Sl. No.</th>
+                            <th>Paper Code</th>
+                            <th>Paper Name</th>
+                            <th>L</th>
+                            <th>T</th>
+                            <th>P</th>
+                            <th>Total Hours</th>
+                            <th>Credit</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {section.rows.map((row, rowIndex) => (
+                            <tr key={`${row.code}-${rowIndex}`}>
+                              <td className="number-cell">{row.no}</td>
+                              <td className="code-cell">{row.code}</td>
+                              <td className="subject-cell">
+                                {row.name}
+
+                                {row.options && (
+                                  <div className="elective-options">
+                                    <span className="elective-label">
+                                      Available options
+                                    </span>
+
+                                    {row.options.map(([code, name]) => (
+                                      <div
+                                        className="elective-option"
+                                        key={code}
+                                      >
+                                        <b>{code}</b>
+                                        <span>{name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+
+                              <td className="hours-cell">{row.l}</td>
+                              <td className="hours-cell">{row.t}</td>
+                              <td className="hours-cell">{row.p}</td>
+                              <td className="hours-cell">{row.total}</td>
+                              <td className="credit-cell">{row.credit}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                ))}
+
+                {currentSemester.bridge && (
+                  <div className="bridge-card">
+                    <h3>Bridge Course</h3>
+                    <p>
+                      <strong>
+                        Only for students of Category “B” stated in the
+                        Eligibility Section.
+                      </strong>
+                      <br />
+                      {currentSemester.bridge}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </>
         )}
 
         <div className="course-footer">
-          MCA — Master of Computer Applications
+          {profileLoading || profileError ? "Student Course Overview" : courseName}
         </div>
       </main>
     </div>

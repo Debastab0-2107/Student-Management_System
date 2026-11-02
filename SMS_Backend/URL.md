@@ -7,6 +7,8 @@
 ## Admin — Student & Faculty
 
 - `POST http://localhost:8080/admin/students/upload`
+- `GET http://localhost:8080/admin/students`
+
 - `POST http://localhost:8080/admin/faculty/regular/upload`
 - `POST http://localhost:8080/admin/faculty/regular/deactivate`
 - `PUT http://localhost:8080/admin/faculty/regular/{teacherId}/deactivate`

@@ -139,6 +139,14 @@ public class StudentServiceImpl implements StudentService {
         }
 
         /*
+         * Assign semester 1 when the Excel import
+         * does not provide a semester ID.
+         */
+        if (isBlank(student.getCurrentSemesterId())) {
+            student.setCurrentSemesterId("1");
+        }
+        
+        /*
          * Do not allow duplicate authority-assigned student IDs.
          */
         if (studentDao.existsByStudentId(student)) {

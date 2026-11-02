@@ -89,6 +89,13 @@ public class Student {
      * not be changed by the student.
      */
     private String sessionId;
+    
+    /*
+     * Stores the student's currently assigned semester ID.
+     * New students start in semester 1.
+     */
+    private String currentSemesterId = "1";
+    
 
     /*
      * Student-editable father's name.
@@ -332,6 +339,14 @@ public class Student {
      */
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
+    }
+    //by debastab addedd the current semester getter and setter 
+    public String getCurrentSemesterId() {
+        return currentSemesterId;
+    }
+
+    public void setCurrentSemesterId(String currentSemesterId) {
+        this.currentSemesterId = currentSemesterId;
     }
 
     /**

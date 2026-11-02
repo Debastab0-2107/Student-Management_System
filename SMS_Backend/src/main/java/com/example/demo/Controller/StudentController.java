@@ -251,6 +251,7 @@ public class StudentController {
 		response.put("dateOfBirth", student.getDateOfBirth());
 		response.put("courseId", student.getCourseId());
 		response.put("sessionId", student.getSessionId());
+		response.put("currentSemesterId", student.getCurrentSemesterId());  //Debastab
 		response.put("fatherName", student.getFatherName());
 		response.put("fatherPhoneNumber", student.getFatherPhoneNumber());
 		response.put("motherName", student.getMotherName());

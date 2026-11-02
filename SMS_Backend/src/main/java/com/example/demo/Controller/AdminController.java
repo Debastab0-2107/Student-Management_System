@@ -2,7 +2,10 @@ package com.example.demo.Controller;
 
 import java.util.List;
 import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import com.example.demo.service.StudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,10 +62,9 @@ public class AdminController {
     /*
      * Administrator business service.
      */
-    private final AdminService adminService;
-
-    
-    private final AuthService authService;
+	private final AdminService adminService;
+	private final AuthService authService;
+	private final StudentService studentService;
     
     
     
@@ -71,14 +73,13 @@ public class AdminController {
      *
      * @param adminService administrator service
      */
-    public AdminController(AdminService adminService ,  AuthService authService) {
-        this.adminService = adminService;
-        this.authService = authService;
-    }
-    
-    
-    
-   
+	public AdminController(AdminService adminService, AuthService authService, StudentService studentService) {
+
+	    this.adminService = adminService;
+	    this.authService = authService;
+	    this.studentService = studentService;
+	}
+
 
     /**
      * Uploads the authority-provided Student Excel file.
@@ -405,5 +406,53 @@ public class AdminController {
         }
     }
     
-    
+    //Added by Debastab on 2nd Nov  for list of all students
+    /**
+     * Retrieves all students for the Admin Student List page.
+     *
+     * GET /admin/students
+     *
+     * Password hashes and other sensitive authentication
+     * information are deliberately excluded.
+     */
+    @GetMapping("/students")
+    public ResponseEntity<?> getAllStudents() {
+
+        try {
+
+            List<Student> students = studentService.findAll();
+
+            List<Map<String, Object>> response = new ArrayList<>();
+
+            for (Student student : students) {
+
+                Map<String, Object> studentData = new HashMap<>();
+
+                studentData.put("studentId", student.getStudentId());
+                studentData.put("name", student.getName());
+                studentData.put("phoneNumber", student.getPhoneNumber());
+                studentData.put("email", student.getEmail());
+                studentData.put("courseId", student.getCourseId());
+                studentData.put("sessionId", student.getSessionId());
+                studentData.put("active", student.isActive());
+                studentData.put(
+                        "status",
+                        student.isActive() ? "ACTIVE" : "INACTIVE"
+                );
+
+                response.add(studentData);
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "message",
+                            "Failed to retrieve student list"
+                    ));
+        }
+    }
 }

@@ -98,6 +98,12 @@
         <property name="sessionId"
                   column="session_id"/>
 
+        <!--Debastab
+             Stores the student's current semester ID.
+        -->
+		<property name="currentSemesterId"
+          column="current_semester_id"/>
+          
         <!--
             Student-editable father's name.
 

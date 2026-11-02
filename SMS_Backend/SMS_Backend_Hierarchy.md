@@ -215,3 +215,10 @@
 ##UPDATED CLASS for student De-Activation:--
 		[Student.java,Student.hbm.xml,StudentDao.java,StudentDaoImpl.java,StudentService.java,StudentServiceImpl.java,AdminService.java,AdminServiceImpl.java,AdminController.java, AuthServiceImpl.java,JwtAuthenticationFilter.java
 		Create a class :PasswordEncoderConfig and Modify SecurityConfig.java]
+		
+##UPDATED the AdminController for getting the list of students and getting semester id in frontend :-- Debastab 
+		AdminController.java ( method name : getAllStudents())----2nd nov 7.08pm
+		Student.java ( added attribute SemesterId and getter and setter )---- 2nd nov 8pm
+		Student.hbm.xml ( added a property in line 101 -106 )---- 2nd nov 8pm
+		StudentServiceImpl.java ( added line 141 - 147 )---- 2nd nov 8pm
+		/StudentController.java (line 254, ) ---- 2nd nov 8pm
