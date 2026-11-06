@@ -429,7 +429,7 @@ export default function ClassRoutine() {
               </span>
 
               <h1>
-                {isBCA ? "BCA Class Routine" : "MCA 3rd Semester Class Routine"}
+                {isBCA ? "BCA Class Routine" : "MCA Class Routine"}
               </h1>
 
               <p className="routine-intro">

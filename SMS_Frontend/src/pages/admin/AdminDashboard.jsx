@@ -67,6 +67,7 @@ const ADMIN_CARDS = [
     tag: "ACADEMIC MANAGEMENT",
     number: "04",
   },
+  
 ];
 
 export default function AdminDashboard() {

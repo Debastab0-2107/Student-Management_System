@@ -36,6 +36,30 @@ const EMPTY_PROFILE = {
   mustChangePassword: false,
 };
 
+// Password rules — consistent with Admin password validation.
+const PASSWORD_RULES = [
+  {
+    label: "At least 8 characters",
+    test: (value) => value.length >= 8,
+  },
+  {
+    label: "At least one uppercase letter (A-Z)",
+    test: (value) => /[A-Z]/.test(value),
+  },
+  {
+    label: "At least one lowercase letter (a-z)",
+    test: (value) => /[a-z]/.test(value),
+  },
+  {
+    label: "At least one number (0-9)",
+    test: (value) => /\d/.test(value),
+  },
+  {
+    label: "At least one special character (@ . - _)",
+    test: (value) => /[@._-]/.test(value),
+  },
+];
+
 function getErrorMessage(error) {
   return (
     error?.response?.data?.message ||
@@ -43,6 +67,25 @@ function getErrorMessage(error) {
     error?.message ||
     "Something went wrong. Please try again."
   );
+}
+
+// Returns the warning message for a phone number.
+function getPhoneError(value) {
+  if (!value) return "";
+
+  if (/[^0-9]/.test(value)) {
+    return "Only numbers are allowed. Please remove letters and special characters.";
+  }
+
+  if (value.length > 10) {
+    return "Phone number cannot exceed 10 digits.";
+  }
+
+  if (value.length < 10) {
+    return `Phone number must contain exactly 10 digits. ${10 - value.length} more digit(s) required.`;
+  }
+
+  return "";
 }
 
 function ProfileField({ label, value, icon: Icon, readOnly = false }) {
@@ -71,17 +114,31 @@ function FormField({
   onChange,
   type = "text",
   placeholder,
+  warning = "",
+  inputMode,
 }) {
   return (
     <label className="sp-form-field">
       <span>{label}</span>
+
       <input
         type={type}
         name={name}
         value={value ?? ""}
         onChange={onChange}
         placeholder={placeholder || `Enter ${label.toLowerCase()}`}
+        inputMode={inputMode}
+        aria-invalid={Boolean(warning)}
+        className={warning ? "sp-input-invalid" : ""}
+        autoComplete="off"
       />
+
+      {warning && (
+        <span className="sp-field-warning" role="alert">
+          <AlertCircle size={13} />
+          {warning}
+        </span>
+      )}
     </label>
   );
 }
@@ -119,6 +176,28 @@ export default function StudentProfile() {
     confirm: false,
   });
 
+  const fatherPhoneWarning = getPhoneError(
+    profileForm.fatherPhoneNumber
+  );
+
+  const motherPhoneWarning = getPhoneError(
+    profileForm.motherPhoneNumber
+  );
+
+  // Live password validation.
+  const passwordRules = PASSWORD_RULES.map((rule) => ({
+    ...rule,
+    passed: rule.test(passwordForm.newPassword),
+  }));
+
+  const allPasswordRulesPassed = passwordRules.every(
+    (rule) => rule.passed
+  );
+
+  const passwordsMatch =
+    passwordForm.confirmPassword.length > 0 &&
+    passwordForm.newPassword === passwordForm.confirmPassword;
+
   // Fetch the authenticated student's profile.
   useEffect(() => {
     let active = true;
@@ -133,6 +212,7 @@ export default function StudentProfile() {
         if (!active) return;
 
         const data = response.data || {};
+
         setProfile({ ...EMPTY_PROFILE, ...data });
 
         setProfileForm({
@@ -153,6 +233,7 @@ export default function StudentProfile() {
           localStorage.removeItem("sms_token");
           localStorage.removeItem("sms_role");
           localStorage.removeItem("sms_student_id");
+
           window.location.href = "/login/student";
           return;
         }
@@ -227,6 +308,8 @@ export default function StudentProfile() {
   function handleProfileChange(event) {
     const { name, value } = event.target;
 
+    // Keep the entered value so invalid characters can be shown
+    // to the user with a warning instead of silently removing them.
     setProfileForm((previous) => ({
       ...previous,
       [name]: value,
@@ -246,6 +329,28 @@ export default function StudentProfile() {
     event.preventDefault();
     setModalError("");
 
+    // Validate father's phone number.
+    if (
+      profileForm.fatherPhoneNumber &&
+      !/^\d{10}$/.test(profileForm.fatherPhoneNumber)
+    ) {
+      setModalError(
+        "Please enter a valid father's phone number containing exactly 10 digits."
+      );
+      return;
+    }
+
+    // Validate mother's phone number.
+    if (
+      profileForm.motherPhoneNumber &&
+      !/^\d{10}$/.test(profileForm.motherPhoneNumber)
+    ) {
+      setModalError(
+        "Please enter a valid mother's phone number containing exactly 10 digits."
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -260,7 +365,6 @@ export default function StudentProfile() {
 
       const response = await api.put("/student/profile", payload);
 
-      // Use the updated profile returned by the backend.
       const updatedProfile = response.data || {
         ...profile,
         ...payload,
@@ -280,7 +384,9 @@ export default function StudentProfile() {
         motherPhoneNumber: updatedProfile.motherPhoneNumber || "",
       });
 
-      setSuccessMessage("Your profile has been updated successfully.");
+      setSuccessMessage(
+        "Your profile has been updated successfully."
+      );
     } catch (error) {
       setModalError(getErrorMessage(error));
     } finally {
@@ -297,18 +403,33 @@ export default function StudentProfile() {
       return;
     }
 
-    if (!passwordForm.newPassword.trim()) {
+    if (!passwordForm.newPassword) {
       setModalError("Please enter your new password.");
       return;
     }
 
-    if (passwordForm.newPassword.length < 8) {
-      setModalError("Your new password must contain at least 8 characters.");
+    if (!allPasswordRulesPassed) {
+      setModalError(
+        "Please satisfy all the password requirements before continuing."
+      );
       return;
     }
 
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setModalError("The new password and confirmation do not match.");
+    if (
+      passwordForm.newPassword === passwordForm.currentPassword
+    ) {
+      setModalError(
+        "Your new password must be different from your current password."
+      );
+      return;
+    }
+
+    if (
+      passwordForm.newPassword !== passwordForm.confirmPassword
+    ) {
+      setModalError(
+        "The new password and confirmation do not match."
+      );
       return;
     }
 
@@ -326,7 +447,9 @@ export default function StudentProfile() {
         confirmPassword: "",
       });
 
-      setSuccessMessage("Your password has been changed successfully.");
+      setSuccessMessage(
+        "Your password has been changed successfully."
+      );
     } catch (error) {
       setModalError(getErrorMessage(error));
     } finally {
@@ -348,6 +471,7 @@ export default function StudentProfile() {
           <LoaderCircle className="sp-spinner" size={30} />
           <p>Loading your profile...</p>
         </div>
+
         <ProfileStyles />
       </main>
     );
@@ -386,6 +510,7 @@ export default function StudentProfile() {
           <div className="sp-page-error" role="alert">
             <AlertCircle size={18} />
             <span>{pageError}</span>
+
             <button
               type="button"
               onClick={() => window.location.reload()}
@@ -406,7 +531,9 @@ export default function StudentProfile() {
                 <span className="sp-identity-label">
                   STUDENT ACCOUNT
                 </span>
+
                 <h2>{profile.name || "Student"}</h2>
+
                 <p>
                   Student ID: {profile.studentId || "Not available"}
                 </p>
@@ -424,7 +551,9 @@ export default function StudentProfile() {
                   <span className="sp-section-kicker">
                     PERSONAL INFORMATION
                   </span>
+
                   <h2>Student details</h2>
+
                   <p>
                     Your authority-provided information and personal
                     details.
@@ -448,34 +577,40 @@ export default function StudentProfile() {
                   icon={UserRound}
                   readOnly
                 />
+
                 <ProfileField
                   label="Student ID"
                   value={profile.studentId}
                   icon={ShieldCheck}
                   readOnly
                 />
+
                 <ProfileField
                   label="Phone number"
                   value={profile.phoneNumber}
                   icon={Phone}
                   readOnly
                 />
+
                 <ProfileField
                   label="Email address"
                   value={profile.email}
                   icon={Mail}
                 />
+
                 <ProfileField
                   label="Date of birth"
                   value={profile.dateOfBirth}
                   icon={CalendarDays}
                 />
+
                 <ProfileField
                   label="Course ID"
                   value={profile.courseId}
                   icon={Users}
                   readOnly
                 />
+
                 <ProfileField
                   label="Academic session ID"
                   value={profile.sessionId}
@@ -491,7 +626,9 @@ export default function StudentProfile() {
                   <span className="sp-section-kicker">
                     FAMILY INFORMATION
                   </span>
+
                   <h2>Parent / Guardian details</h2>
+
                   <p>
                     Contact information for your parents or guardians.
                   </p>
@@ -504,16 +641,19 @@ export default function StudentProfile() {
                   value={profile.fatherName}
                   icon={UserRound}
                 />
+
                 <ProfileField
                   label="Father's phone number"
                   value={profile.fatherPhoneNumber}
                   icon={Phone}
                 />
+
                 <ProfileField
                   label="Mother's name"
                   value={profile.motherName}
                   icon={UserRound}
                 />
+
                 <ProfileField
                   label="Mother's phone number"
                   value={profile.motherPhoneNumber}
@@ -528,8 +668,12 @@ export default function StudentProfile() {
               </div>
 
               <div className="sp-security-content">
-                <span className="sp-section-kicker">ACCOUNT SECURITY</span>
+                <span className="sp-section-kicker">
+                  ACCOUNT SECURITY
+                </span>
+
                 <h2>Password & security</h2>
+
                 <p>
                   Keep your student account secure by using a strong,
                   private password.
@@ -646,8 +790,11 @@ export default function StudentProfile() {
                         label="Father's phone number"
                         name="fatherPhoneNumber"
                         type="tel"
+                        inputMode="numeric"
                         value={profileForm.fatherPhoneNumber}
                         onChange={handleProfileChange}
+                        placeholder="Enter 10-digit phone number"
+                        warning={fatherPhoneWarning}
                       />
 
                       <FormField
@@ -661,8 +808,11 @@ export default function StudentProfile() {
                         label="Mother's phone number"
                         name="motherPhoneNumber"
                         type="tel"
+                        inputMode="numeric"
                         value={profileForm.motherPhoneNumber}
                         onChange={handleProfileChange}
+                        placeholder="Enter 10-digit phone number"
+                        warning={motherPhoneWarning}
                       />
                     </div>
 
@@ -683,7 +833,10 @@ export default function StudentProfile() {
                       >
                         {saving ? (
                           <>
-                            <LoaderCircle className="sp-spinner" size={16} />
+                            <LoaderCircle
+                              className="sp-spinner"
+                              size={16}
+                            />
                             Saving...
                           </>
                         ) : (
@@ -716,6 +869,36 @@ export default function StudentProfile() {
                         onToggle={() => togglePassword("new")}
                       />
 
+                      {/* Live password validation */}
+                      <div className="sp-password-rules">
+                        <p className="sp-password-rules-title">
+                          Password requirements
+                        </p>
+
+                        <div className="sp-password-rule-list">
+                          {passwordRules.map((rule, index) => (
+                            <div
+                              className={`sp-password-rule ${
+                                rule.passed
+                                  ? "sp-password-rule-passed"
+                                  : ""
+                              }`}
+                              key={index}
+                            >
+                              <span className="sp-password-rule-icon">
+                                {rule.passed ? (
+                                  <Check size={13} />
+                                ) : (
+                                  <X size={13} />
+                                )}
+                              </span>
+
+                              <span>{rule.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
                       <PasswordField
                         label="Confirm new password"
                         name="confirmPassword"
@@ -725,9 +908,29 @@ export default function StudentProfile() {
                         onToggle={() => togglePassword("confirm")}
                       />
 
+                      {passwordForm.confirmPassword.length > 0 && (
+                        <div
+                          className={`sp-password-match ${
+                            passwordsMatch
+                              ? "sp-password-match-success"
+                              : "sp-password-match-error"
+                          }`}
+                        >
+                          {passwordsMatch ? (
+                            <Check size={14} />
+                          ) : (
+                            <X size={14} />
+                          )}
+
+                          {passwordsMatch
+                            ? "Passwords match"
+                            : "Passwords do not match"}
+                        </div>
+                      )}
+
                       <p className="sp-password-hint">
-                        Use at least 8 characters. Your new password
-                        must be different from your current password.
+                        Your new password must be different from your
+                        current password.
                       </p>
                     </div>
 
@@ -748,7 +951,10 @@ export default function StudentProfile() {
                       >
                         {saving ? (
                           <>
-                            <LoaderCircle className="sp-spinner" size={16} />
+                            <LoaderCircle
+                              className="sp-spinner"
+                              size={16}
+                            />
                             Updating...
                           </>
                         ) : (
@@ -1135,7 +1341,7 @@ function ProfileStyles() {
         font-size: 9px;
       }
 
-      /* More prominent individual information boxes */
+      /* Individual information boxes */
 
       .sp-details-grid {
         position: relative;
@@ -1154,8 +1360,7 @@ function ProfileStyles() {
         min-height: 86px;
         padding: 17px 19px;
         overflow: hidden;
-        background:
-          linear-gradient(115deg, #ffffff 0%, #f9faff 100%);
+        background: linear-gradient(115deg, #ffffff 0%, #f9faff 100%);
         border: 1px solid #e2e7f1;
         border-left: 3px solid rgba(193,154,82,.75);
         border-radius: 15px;
@@ -1533,6 +1738,36 @@ function ProfileStyles() {
         box-shadow: 0 0 0 3px rgba(193,154,82,.14);
       }
 
+      /* Phone validation warnings */
+
+      .sp-form-field input.sp-input-invalid {
+        border-color: #d85b5b;
+        background: #fffafa;
+        box-shadow: 0 0 0 2px rgba(216,91,91,.08);
+      }
+
+      .sp-form-field input.sp-input-invalid:focus {
+        border-color: #d85b5b;
+        box-shadow: 0 0 0 3px rgba(216,91,91,.12);
+      }
+
+      .sp-field-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+        color: #c04444;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .sp-field-warning svg {
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* Password fields */
+
       .sp-password-fields {
         display: flex;
         flex-direction: column;
@@ -1566,6 +1801,77 @@ function ProfileStyles() {
         color: #858da0;
         font-size: 10px;
         line-height: 1.6;
+      }
+
+      /* Live password rules */
+
+      .sp-password-rules {
+        margin-top: -5px;
+        padding: 15px 16px;
+        background: #f8f9fc;
+        border: 1px solid #e7eaf2;
+        border-radius: 12px;
+      }
+
+      .sp-password-rules-title {
+        margin: 0 0 12px;
+        color: #303b5d;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .sp-password-rule-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 13px;
+      }
+
+      .sp-password-rule {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #a04b4b;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.4;
+        transition: color .2s ease;
+      }
+
+      .sp-password-rule-icon {
+        display: grid;
+        place-items: center;
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
+        color: #b64d4d;
+        background: #fff0ef;
+        border-radius: 50%;
+      }
+
+      .sp-password-rule-passed {
+        color: #278354;
+      }
+
+      .sp-password-rule-passed .sp-password-rule-icon {
+        color: #fff;
+        background: #43a875;
+      }
+
+      .sp-password-match {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: -7px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .sp-password-match-success {
+        color: #278354;
+      }
+
+      .sp-password-match-error {
+        color: #c04444;
       }
 
       .sp-modal-error {
@@ -1838,6 +2144,10 @@ function ProfileStyles() {
 
         .sp-identity-text h2 {
           font-size: 18px;
+        }
+
+        .sp-password-rule-list {
+          grid-template-columns: 1fr;
         }
       }
 

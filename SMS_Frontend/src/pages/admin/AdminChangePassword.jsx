@@ -57,6 +57,30 @@ function PasswordField({
   );
 }
 
+
+const PASSWORD_RULES = [
+  {
+    label: "At least 8 characters",
+    test: (value) => value.length >= 8,
+  },
+  {
+    label: "At least one uppercase letter (A–Z)",
+    test: (value) => /[A-Z]/.test(value),
+  },
+  {
+    label: "At least one lowercase letter (a–z)",
+    test: (value) => /[a-z]/.test(value),
+  },
+  {
+    label: "At least one number (0–9)",
+    test: (value) => /[0-9]/.test(value),
+  },
+  {
+    label: "At least one special character from @ . - _",
+    test: (value) => /[@._-]/.test(value),
+  },
+];
+
 export default function AdminChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -77,6 +101,18 @@ export default function AdminChangePassword() {
       setNotice({
         type: "error",
         text: "Please fill in all three password fields.",
+      });
+      return;
+    }
+
+    const failedRule = PASSWORD_RULES.find(
+      (rule) => !rule.test(newPassword)
+    );
+
+    if (failedRule) {
+      setNotice({
+        type: "error",
+        text: `Password must satisfy: ${failedRule.label}.`,
       });
       return;
     }
@@ -295,6 +331,39 @@ export default function AdminChangePassword() {
         .acp-eye:hover {
           color: #a27c37;
           background: #fbf4e7;
+        }
+
+        .acp-password-rules {
+          display: grid;
+          gap: 8px;
+          padding: 13px 14px;
+          border: 1px solid #e5e8ef;
+          border-radius: 10px;
+          background: #f8f9fc;
+        }
+
+        .acp-password-rules-title {
+          margin: 0 0 2px;
+          color: #59637a;
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .acp-password-rule {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #858ba0;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .acp-password-rule svg {
+          flex-shrink: 0;
+        }
+
+        .acp-password-rule.passed {
+          color: #236447;
         }
 
         .acp-submit {
@@ -572,6 +641,30 @@ export default function AdminChangePassword() {
               placeholder="Enter new password"
               autoComplete="new-password"
             />
+
+            <div className="acp-password-rules" aria-live="polite">
+              <p className="acp-password-rules-title">
+                NEW PASSWORD MUST CONTAIN:
+              </p>
+
+              {PASSWORD_RULES.map((rule) => {
+                const passed = rule.test(newPassword);
+
+                return (
+                  <div
+                    className={`acp-password-rule ${passed ? "passed" : ""}`}
+                    key={rule.label}
+                  >
+                    {passed ? (
+                      <CheckCircle2 size={14} />
+                    ) : (
+                      <AlertCircle size={14} />
+                    )}
+                    <span>{rule.label}</span>
+                  </div>
+                );
+              })}
+            </div>
 
             <PasswordField
               id="acp-confirm"
