@@ -100,4 +100,7 @@
 ### MySql Student table semester_id will now start from 1 :----- [Debastab , 02/11/2026 at 7:58 pm]		
 		ALTER TABLE student MODIFY COLUMN current_semester_id VARCHAR(50) DEFAULT '1';
 		
+### MySql Subject table field addition for active/de-active subjects	[Priyanshu, 06/11/26, 03:16am]
+	USE mca_student_management;
+	ALTER TABLE subject ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1;
 		

@@ -1,8 +1,10 @@
 package com.example.demo.service;
 
 import java.util.List;
-
+import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.model.Subject;
+import java.util.Map;
 
 /**
  * Defines the business operations available for Subject management.
@@ -50,4 +52,20 @@ public interface SubjectService {
      * @return true if the subject was successfully deleted
      */
     boolean deleteSubject(String subjectId);
+
+    int importSubjectsFromExcel(MultipartFile file)
+            throws IOException;
+    
+    int updateSubjectsFromExcel(MultipartFile file)
+            throws IOException;
+
+    int deactivateSubjectsFromExcel(MultipartFile file)
+            throws IOException;
+
+    List<Subject> getActiveSubjectsByCourse(String courseId);
+
+    List<Subject> getActiveSubjectsBySemester(
+            String courseId, String semesterId);
+
+    Map<String, List<Subject>> getSubjectsSemesterWise(String courseId);
 }

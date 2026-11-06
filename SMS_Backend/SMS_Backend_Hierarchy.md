@@ -211,7 +211,6 @@
 	    }
 	]
 	
-	
 ##UPDATED CLASS for student De-Activation:--
 		[Student.java,Student.hbm.xml,StudentDao.java,StudentDaoImpl.java,StudentService.java,StudentServiceImpl.java,AdminService.java,AdminServiceImpl.java,AdminController.java, AuthServiceImpl.java,JwtAuthenticationFilter.java
 		Create a class :PasswordEncoderConfig and Modify SecurityConfig.java]
@@ -222,3 +221,39 @@
 		Student.hbm.xml ( added a property in line 101 -106 )---- 2nd nov 8pm
 		StudentServiceImpl.java ( added line 141 - 147 )---- 2nd nov 8pm
 		/StudentController.java (line 254, ) ---- 2nd nov 8pm
+		
+### Changes for doing (admin Subject upload through (.xlxs) file not using his own JWT token)	[Priyanshu, 05/11/26, 03:36am]
+	1.	Update SubjectController.java [3 mapping added for 3 CRUD methods]
+	2. Make another xl file containing subject details for upload
+	3. Create SubjectExcelRow.java
+	4. Create SubjectExcelParser.java
+	5.	Update SubjectDao.java and Update SubjectDaoImpl.java
+	6.	Update SubjectService.java and Update SubjectServiceImpl.java
+	7. Update AdminController.java
+	
+### Faculty can view all student details
+	1. Create FacultyStudentResponse.java
+	2. Create FacultyStudentService.java
+	3. Create FacultyStudentServiceImpl.java
+	4. Create FacultyStudentController.java
+	5. Update SecurityConfig.java
+	
+### Testing of Subjects uploaded through admins JWt token in xl file [Priyanshu, 06/11/26, 02:50am]
+	 1. just admin login 
+	 2. then by using his token, he can upload the subject (.xl) file to the existing db table of subject
+
+### One field added in Subject table for maintaining active/inactive subject status
+	is_active(0,1)
+	
+### Subject module updated	[Priyanshu, 06/11/26, 03:50am]
+	1. Subject.java
+	2. Subject.hbm.xml[Update Hibernate mapping]
+	3. SubjectService.java
+	4. SubjectServiceImpl.java
+	5. SubjectController.java
+	6. AdminController.java
+	7. SubjectExcelParser.java
+	8. SubjectDao.java
+	9. SubjectDaoImpl.java
+	
+### Subject CRUD[By Admin] Integration Testing is done [Priyanshu, 06/11/26, 04:15am]

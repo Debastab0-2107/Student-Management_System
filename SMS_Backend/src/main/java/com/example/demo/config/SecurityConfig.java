@@ -112,6 +112,8 @@ public SecurityFilterChain securityFilterChain(
             .requestMatchers("/admin/**").hasRole("ADMIN")
 
             .requestMatchers("/student/**").hasRole("STUDENT")
+            
+            .requestMatchers("/faculty/**").hasRole("TEACHER")
 
             .anyRequest().authenticated()
         )

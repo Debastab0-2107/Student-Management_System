@@ -19,7 +19,9 @@ public class Subject {
 
     /** Identifier of the semester in which the subject is offered. */
     private String semesterId;
-
+   
+    /** Indicates whether the subject is active (true) or inactive (false). */
+    private boolean active = true;
     /**
      * Creates an empty Subject object.
      */
@@ -112,7 +114,14 @@ public class Subject {
     public void setSemesterId(String semesterId) {
         this.semesterId = semesterId;
     }
+    
+    public boolean isActive() {
+        return active;
+    }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
     /**
      * Returns a string representation of the Subject object.
      *
@@ -125,6 +134,7 @@ public class Subject {
                 ", subjectName='" + subjectName + '\'' +
                 ", courseId='" + courseId + '\'' +
                 ", semesterId='" + semesterId + '\'' +
+                ", active=" + active +
                 '}';
     }
 }

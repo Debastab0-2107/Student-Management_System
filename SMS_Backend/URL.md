@@ -1,6 +1,6 @@
 ## Authentication
 
-- `POST http://localhost:8080/auth/login`
+- `POST http://localhost:8080/auth/login` [admin login]
 - `POST http://localhost:8080/auth/student/login` [student login]
 - `POST http://localhost:8080/auth/teacher/login` [faculty login]
 
@@ -27,6 +27,9 @@
 
 - `POST http://localhost:8080/ca-marks/upload/{semesterId}/{caCode}`
 
+### Semester Marks Uploaded by Teacher
+	GET /faculty/students/{studentId}/semester-results
+
 ## Marks Management
 
 - `POST http://localhost:8080/marks`
@@ -45,11 +48,12 @@
 
 ## Subject Management
 
-- `POST http://localhost:8080/subject`
+- `POST http://localhost:8080/admin/subjects/upload`
 - `GET http://localhost:8080/subject`
-- `GET http://localhost:8080/subject/{subjectId}`
-- `PUT http://localhost:8080/subject/{subjectId}`
-- `DELETE http://localhost:8080/subject/{subjectId}`
+- `GET http://localhost:8080/subject/MCAN-103`
+- `GEt http://localhost:8080/subject/course/MCA/semester-wise`
+- `POST http://localhost:8080/admin/subjects/update-upload`
+- `POST http://localhost:8080/admin/subjects/deactivate-upload`
 
 ## Testing & Development
 

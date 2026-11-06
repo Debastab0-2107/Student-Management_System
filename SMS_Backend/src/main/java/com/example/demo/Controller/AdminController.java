@@ -24,7 +24,7 @@ import com.example.demo.service.AuthService;
 
 import com.example.demo.model.Student;
 import com.example.demo.service.AdminService;
-
+import com.example.demo.service.SubjectService;
 /**
  * AdminController
  *
@@ -65,21 +65,24 @@ public class AdminController {
 	private final AdminService adminService;
 	private final AuthService authService;
 	private final StudentService studentService;
-    
-    
+	private final SubjectService subjectService;
     
     /**
      * Constructor-based dependency injection.
      *
      * @param adminService administrator service
      */
-	public AdminController(AdminService adminService, AuthService authService, StudentService studentService) {
+	public AdminController(
+	        AdminService adminService,
+	        AuthService authService,
+	        StudentService studentService,
+	        SubjectService subjectService) {
 
 	    this.adminService = adminService;
 	    this.authService = authService;
 	    this.studentService = studentService;
+	    this.subjectService = subjectService;
 	}
-
 
     /**
      * Uploads the authority-provided Student Excel file.
@@ -455,4 +458,127 @@ public class AdminController {
                     ));
         }
     }
+    
+    /**
+     * Uploads subjects using an administrator Excel file.
+     *
+     * POST /admin/subjects/upload
+     *
+     * Multipart field: file
+     */
+    @PostMapping("/subjects/upload")
+    public ResponseEntity<?> uploadSubjects(
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+
+            int count = subjectService.importSubjectsFromExcel(file);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "message",
+                            "Subjects imported successfully",
+                            "count",
+                            count
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+
+            org.slf4j.LoggerFactory
+                    .getLogger(AdminController.class)
+                    .error("Subject Excel import failed", e);
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "message",
+                            "Failed to import subjects"
+                    ));
+        }
+    }
+    
+
+/**
+ * Updates existing subjects using an Excel file.
+ *
+ * POST /admin/subjects/update-upload
+ *
+ * Excel headers:
+ * subjectId | subjectName | courseId | semesterId
+ */
+@PostMapping("/subjects/update-upload")
+public ResponseEntity<?> updateSubjectsFromExcel(
+        @RequestParam("file") MultipartFile file) {
+
+    try {
+
+        int count = subjectService.updateSubjectsFromExcel(file);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Subjects updated successfully",
+                "updatedCount", count
+        ));
+
+    } catch (IllegalArgumentException e) {
+
+        return ResponseEntity.badRequest().body(
+                Map.of("message", e.getMessage()));
+
+    } catch (Exception e) {
+
+        org.slf4j.LoggerFactory
+                .getLogger(AdminController.class)
+                .error("Subject Excel update failed", e);
+
+        return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("message", "Failed to update subjects"));
+    }
+}
+
+/**
+ * Deactivates subjects using an Excel file.
+ *
+ * POST /admin/subjects/deactivate-upload
+ *
+ * Excel header:
+ * subjectId
+ */
+@PostMapping("/subjects/deactivate-upload")
+public ResponseEntity<?> deactivateSubjectsFromExcel(
+        @RequestParam("file") MultipartFile file) {
+
+    try {
+
+        int count =
+                subjectService.deactivateSubjectsFromExcel(file);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Subject deactivation completed",
+                "deactivatedCount", count
+        ));
+
+    } catch (IllegalArgumentException e) {
+
+        return ResponseEntity.badRequest().body(
+                Map.of("message", e.getMessage()));
+
+    } catch (Exception e) {
+
+        org.slf4j.LoggerFactory
+                .getLogger(AdminController.class)
+                .error("Subject Excel deactivation failed", e);
+
+        return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("message", "Failed to deactivate subjects"));
+    }
+}
+
 }
