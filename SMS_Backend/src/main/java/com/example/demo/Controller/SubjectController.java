@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.demo.model.Subject;
 import com.example.demo.service.SubjectService;
+import java.util.Map;
 
 /**
  * REST controller responsible for Subject management operations.
@@ -44,6 +45,7 @@ public class SubjectController {
      * @param subject subject information received from the client
      * @return the created subject
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Subject> createSubject(
             @RequestBody Subject subject) {
@@ -93,6 +95,7 @@ public class SubjectController {
      * @param subjectId identifier of the subject to update
      * @return HTTP response indicating whether the update succeeded
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{subjectId}")
     public ResponseEntity<String> updateSubject(
             @PathVariable String subjectId,
@@ -117,6 +120,7 @@ public class SubjectController {
      * @param subjectId unique subject identifier
      * @return HTTP response indicating whether deletion succeeded
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{subjectId}")
     public ResponseEntity<String> deleteSubject(
             @PathVariable String subjectId) {
@@ -131,4 +135,35 @@ public class SubjectController {
 
         return ResponseEntity.ok("Subject deleted successfully.");
     }
+    
+
+/**
+ * Returns all active subjects grouped by semester for a course.
+ *
+ * GET /subject/course/{courseId}/semester-wise
+ */
+@GetMapping("/course/{courseId}/semester-wise")
+public ResponseEntity<Map<String, List<Subject>>>
+        getSubjectsSemesterWise(
+                @PathVariable String courseId) {
+
+    return ResponseEntity.ok(
+            subjectService.getSubjectsSemesterWise(courseId));
+}
+
+/**
+ * Returns active subjects for a particular course and semester.
+ *
+ * GET /subject/course/{courseId}/semester/{semesterId}
+ */
+@GetMapping("/course/{courseId}/semester/{semesterId}")
+public ResponseEntity<List<Subject>> getSubjectsBySemester(
+        @PathVariable String courseId,
+        @PathVariable String semesterId) {
+
+    return ResponseEntity.ok(
+            subjectService.getActiveSubjectsBySemester(
+                    courseId, semesterId));
+}
+
 }

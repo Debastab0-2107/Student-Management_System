@@ -23,6 +23,12 @@
         <!-- Semester in which the subject is offered. -->
         <property name="semesterId"
                   column="semester_id"/>
+                  
+        <!-- Indicates whether the subject is active or inactive. -->
+		<property name="active"
+          column="is_active"
+          type="boolean"
+          not-null="true"/>
 
     </class>
 

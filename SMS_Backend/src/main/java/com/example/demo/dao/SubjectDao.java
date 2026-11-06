@@ -1,7 +1,7 @@
 package com.example.demo.dao;
 
 import java.util.List;
-
+import java.util.List;
 import com.example.demo.model.Subject;
 
 /**
@@ -50,4 +50,17 @@ public interface SubjectDao {
      * @return true if the subject was deleted successfully
      */
     boolean deleteById(String subjectId);
+
+    void saveAll(List<Subject> subjects);
+    
+ // Excel-based operations.
+    boolean updateAll(List<Subject> subjects);
+
+    int deactivateAll(List<String> subjectIds);
+
+    // Active syllabus queries.
+    List<Subject> findActiveByCourseId(String courseId);
+
+    List<Subject> findActiveByCourseAndSemester(
+            String courseId, String semesterId);
 }

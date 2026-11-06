@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.dao.SubjectDao;
@@ -157,6 +158,123 @@ public class SubjectDaoImpl implements SubjectDao {
                 transaction.rollback();
                 throw exception;
             }
+        }
+    }
+    
+    @Override
+    public void saveAll(List<Subject> subjects) {
+
+        try (Session session = sessionFactory.openSession()) {
+
+            org.hibernate.Transaction transaction =
+                    session.beginTransaction();
+
+            try {
+
+                for (Subject subject : subjects) {
+                    session.persist(subject);
+                }
+
+                transaction.commit();
+
+            } catch (RuntimeException exception) {
+
+                transaction.rollback();
+                throw exception;
+            }
+        }
+    }
+ // All-or-nothing Excel update.
+    @Override
+    public boolean updateAll(List<Subject> subjects) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                for (Subject input : subjects) {
+                    Subject existing = session.get(
+                            Subject.class, input.getSubjectId());
+
+                    if (existing == null || !existing.isActive()) {
+                        tx.rollback();
+                        return false;
+                    }
+
+                    existing.setSubjectName(input.getSubjectName());
+                    existing.setCourseId(input.getCourseId());
+                    existing.setSemesterId(input.getSemesterId());
+                }
+
+                tx.commit();
+                return true;
+
+            } catch (RuntimeException e) {
+                tx.rollback();
+                throw e;
+            }
+        }
+    }
+
+    // All-or-nothing validation, but only active records are changed.
+    @Override
+    public int deactivateAll(List<String> subjectIds) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                int count = 0;
+
+                for (String id : subjectIds) {
+                    Subject subject = session.get(Subject.class, id);
+
+                    if (subject == null) {
+                        tx.rollback();
+                        throw new IllegalArgumentException(
+                                "Subject not found: " + id);
+                    }
+
+                    if (subject.isActive()) {
+                        subject.setActive(false);
+                        count++;
+                    }
+                }
+
+                tx.commit();
+                return count;
+
+            } catch (RuntimeException e) {
+                if (tx.isActive()) {
+                    tx.rollback();
+                }
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public List<Subject> findActiveByCourseId(String courseId) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery(
+                    "FROM Subject WHERE courseId = :courseId "
+                    + "AND active = true "
+                    + "ORDER BY semesterId, subjectId",
+                    Subject.class
+            ).setParameter("courseId", courseId).getResultList();
+        }
+    }
+
+    @Override
+    public List<Subject> findActiveByCourseAndSemester(
+            String courseId, String semesterId) {
+
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery(
+                    "FROM Subject WHERE courseId = :courseId "
+                    + "AND semesterId = :semesterId "
+                    + "AND active = true ORDER BY subjectId",
+                    Subject.class
+            )
+            .setParameter("courseId", courseId)
+            .setParameter("semesterId", semesterId)
+            .getResultList();
         }
     }
 }
