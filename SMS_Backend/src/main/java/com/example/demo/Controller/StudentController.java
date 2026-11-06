@@ -295,7 +295,6 @@ public class StudentController {
 			item.put("subjectId", mark.getSubjectId());
 			item.put("totalMarks", mark.getTotalMarks());
 			item.put("sem", mark.getSem());
-			item.put("caNo", mark.getCaNo());
 
 			response.add(item);
 		}

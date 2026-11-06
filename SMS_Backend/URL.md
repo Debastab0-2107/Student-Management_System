@@ -29,7 +29,13 @@
 
 ### Semester Marks Uploaded by Teacher
 	GET /faculty/students/{studentId}/semester-results
-
+	
+### Teacher can see student details(basics, CA-Marks, Semester marks)	[Priyanshu, 07/11/2026, 03:29am-4:00am]
+-	`GET http://localhost:8080/faculty/students`
+-	`GET http://localhost:8080/faculty/ca-marks`
+-	`GET http://localhost:8080/faculty/students/MCA2026001/ca-marks`
+-	`GET http://localhost:8080/faculty/ca-marks/semester/SEM1`
+ 
 ## Marks Management
 
 - `POST http://localhost:8080/marks`
@@ -62,6 +68,6 @@
 
 ##De-activation of student by Admin
 	Admin should login first then by using JWT token run below url
-	http://localhost:8080/admin/students/MCA2026007/deactivate
-	method[PUT]
+-	`PUT/POST http://localhost:8080/admin/students/MCA2026007/deactivate`
+
 
