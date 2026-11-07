@@ -87,26 +87,33 @@ public class SubjectDaoImpl implements SubjectDao {
     }
 
     /**
-     * Updates an existing subject.
+     * Updates an existing active subject.
      *
-     * The existing database record is loaded first and its fields
-     * are updated inside an explicit Hibernate transaction.
+     * Inactive subjects cannot be modified through this method.
      *
-     * @param subject subject object containing updated information
-     * @return true if the subject was found and updated
+     * @param subject updated subject information
+     * @return true if the active subject was successfully updated
      */
     @Override
     public boolean update(Subject subject) {
 
         try (Session session = sessionFactory.openSession()) {
 
-            org.hibernate.Transaction transaction = session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
 
             try {
+
                 Subject existingSubject =
                         session.get(Subject.class, subject.getSubjectId());
 
+                // Subject does not exist.
                 if (existingSubject == null) {
+                    transaction.rollback();
+                    return false;
+                }
+
+                // Prevent modifications to inactive subjects.
+                if (!existingSubject.isActive()) {
                     transaction.rollback();
                     return false;
                 }
@@ -115,33 +122,44 @@ public class SubjectDaoImpl implements SubjectDao {
                 existingSubject.setCourseId(subject.getCourseId());
                 existingSubject.setSemesterId(subject.getSemesterId());
 
-                session.merge(existingSubject);
-
                 transaction.commit();
 
                 return true;
 
             } catch (RuntimeException exception) {
-                transaction.rollback();
+
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+
                 throw exception;
             }
         }
     }
 
     /**
-     * Deletes a subject using its unique identifier.
+     * Deactivates a subject using its unique identifier.
+     *
+     * This method performs a soft deletion instead of physically
+     * removing the subject from the database.
+     *
+     * is_active = 1 : Active subject
+     * is_active = 0 : Inactive subject
+     *
+     * Academic history and references to this subject are preserved.
      *
      * @param subjectId unique subject identifier
-     * @return true if the subject was found and deleted
+     * @return true if the subject exists and is now inactive
      */
     @Override
     public boolean deleteById(String subjectId) {
 
         try (Session session = sessionFactory.openSession()) {
 
-            org.hibernate.Transaction transaction = session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
 
             try {
+
                 Subject subject = session.get(Subject.class, subjectId);
 
                 if (subject == null) {
@@ -149,13 +167,25 @@ public class SubjectDaoImpl implements SubjectDao {
                     return false;
                 }
 
-                session.remove(subject);
+                // Avoid unnecessary updates if already inactive.
+                if (!subject.isActive()) {
+                    transaction.commit();
+                    return true;
+                }
+
+                // Soft deletion: preserve the database record.
+                subject.setActive(false);
+
                 transaction.commit();
 
                 return true;
 
             } catch (RuntimeException exception) {
-                transaction.rollback();
+
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+
                 throw exception;
             }
         }

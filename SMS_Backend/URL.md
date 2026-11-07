@@ -60,6 +60,7 @@
 - `GEt http://localhost:8080/subject/course/MCA/semester-wise`
 - `POST http://localhost:8080/admin/subjects/update-upload`
 - `POST http://localhost:8080/admin/subjects/deactivate-upload`
+- `DELETE http://localhost:8080/subject/MCAN-101`	[without xlsx fle]
 
 ## Testing & Development
 

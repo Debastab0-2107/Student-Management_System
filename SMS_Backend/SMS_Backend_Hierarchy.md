@@ -281,4 +281,11 @@
 	Path: src/main/java/com/example/demo/Controller/FacultyCAMarksController.java
 	Path: src/main/java/com/example/demo/Controller/StudentController.java
 	
+### Resolve Subject model related class problems [Priyanshu, 07/11/26, 01:00pm]
+	SubjectDaoImpl.java
+	SubjectController.java
+	SubjectDao.java
+	
+### Testing of the above Solved Problem	[Priyanshu, 07/11/26, 03:00pm]
+	Through URLs for checking de-activation and updation 
 	
