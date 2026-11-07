@@ -115,25 +115,30 @@ public class SubjectController {
     }
 
     /**
-     * Deletes a subject by its identifier.
+     * Deactivates a subject using its identifier.
+     *
+     * The database record is preserved to protect academic history.
+     *
+     * DELETE /subject/{subjectId}
      *
      * @param subjectId unique subject identifier
-     * @return HTTP response indicating whether deletion succeeded
+     * @return response indicating deactivation status
      */
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{subjectId}")
     public ResponseEntity<String> deleteSubject(
             @PathVariable String subjectId) {
 
-        boolean deleted = subjectService.deleteSubject(subjectId);
+        boolean deactivated = subjectService.deleteSubject(subjectId);
 
-        if (!deleted) {
+        if (!deactivated) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("Subject not found.");
         }
 
-        return ResponseEntity.ok("Subject deleted successfully.");
+        return ResponseEntity.ok(
+                "Subject deactivated successfully. Academic history preserved.");
     }
     
 

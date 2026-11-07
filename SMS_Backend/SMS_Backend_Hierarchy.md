@@ -257,3 +257,35 @@
 	9. SubjectDaoImpl.java
 	
 ### Subject CRUD[By Admin] Integration Testing is done [Priyanshu, 06/11/26, 04:15am]
+
+### One field added in Student table for maintaining active/inactive subject status [Priyanshu, 07/11/26, 02:55am]
+	is_active(0,1) 
+
+### Faculty should be able to open a student's details and see their CA marks semester-wise and subject-wise.	[Priyanshu, 07/11/26, 03:45am]
+	1. FacultyStudentController.java
+	2. CAMarksDao.java
+	3. CAMarksDaoImpl.java
+	4. CAMarksService.java
+	5. CAMarksServiceImpl.java
+	6. FacultyCAMarksController.java
+
+### There is only one CA, no CA classifications(CA1, CA2...) needed [Priyanshu, 07/11/26, 04:30am]
+	Path: src/main/java/com/example/demo/model/CAMarks.java
+	Path: src/main/resources/CAMarks.hbm.xml
+	Path: src/main/java/com/example/demo/dao/CAMarksDao.java
+	Path: src/main/java/com/example/demo/daoimpl/CAMarksDaoImpl.java
+	Path: src/main/java/com/example/demo/service/CAMarksService.java
+	Path: src/main/java/com/example/demo/serviceimpl/CAMarksServiceImpl.java
+	Path: src/main/java/com/example/demo/Controller/CAMarksController.java
+	Path: src/main/java/com/example/demo/Controller/FacultyStudentController.java
+	Path: src/main/java/com/example/demo/Controller/FacultyCAMarksController.java
+	Path: src/main/java/com/example/demo/Controller/StudentController.java
+	
+### Resolve Subject model related class problems [Priyanshu, 07/11/26, 01:00pm]
+	SubjectDaoImpl.java
+	SubjectController.java
+	SubjectDao.java
+	
+### Testing of the above Solved Problem	[Priyanshu, 07/11/26, 03:00pm]
+	Through URLs for checking de-activation and updation 
+	

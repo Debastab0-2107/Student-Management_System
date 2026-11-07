@@ -9,7 +9,7 @@ public class CAMarks {
     private String subjectId;
     private java.math.BigDecimal totalMarks;
     private String sem;
-    private int caNo;
+    //private int caNo;
 
     public CAMarks() {
     }
@@ -61,7 +61,7 @@ public class CAMarks {
     public void setSem(String sem) {
         this.sem = sem;
     }
-
+/*
     public int getCaNo() {
         return caNo;
     }
@@ -69,4 +69,5 @@ public class CAMarks {
     public void setCaNo(int caNo) {
         this.caNo = caNo;
     }
+    */
 }
