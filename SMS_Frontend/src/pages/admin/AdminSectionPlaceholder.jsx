@@ -1,18 +1,37 @@
 
-import { useLocation, Link } from "react-router-dom";
-import { ArrowLeft, Construction, GraduationCap, BookPlus } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  Construction,
+  GraduationCap,
+  BookPlus,
+  Landmark,
+} from "lucide-react";
 
 export default function AdminSectionPlaceholder({ type }) {
-  const location = useLocation();
+  const configurations = {
+    students: {
+      title: "Student Section",
+      description:
+        "The student management workspace will be configured here.",
+      Icon: GraduationCap,
+    },
+    subjects: {
+      title: "Add Subject",
+      description:
+        "The subject directory and Excel import, update, and deletion tools are being prepared.",
+      Icon: BookPlus,
+    },
+    university: {
+      title: "University Details",
+      description:
+        "This section will be used to manage university information. The backend integration is not available yet.",
+      Icon: Landmark,
+    },
+  };
 
-  const isStudent = type === "students";
-
-  const title = isStudent ? "Student Section" : "Add Course";
-  const description = isStudent
-    ? "The student management workspace will be configured here."
-    : "The course management workspace will be configured here.";
-
-  const Icon = isStudent ? GraduationCap : BookPlus;
+  const config = configurations[type] || configurations.university;
+  const Icon = config.Icon;
 
   return (
     <div style={styles.page}>
@@ -23,13 +42,17 @@ export default function AdminSectionPlaceholder({ type }) {
 
         <span style={styles.kicker}>ADMINISTRATION WORKSPACE</span>
 
-        <h1 style={styles.title}>{title}</h1>
+        <h1 style={styles.title}>{config.title}</h1>
 
-        <p style={styles.description}>{description}</p>
+        <p style={styles.description}>{config.description}</p>
 
         <div style={styles.status}>
           <Construction size={16} />
-          <span>Workspace setup pending</span>
+          <span>
+            {type === "university"
+              ? "Backend integration pending"
+              : "Workspace setup in progress"}
+          </span>
         </div>
 
         <Link to="/admin/dashboard" style={styles.link}>

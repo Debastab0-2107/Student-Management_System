@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   KeyRound,
   BookPlus,
+  Landmark,
 } from "lucide-react";
 
 const ADMIN_CARDS = [
@@ -18,7 +19,7 @@ const ADMIN_CARDS = [
     features: [
       "Import student records",
       "Manage student status",
-      "Work with student information",
+      "Add Semester Marks",
     ],
     path: "/admin/students",
     icon: GraduationCap,
@@ -54,20 +55,33 @@ const ADMIN_CARDS = [
     number: "03",
   },
   {
-    title: "Add Course",
+    title: "Add Subject",
     description:
-      "Access the course management workspace for academic course setup.",
+      "View, import, update, and deactivate subjects for the department.",
     features: [
-      "Open course management",
-      "Prepare academic course details",
-      "Manage course-related information",
+      "View the subject directory",
+      "Import and update subjects using Excel",
+      "Deactivate subjects using subject IDs",
     ],
-    path: "/admin/course",
+    path: "/admin/subjects",
     icon: BookPlus,
-    tag: "ACADEMIC MANAGEMENT",
+    tag: "SUBJECT MANAGEMENT",
     number: "04",
   },
-  
+  {
+    title: "University Details",
+    description:
+      "A dedicated workspace for maintaining university information will be available here.",
+    features: [
+      "University information workspace",
+      "Academic affiliation details",
+      "Backend integration pending",
+    ],
+    path: "/admin/university",
+    icon: Landmark,
+    tag: "UNIVERSITY INFORMATION",
+    number: "05",
+  },
 ];
 
 export default function AdminDashboard() {
@@ -84,8 +98,9 @@ export default function AdminDashboard() {
     <div className="ad-page">
       <style>{`
         .ad-page {
-          max-width: 1250px;
-          margin: 0 auto;
+          width: 100%;
+          max-width: none;
+          margin: 0;
           animation: ad-enter .55s ease both;
         }
 
@@ -104,20 +119,22 @@ export default function AdminDashboard() {
           }
         }
 
+        /* PAGE HEADING */
+
         .ad-heading {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          gap: 20px;
+          gap: 16px;
           flex-wrap: wrap;
-          margin-bottom: 25px;
+          margin-bottom: 20px;
         }
 
         .ad-kicker {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin: 0 0 12px;
+          margin: 0 0 10px;
           color: #a27c37;
           font-size: 10px;
           font-weight: 800;
@@ -127,21 +144,21 @@ export default function AdminDashboard() {
         .ad-heading h1 {
           margin: 0;
           color: #202945;
-          font-size: clamp(27px, 4vw, 39px);
+          font-size: clamp(27px, 3vw, 37px);
           line-height: 1.2;
           letter-spacing: -1.2px;
         }
 
         .ad-heading > div > p:last-child {
-          margin: 10px 0 0;
+          margin: 8px 0 0;
           color: #858ba0;
-          font-size: 13px;
+          font-size: 12px;
           line-height: 1.7;
         }
 
         .ad-date {
-          min-width: 190px;
-          padding: 14px 18px;
+          min-width: 180px;
+          padding: 12px 15px;
           border: 1px solid #d8c397;
           border-radius: 14px;
           background: #fbf4e7;
@@ -160,8 +177,10 @@ export default function AdminDashboard() {
 
         .ad-date strong {
           color: #202945;
-          font-size: 13px;
+          font-size: 12px;
         }
+
+        /* WELCOME BANNER */
 
         .ad-welcome {
           position: relative;
@@ -169,11 +188,11 @@ export default function AdminDashboard() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 20px;
-          padding: 27px 30px;
-          margin-bottom: 30px;
+          gap: 18px;
+          padding: 22px 25px;
+          margin-bottom: 23px;
           border: 1px solid #ffffffa8;
-          border-radius: 19px;
+          border-radius: 17px;
           color: white;
           background: linear-gradient(110deg, #202945, #354365);
           box-shadow: 0 14px 34px #20294520;
@@ -202,9 +221,9 @@ export default function AdminDashboard() {
         }
 
         .ad-welcome h2 {
-          margin: 8px 0 5px;
+          margin: 7px 0 5px;
           color: white;
-          font-size: 23px;
+          font-size: 22px;
           letter-spacing: -.5px;
         }
 
@@ -217,23 +236,25 @@ export default function AdminDashboard() {
 
         .ad-welcome-icon {
           z-index: 1;
-          width: 57px;
-          height: 57px;
+          width: 52px;
+          height: 52px;
           flex-shrink: 0;
           display: grid;
           place-items: center;
           border: 1px solid #e6c47f55;
-          border-radius: 17px;
+          border-radius: 16px;
           color: #e6c47f;
           background: #ffffff0d;
         }
+
+        /* SECTION HEADING */
 
         .ad-section-heading {
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 12px;
-          margin-bottom: 17px;
+          margin-bottom: 13px;
         }
 
         .ad-section-heading h2 {
@@ -259,21 +280,27 @@ export default function AdminDashboard() {
           font-size: 10px;
         }
 
+        /* FIVE-COLUMN CARD GRID */
+
         .ad-card-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 19px;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 13px;
+          width: 100%;
         }
+
+        /* ADMIN CARDS */
 
         .ad-card {
           position: relative;
           display: flex;
           flex-direction: column;
-          min-height: 285px;
-          padding: 24px;
+          min-width: 0;
+          min-height: 290px;
+          padding: 17px 15px;
           overflow: hidden;
           border: 1px solid #ffffffd6;
-          border-radius: 18px;
+          border-radius: 16px;
           color: #202945;
           background: #ffffffd9;
           box-shadow: 0 10px 28px #2029450d;
@@ -299,6 +326,10 @@ export default function AdminDashboard() {
           animation-delay: .21s;
         }
 
+        .ad-card:nth-child(5) {
+          animation-delay: .28s;
+        }
+
         @keyframes ad-card-enter {
           from {
             opacity: 0;
@@ -314,16 +345,16 @@ export default function AdminDashboard() {
           transform: translateY(-5px);
           border-color: #c19a5280;
           background: #ffffffed;
-          box-shadow: 0 19px 40px #20294518;
+          box-shadow: 0 19px 35px #20294518;
         }
 
         .ad-card::after {
           content: "";
           position: absolute;
-          width: 150px;
-          height: 150px;
-          right: -75px;
-          bottom: -80px;
+          width: 130px;
+          height: 130px;
+          right: -70px;
+          bottom: -75px;
           border: 1px solid #c19a521c;
           border-radius: 50%;
           box-shadow: 0 0 0 18px #c19a5208;
@@ -336,18 +367,19 @@ export default function AdminDashboard() {
 
         .ad-card-top {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
         }
 
         .ad-card-icon {
-          width: 53px;
-          height: 53px;
+          width: 43px;
+          height: 43px;
+          flex-shrink: 0;
           display: grid;
           place-items: center;
           border: 1px solid #e9d9b6;
-          border-radius: 15px;
+          border-radius: 13px;
           color: #a27c37;
           background: #fbf4e7;
           transition:
@@ -364,18 +396,19 @@ export default function AdminDashboard() {
 
         .ad-card-tag {
           color: #a27c37;
-          font-size: 9px;
+          font-size: 8px;
           font-weight: 800;
-          letter-spacing: 1.1px;
-          text-align: right;
+          letter-spacing: .8px;
+          text-align: left;
+          overflow-wrap: anywhere;
         }
 
         .ad-card-number {
           position: absolute;
-          top: 27px;
-          right: 25px;
+          top: 15px;
+          right: 13px;
           color: #2029450b;
-          font-size: 43px;
+          font-size: 34px;
           font-weight: 900;
           line-height: 1;
           pointer-events: none;
@@ -384,33 +417,41 @@ export default function AdminDashboard() {
         .ad-card h3 {
           position: relative;
           z-index: 1;
-          margin: 21px 0 8px;
+          margin: 17px 0 8px;
           color: #202945;
-          font-size: 20px;
+          font-size: 16px;
+          line-height: 1.35;
+          overflow-wrap: anywhere;
         }
 
         .ad-card > p {
-          max-width: 440px;
+          position: relative;
+          z-index: 1;
           margin: 0;
           color: #858ba0;
-          font-size: 12px;
-          line-height: 1.8;
+          font-size: 11px;
+          line-height: 1.7;
+          overflow-wrap: anywhere;
         }
 
         .ad-card ul {
+          position: relative;
+          z-index: 1;
           display: grid;
-          gap: 8px;
+          gap: 9px;
           padding: 0;
-          margin: 17px 0 20px;
+          margin: 15px 0 17px;
           list-style: none;
         }
 
         .ad-card li {
           display: flex;
-          align-items: center;
-          gap: 9px;
+          align-items: flex-start;
+          gap: 7px;
           color: #4f5870;
-          font-size: 11px;
+          font-size: 10px;
+          line-height: 1.5;
+          overflow-wrap: anywhere;
         }
 
         .ad-card li::before {
@@ -418,6 +459,7 @@ export default function AdminDashboard() {
           width: 5px;
           height: 5px;
           flex-shrink: 0;
+          margin-top: 5px;
           border-radius: 50%;
           background: #c19a52;
         }
@@ -427,19 +469,21 @@ export default function AdminDashboard() {
           z-index: 1;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
           margin-top: auto;
           color: #a27c37;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 800;
         }
+
+        /* BOTTOM NOTE */
 
         .ad-bottom-note {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 15px 17px;
-          margin-top: 23px;
+          padding: 12px 15px;
+          margin-top: 17px;
           border: 1px solid #ffffffc9;
           border-radius: 13px;
           color: #727b91;
@@ -453,27 +497,55 @@ export default function AdminDashboard() {
           color: #a27c37;
         }
 
+        /* RESPONSIVE LAYOUT */
+
+        @media(max-width: 1150px) {
+          .ad-card-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
         @media(max-width: 760px) {
+          .ad-card-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+
+          .ad-welcome {
+            padding: 19px;
+          }
+
+          .ad-heading {
+            margin-bottom: 20px;
+          }
+
+          .ad-card {
+            min-height: 275px;
+          }
+        }
+
+        @media(max-width: 480px) {
           .ad-card-grid {
             grid-template-columns: 1fr;
           }
 
-          .ad-welcome {
-            padding: 21px;
-          }
-
-          .ad-heading {
-            margin-bottom: 23px;
-          }
-        }
-
-        @media(max-width: 430px) {
           .ad-date {
             width: 100%;
           }
 
           .ad-card {
-            padding: 20px;
+            min-height: 235px;
+            padding: 19px;
+          }
+
+          .ad-card-top {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+
+          .ad-card-tag {
+            text-align: right;
           }
 
           .ad-card-number {
@@ -518,7 +590,7 @@ export default function AdminDashboard() {
           <small>WELCOME TO YOUR WORKSPACE</small>
           <h2>Good to see you, Admin.</h2>
           <p>
-            Select one of the four sections below to continue.
+            Select a section below to continue managing department operations.
           </p>
         </div>
 
@@ -529,7 +601,7 @@ export default function AdminDashboard() {
 
       <div className="ad-section-heading">
         <h2>Administration Sections</h2>
-        <span>04 WORKSPACES</span>
+        <span>05 WORKSPACES</span>
       </div>
 
       <div className="ad-card-grid">
@@ -544,7 +616,7 @@ export default function AdminDashboard() {
             >
               <div className="ad-card-top">
                 <div className="ad-card-icon">
-                  <Icon size={26} />
+                  <Icon size={23} />
                 </div>
 
                 <span className="ad-card-tag">
@@ -568,7 +640,7 @@ export default function AdminDashboard() {
 
               <span className="ad-card-link">
                 Open section
-                <ArrowUpRight size={15} />
+                <ArrowUpRight size={14} />
               </span>
             </Link>
           );

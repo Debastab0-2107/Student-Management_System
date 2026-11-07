@@ -8,6 +8,7 @@ import {
   GraduationCap,
   KeyRound,
   BookPlus,
+  Landmark,
   Menu,
   X,
   LogOut,
@@ -33,14 +34,19 @@ const NAV_ITEMS = [
     icon: Users,
   },
   {
+    label: "Add Subject",
+    path: "/admin/subjects",
+    icon: BookPlus,
+  },
+  {
+    label: "University Details",
+    path: "/admin/university",
+    icon: Landmark,
+  },
+  {
     label: "Update Password",
     path: "/admin/password",
     icon: KeyRound,
-  },
-  {
-    label: "Add Course",
-    path: "/admin/course",
-    icon: BookPlus,
   },
 ];
 
