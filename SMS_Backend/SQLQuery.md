@@ -97,18 +97,24 @@
 ### MySql Student table semester_id will now start from 1 :----- [Debastab , 02/11/2026 at 7:58 pm]		
 		ALTER TABLE student MODIFY COLUMN current_semester_id VARCHAR(50) DEFAULT '1';
 		
-### MySql Subject table field addition for active/inactive subjects	[Priyanshu, 06/11/26, 03:16am]
+### MySql Subject table field addition for active/inactive subjects	[Priyanshu, 06/11/26, 03:16am, 07/11/26, 02:55am]
 	USE mca_student_management;
 	ALTER TABLE subject ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1;
 	
-### MySql Student table field addition for active/inactive subjects	[Priyanshu, 07/11/26, 02:55am]
-	USE mca_student_management;
-	ALTER TABLE student ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1;
+
 	
 ### Verify the Student table
 	SELECT student_id, name, is_active FROM student;
 
 ### [Priyanshu, 07/11/26, 04:30am]
 	ALTER TABLE ca_marks DROP COLUMN ca_no, ADD CONSTRAINT uq_ca_marks_student_subject_sem
-    UNIQUE (student_id, subject_id, sem);	
+    UNIQUE (student_id, subject_id, sem);
+    
+### [Debastab, 08/11/26, 10:50am] changing the faculty table in sql
+	ALTER TABLE faculty
+    ADD COLUMN alternate_phone_number VARCHAR(20) NULL,
+    ADD COLUMN educational_details TEXT NULL,
+    ADD COLUMN email VARCHAR(150) NULL;	
+    
+    DESC faculty;
    

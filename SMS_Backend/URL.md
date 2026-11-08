@@ -1,14 +1,19 @@
+# Student Management System — API Endpoint Reference
+
+**Base URL:** `http://localhost:8080`
+
+---
+
 ## Authentication
 
-- `POST http://localhost:8080/auth/login` [admin login]
-- `POST http://localhost:8080/auth/student/login` [student login]
-- `POST http://localhost:8080/auth/teacher/login` [faculty login]
+- `POST http://localhost:8080/auth/login` — Admin login
+- `POST http://localhost:8080/auth/student/login` — Student login
+- `POST http://localhost:8080/auth/teacher/login` — Faculty login
 
 ## Admin — Student & Faculty
 
 - `POST http://localhost:8080/admin/students/upload`
 - `GET http://localhost:8080/admin/students`
-
 - `POST http://localhost:8080/admin/faculty/regular/upload`
 - `POST http://localhost:8080/admin/faculty/regular/deactivate`
 - `PUT http://localhost:8080/admin/faculty/regular/{teacherId}/deactivate`
@@ -19,7 +24,7 @@
 - `PUT http://localhost:8080/admin/faculty/visiting/{teacherId}/deactivate`
 - `POST http://localhost:8080/admin/teacher-credentials`
 
-## Admin Password Changing URL:---------------
+## Admin Password Changing URL
 
 - `PUT http://localhost:8080/admin/password`
 
@@ -27,15 +32,28 @@
 
 - `POST http://localhost:8080/ca-marks/upload/{semesterId}/{caCode}`
 
-### Semester Marks Uploaded by Teacher
-	GET /faculty/students/{studentId}/semester-results
-	
-### Teacher can see student details(basics, CA-Marks, Semester marks)	[Priyanshu, 07/11/2026, 03:29am-4:00am]
--	`GET http://localhost:8080/faculty/students`
--	`GET http://localhost:8080/faculty/ca-marks`
--	`GET http://localhost:8080/faculty/students/MCA2026001/ca-marks`
--	`GET http://localhost:8080/faculty/ca-marks/semester/SEM1`
- 
+## Semester Marks Uploaded by Teacher
+
+- `GET http://localhost:8080/faculty/students/{studentId}/semester-results`
+
+## Teacher — Student Details and Marks
+
+- `GET http://localhost:8080/faculty/students` — View student details
+- `GET http://localhost:8080/faculty/ca-marks` — View CA marks
+- `GET http://localhost:8080/faculty/students/MCA2026001/ca-marks` — View CA marks for a specific student
+- `GET http://localhost:8080/faculty/ca-marks/semester/SEM1` — View CA marks by semester
+
+## Teacher — Profile Management
+
+- `GET http://localhost:8080/faculty/profile` — Get the logged-in teacher's profile  
+  **Added:** 08/11/2026, 11:36 AM IST
+- `PUT http://localhost:8080/faculty/profile` — Update the logged-in teacher's profile  
+  **Added:** 08/11/2026, 11:36 AM IST
+- `PUT http://localhost:8080/faculty/password` — Change the logged-in teacher's password  
+  **Added:** 08/11/2026, 11:36 AM IST
+
+> **Authentication:** These teacher profile and password endpoints require the logged-in teacher's JWT token. In Thunder Client, add the header `Authorization: Bearer YOUR_TEACHER_TOKEN`.
+
 ## Marks Management
 
 - `POST http://localhost:8080/marks`
@@ -50,25 +68,29 @@
 - `GET http://localhost:8080/student/profile`
 - `PUT http://localhost:8080/student/profile`
 - `PUT http://localhost:8080/student/password`
-- `GEt http://localhost:8080/student/ca-marks`
+- `GET http://localhost:8080/student/ca-marks`
 
 ## Subject Management
 
 - `POST http://localhost:8080/admin/subjects/upload`
 - `GET http://localhost:8080/subject`
 - `GET http://localhost:8080/subject/MCAN-103`
-- `GEt http://localhost:8080/subject/course/MCA/semester-wise`
+- `GET http://localhost:8080/subject/course/MCA/semester-wise`
 - `POST http://localhost:8080/admin/subjects/update-upload`
 - `POST http://localhost:8080/admin/subjects/deactivate-upload`
-- `DELETE http://localhost:8080/subject/MCAN-101`	[without xlsx fle]
+- `DELETE http://localhost:8080/subject/MCAN-101` — Delete without an XLSX file
 
 ## Testing & Development
 
 - `GET http://localhost:8080/test-env`
 - `GET http://localhost:8080/git-test-friend1`
 
-##De-activation of student by Admin
-	Admin should login first then by using JWT token run below url
--	`PUT/POST http://localhost:8080/admin/students/MCA2026007/deactivate`
+## Student Deactivation by Admin
 
+The admin must log in first. Use the admin JWT token when calling this endpoint.
 
+- `PUT http://localhost:8080/admin/students/MCA2026007/deactivate`
+
+---
+
+**Note:** Replace example IDs such as `MCA2026001`, `MCA2026007`, `SEM1`, and `MCAN-103` with the required IDs when testing other records.

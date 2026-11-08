@@ -289,3 +289,14 @@
 ### Testing of the above Solved Problem	[Priyanshu, 07/11/26, 03:00pm]
 	Through URLs for checking de-activation and updation 
 	
+	
+### Changing the faculty files for extra features for three fieldsalternate pg, email, educational details	[Debastab, 08/11/26, 10.59am]
+	File path:src/main/java/com/example/demo/model/Faculty.java
+	File path:src/main/resources/Faculty.hbm.xml
+	File path:src/main/java/com/example/demo/dao/FacultyDao.java--updateprofile() method added
+	File path:src/main/java/com/example/demo/daoimpl/FacultyDaoImpl.java--updateprofile() method added
+	File path:src/main/java/com/example/demo/service/FacultyService.java---updatePRofile() method added
+	File path:src/main/java/com/example/demo/serviceimpl/FacultyServiceImpl.java---updatePRofile() method added
+	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherProfileController.java
+	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherCredentialController.java
+	

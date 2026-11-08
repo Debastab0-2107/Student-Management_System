@@ -1,3 +1,4 @@
+
 import { Route, Routes } from "react-router-dom";
 
 // Public pages
@@ -26,152 +27,78 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import FacultyManagement from "./pages/admin/FacultyManagement";
 import AdminChangePassword from "./pages/admin/AdminChangePassword";
 import AdminSectionPlaceholder from "./pages/admin/AdminSectionPlaceholder";
+import SubjectManagement from "./pages/admin/SubjectManagement";
 
-// Admin Student Management pages
+// Admin Student Management
 import StudentManagement, {
-  StudentList
+  StudentList,
 } from "./pages/admin/StudentManagement";
 
 export default function App() {
   return (
+
+    
     <Routes>
-
-      {/* ================= PUBLIC PAGES ================= */}
-
+      {/* PUBLIC PAGES */}
       <Route path="/" element={<LandingPage />} />
-
       <Route path="/programs" element={<ProgramsPage />} />
-
       <Route path="/contact" element={<ContactPage />} />
 
-
-      {/* ================= LOGIN PAGES ================= */}
-
-      <Route
-        path="/login/student"
-        element={<StudentLogin />}
-      />
-
-      <Route
-        path="/login/admin"
-        element={<AdminLogin />}
-      />
-
+      {/* LOGIN PAGES */}
+      <Route path="/login/student" element={<StudentLogin />} />
+      <Route path="/login/admin" element={<AdminLogin />} />
       <Route
         path="/login/permanent-faculty"
         element={<PermanentFacultyLogin />}
       />
-
       <Route
         path="/login/visiting-faculty"
         element={<VisitingFacultyLogin />}
       />
 
 
-      {/* ================= STUDENT SECTION ================= */}
 
-      <Route
-        path="/student"
-        element={<StudentLayout />}
-      >
-
-        {/* Student Dashboard */}
-        <Route
-          path="dashboard"
-          element={<StudentDashboard />}
-        />
-
-        {/* Student Profile */}
-        <Route
-          path="profile"
-          element={<StudentProfile />}
-        />
-
-        {/* Class Routine */}
-        <Route
-          path="routine"
-          element={<ClassRoutine />}
-        />
-
-        {/* Course Overview */}
-        <Route
-          path="course-overview"
-          element={<CourseOverview />}
-        />
-
-        {/* Announcements - support both existing URL patterns */}
-        <Route
-          path="announcements"
-          element={<Announcements />}
-        />
-
-        <Route
-          path="notices"
-          element={<Announcements />}
-        />
-
-        {/* Other Student Features */}
-        <Route
-          path=":feature"
-          element={<StudentFeaturePage />}
-        />
-
+      {/* STUDENT SECTION */}
+      <Route path="/student" element={<StudentLayout />}>
+        <Route path="dashboard" element={<StudentDashboard />} />
+        <Route path="profile" element={<StudentProfile />} />
+        <Route path="routine" element={<ClassRoutine />} />
+        <Route path="course-overview" element={<CourseOverview />} />
+        <Route path="announcements" element={<Announcements />} />
+        <Route path="notices" element={<Announcements />} />
+        <Route path=":feature" element={<StudentFeaturePage />} />
       </Route>
 
 
-      {/* ================= ADMIN SECTION ================= */}
 
-      <Route
-        path="/admin"
-        element={<AdminLayout />}
-      >
+      {/* ADMIN SECTION */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
 
-        {/* Admin Dashboard */}
-        <Route
-          path="dashboard"
-          element={<AdminDashboard />}
-        />
-
-        {/* Student Operations Workspace */}
-        <Route
-          path="students"
-          element={<StudentManagement />}
-        />
-
-        {/* Student Directory */}
-        <Route
-          path="students/list"
-          element={<StudentList />}
-        />
+        {/* Student Management */}
+        <Route path="students" element={<StudentManagement />} />
+        <Route path="students/list" element={<StudentList />} />
 
         {/* Faculty Management */}
-        <Route
-          path="faculty"
-          element={<FacultyManagement />}
-        />
+        <Route path="faculty" element={<FacultyManagement />} />
 
         {/* Admin Password */}
-        <Route
-          path="password"
-          element={<AdminChangePassword />}
-        />
+        <Route path="password" element={<AdminChangePassword />} />
 
-        {/* Course Section */}
-        <Route
-          path="course"
-          element={<AdminSectionPlaceholder type="course" />}
-        />
+        {/* Subject Management */}
+        <Route path="subjects" element={<SubjectManagement />} />
 
+        {/* University Details - backend not ready yet */}
+        <Route
+          path="university"
+          element={<AdminSectionPlaceholder type="university" />}
+        />
       </Route>
 
 
-      {/* ================= FALLBACK ================= */}
 
-      <Route
-        path="*"
-        element={<LandingPage />}
-      />
-
+      {/* FALLBACK */}
+      <Route path="*" element={<LandingPage />} />
     </Routes>
   );
 }

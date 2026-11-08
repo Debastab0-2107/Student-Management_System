@@ -142,6 +142,86 @@ npm install axios
 
 
 
+## JETA KORTE HBE 
+
+# Setting Up the React Frontend (Vite)
+
+**Important:** The existing React frontend is already present inside `SMS_Frontend`. Do not create another Vite project or an additional `sms-frontend` folder.
+
+## Step 1: Open the existing frontend folder
+
+Open PowerShell or the VS Code terminal and execute:
+
+```powershell
+cd E:\MINOR_PROJECT\Student-Management_System\SMS_Frontend
+```
+
+## Step 2: Check whether `package.json` exists
+
+```powershell
+dir package.json
+```
+
+If the file exists, continue to the next step.
+
+## Step 3: Install project dependencies
+
+```powershell
+npm install
+```
+
+This command reads `package.json` and installs the required packages, including React, Vite, and other project dependencies.
+
+## Step 4: Start the frontend
+
+```powershell
+npm run dev
+```
+
+Vite should start the development server. Open the URL displayed in the terminal, usually:
+
+```text
+http://localhost:5173/
+```
+
+## Step 5: If Vite is missing
+
+If the existing project does not have Vite installed, execute:
+
+```powershell
+npm install --save-dev vite
+```
+
+Then run:
+
+```powershell
+npm run dev
+```
+
+**Note:** This command installs Vite in the current project. It does not create another folder or ask for a project name.
+
+## Important reminders
+
+- Do not execute `npm create vite@latest` again.
+- Do not create a nested `sms-frontend` folder.
+- Run all npm commands from the existing `SMS_Frontend` directory.
+- Do not push the `node_modules` folder to GitHub.
+- Make sure `package.json` and `package-lock.json` are committed and pushed to GitHub.
+
+**Expected folder location:**
+
+```text
+Student-Management_System/
+└── SMS_Frontend/
+    ├── src/
+    ├── public/
+    ├── package.json
+    ├── package-lock.json
+    ├── vite.config.js
+    └── index.html
+```
+
+
 
 
 
