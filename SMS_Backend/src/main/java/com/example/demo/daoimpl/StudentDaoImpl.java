@@ -294,6 +294,30 @@ public class StudentDaoImpl implements StudentDao {
         return updatedRows > 0;
     }
     
+    //roll and reg no adding
+    
+    @Override
+    public boolean updateUniversityIdentifiers(
+            Student student) {
+
+        Session session = sessionFactory.getCurrentSession();
+
+        String hql =
+                "UPDATE Student s "
+                + "SET s.universityRollNo = :roll, "
+                + "s.universityRegistrationNo = :reg "
+                + "WHERE s.studentId = :studentId "
+                + "AND s.sessionId = :batch";
+
+        int updatedRows = session.createMutationQuery(hql)
+                .setParameter("roll", student.getUniversityRollNo())
+                .setParameter("reg", student.getUniversityRegistrationNo())
+                .setParameter("studentId", student.getStudentId())
+                .setParameter("batch", student.getSessionId())
+                .executeUpdate();
+
+        return updatedRows > 0;
+    }
     
     
 }

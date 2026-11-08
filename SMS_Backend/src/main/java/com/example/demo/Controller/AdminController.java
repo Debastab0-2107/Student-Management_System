@@ -581,4 +581,38 @@ public ResponseEntity<?> deactivateSubjectsFromExcel(
     }
 }
 
+
+		//roll reg controller mapping
+	@PostMapping("/students/university-identifiers/upload")
+	public ResponseEntity<?> uploadUniversityIdentifiers(
+        @RequestParam("file") MultipartFile file) {
+
+    try {
+
+        int count = adminService.uploadUniversityIdentifiers(file);
+
+        return ResponseEntity.ok(Map.of(
+                "message",
+                "University identifiers uploaded successfully",
+                "updatedCount",
+                count
+        ));
+
+    } catch (IllegalArgumentException e) {
+
+        return ResponseEntity.badRequest().body(
+                Map.of("message", e.getMessage()));
+
+    } catch (Exception e) {
+
+        return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("message",
+                        "Failed to upload university identifiers"));
+    }
+}
+	
+
+
+
 }

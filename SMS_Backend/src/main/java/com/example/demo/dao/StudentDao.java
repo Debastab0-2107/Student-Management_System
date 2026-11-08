@@ -127,4 +127,7 @@ public interface StudentDao {
             String studentId,
             boolean active);
     
+    //for adding roll and reg no via excel
+    boolean updateUniversityIdentifiers(Student student);
+    
 }

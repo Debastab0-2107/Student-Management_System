@@ -148,7 +148,10 @@ public class Student {
      * Required by Hibernate for creating Student objects.
      */
     
-    private boolean active = true;
+    private boolean active = true; //for activation status of student
+    
+    private String universityRollNo; //univ roll no
+    private String universityRegistrationNo; //univ reg no.
     
     public Student() {
     }
@@ -468,6 +471,7 @@ public class Student {
      * @return readable Student representation
      */
     
+    //activation test of student
     public boolean isActive() {
         return active;
     }
@@ -475,6 +479,24 @@ public class Student {
     public void setActive(boolean active) {
         this.active = active;
     }
+    //roll and reg no 
+    
+    public String getUniversityRollNo() {
+        return universityRollNo;
+    }
+
+    public void setUniversityRollNo(String universityRollNo) {
+        this.universityRollNo = universityRollNo;
+    }
+
+    public String getUniversityRegistrationNo() {
+        return universityRegistrationNo;
+    }
+
+    public void setUniversityRegistrationNo(String universityRegistrationNo) {
+        this.universityRegistrationNo = universityRegistrationNo;
+    }
+    
     
     @Override
     public String toString() {

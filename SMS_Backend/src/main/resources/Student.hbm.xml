@@ -156,6 +156,13 @@
 		<property name="active"
           column="is_active"
           not-null="true"/>
+          
+          <!--  univ roll and reg no hibernate xml mapping -->
+          <property name="universityRollNo"
+          column="university_roll_no"/>
+
+		<property name="universityRegistrationNo"
+          column="university_registration_no"/>
 		
     </class>
 

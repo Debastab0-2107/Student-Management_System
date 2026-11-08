@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
 import java.util.List;
-
 import com.example.demo.model.Student;
+import com.example.demo.dto.request.UniversityIdentifierExcelRow;
 
 /**
  * StudentService
@@ -131,5 +131,8 @@ public interface StudentService {
     boolean deactivateStudent(String studentId); //for de-active student
 
     boolean isStudentActive(String studentId); //for checking the status of student
+    
+    int assignUniversityIdentifiers(
+            List<UniversityIdentifierExcelRow> rows);
     
 }

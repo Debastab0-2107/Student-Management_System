@@ -1,5 +1,6 @@
 package com.example.demo.serviceimpl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.request.FacultyDeactivateExcelRow;
 import com.example.demo.dto.request.FacultyExcelRow;
 import com.example.demo.dto.request.StudentExcelRow;
+import com.example.demo.dto.request.UniversityIdentifierExcelRow;
 import com.example.demo.model.Faculty;
 import com.example.demo.model.Student;
 import com.example.demo.service.AdminService;
@@ -16,6 +18,7 @@ import com.example.demo.service.FacultyService;
 import com.example.demo.service.StudentService;
 import com.example.demo.util.FacultyExcelParser;
 import com.example.demo.util.StudentExcelParser;
+import com.example.demo.util.UniversityIdentifierExcelParser;
 
 /**
  * AdminServiceImpl
@@ -62,6 +65,9 @@ public class AdminServiceImpl implements AdminService {
      * Faculty business service.
      */
     private final FacultyService facultyService;
+    
+    
+    private final UniversityIdentifierExcelParser universityIdentifierExcelParser;
 
     /**
      * Constructor-based dependency injection.
@@ -75,12 +81,14 @@ public class AdminServiceImpl implements AdminService {
             StudentExcelParser studentExcelParser,
             StudentService studentService,
             FacultyExcelParser facultyExcelParser,
-            FacultyService facultyService) {
+            FacultyService facultyService, 
+            UniversityIdentifierExcelParser universityIdentifierExcelParser) {
 
         this.studentExcelParser = studentExcelParser;
         this.studentService = studentService;
         this.facultyExcelParser = facultyExcelParser;
         this.facultyService = facultyService;
+        this.universityIdentifierExcelParser = universityIdentifierExcelParser;
     }
 
     /**
@@ -389,6 +397,23 @@ public class AdminServiceImpl implements AdminService {
     public boolean deactivateStudent(String studentId) {
 
         return studentService.deactivateStudent(studentId);
+    }
+    
+    @Override
+    public int uploadUniversityIdentifiers(MultipartFile file) {
+
+        try {
+
+            List<UniversityIdentifierExcelRow> rows =
+                    universityIdentifierExcelParser.parse(file);
+
+            return studentService.assignUniversityIdentifiers(rows);
+
+        } catch (IOException e) {
+
+            throw new IllegalArgumentException(
+                    "Unable to read university Excel file", e);
+        }
     }
     
     
