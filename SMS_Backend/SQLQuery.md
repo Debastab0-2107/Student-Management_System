@@ -94,9 +94,6 @@
 		ALTER TABLE student ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
 		
 		
-### MySql Student table add column is_active :----- [Debastab , 02/11/2026 at 7:08 pm]
-		ALTER TABLE student ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
-		
 ### MySql Student table semester_id will now start from 1 :----- [Debastab , 02/11/2026 at 7:58 pm]		
 		ALTER TABLE student MODIFY COLUMN current_semester_id VARCHAR(50) DEFAULT '1';
 		
