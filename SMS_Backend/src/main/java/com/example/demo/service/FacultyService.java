@@ -69,4 +69,21 @@ public interface FacultyService {
      * @return true if successful
      */
     boolean deactivateById(String teacherId);
+    
+    /**
+     * Updates the editable profile information of a faculty member.
+     *
+     * @param teacherId faculty identifier
+     * @param phoneNumber primary mobile number
+     * @param alternatePhoneNumber alternative mobile number
+     * @param email email address
+     * @param educationalDetails educational qualifications/details
+     * @return true if profile is updated successfully
+     */
+    boolean updateProfile(
+            String teacherId,
+            String phoneNumber,
+            String alternatePhoneNumber,
+            String email,
+            String educationalDetails);
 }

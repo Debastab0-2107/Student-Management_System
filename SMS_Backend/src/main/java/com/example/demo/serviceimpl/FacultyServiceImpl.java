@@ -188,4 +188,59 @@ public class FacultyServiceImpl implements FacultyService {
 
         return facultyDao.deactivateById(teacherId);
     }
+    
+    /**
+     * Updates the editable profile information of a faculty member.
+     */
+    @Override
+    public boolean updateProfile(
+            String teacherId,
+            String phoneNumber,
+            String alternatePhoneNumber,
+            String email,
+            String educationalDetails) {
+
+        if (teacherId == null || teacherId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID is required");
+        }
+
+        Faculty existingFaculty =
+                facultyDao.findById(teacherId);
+
+        if (existingFaculty == null) {
+            return false;
+        }
+
+        if (!existingFaculty.isStatus()) {
+            throw new IllegalArgumentException(
+                    "Inactive faculty cannot update their profile");
+        }
+
+        if (phoneNumber != null && !phoneNumber.isBlank()
+                && !phoneNumber.matches("[0-9+\\-\\s]{7,20}")) {
+            throw new IllegalArgumentException(
+                    "Please enter a valid primary mobile number");
+        }
+
+        if (alternatePhoneNumber != null
+                && !alternatePhoneNumber.isBlank()
+                && !alternatePhoneNumber.matches("[0-9+\\-\\s]{7,20}")) {
+            throw new IllegalArgumentException(
+                    "Please enter a valid alternative mobile number");
+        }
+
+        if (email != null && !email.isBlank()
+                && !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new IllegalArgumentException(
+                    "Please enter a valid email address");
+        }
+
+        return facultyDao.updateProfile(
+                teacherId,
+                phoneNumber,
+                alternatePhoneNumber,
+                email,
+                educationalDetails);
+    }
 }

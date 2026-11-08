@@ -271,4 +271,57 @@ public class FacultyDaoImpl implements FacultyDao {
             session.close();
         }
     }
+    
+    /**
+     * Updates only the editable profile fields of a faculty member.
+     */
+    @Override
+    public boolean updateProfile(
+            String teacherId,
+            String phoneNumber,
+            String alternatePhoneNumber,
+            String email,
+            String educationalDetails) {
+
+        if (teacherId == null || teacherId.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Teacher ID cannot be empty");
+        }
+
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+
+        try {
+            transaction = session.beginTransaction();
+
+            Faculty faculty = session.get(
+                    Faculty.class,
+                    teacherId);
+
+            if (faculty == null) {
+                transaction.rollback();
+                return false;
+            }
+
+            faculty.setPhoneNumber(phoneNumber);
+            faculty.setAlternatePhoneNumber(alternatePhoneNumber);
+            faculty.setEmail(email);
+            faculty.setEducationalDetails(educationalDetails);
+
+            transaction.commit();
+
+            return true;
+
+        } catch (Exception e) {
+
+            if (transaction != null) {
+                transaction.rollback();
+            }
+
+            throw e;
+
+        } finally {
+            session.close();
+        }
+    }
 }

@@ -69,4 +69,17 @@ public interface FacultyDao {
      * @return true if deactivated successfully
      */
     boolean deactivateById(String teacherId);
+    
+    /**
+     * Updates the editable profile information of a faculty member.
+     *
+     * Teacher ID, faculty type, department and account status
+     * are not modified by this operation.
+     */
+    boolean updateProfile(
+            String teacherId,
+            String phoneNumber,
+            String alternatePhoneNumber,
+            String email,
+            String educationalDetails);
 }
