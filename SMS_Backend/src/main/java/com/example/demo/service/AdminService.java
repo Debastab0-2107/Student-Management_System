@@ -83,4 +83,6 @@ public interface AdminService {
     
     boolean deactivateStudent(String studentId);//student de-activation controlled by admin
     
+    int uploadUniversityIdentifiers(MultipartFile file);//admin upload excel file for roll and reg no
+    
 }

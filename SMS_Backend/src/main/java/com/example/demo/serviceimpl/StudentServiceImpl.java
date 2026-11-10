@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dao.StudentDao;
+import com.example.demo.dto.request.UniversityIdentifierExcelRow;
 import com.example.demo.model.Student;
 import com.example.demo.service.StudentService;
 
@@ -458,6 +459,105 @@ public class StudentServiceImpl implements StudentService {
         return student != null && student.isActive();
     }
     
-    
+    @Override
+    @Transactional
+    public int assignUniversityIdentifiers(
+            List<UniversityIdentifierExcelRow> rows) {
+
+        if (rows == null || rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Excel contains no student records");
+        }
+
+        java.util.Set<String> studentIds =
+                new java.util.HashSet<>();
+
+        java.util.Set<String> rollNumbers =
+                new java.util.HashSet<>();
+
+        java.util.Set<String> registrationNumbers =
+                new java.util.HashSet<>();
+
+        // Validate the complete Excel before updating records.
+        for (UniversityIdentifierExcelRow row : rows) {
+
+            if (row.getStudentId() == null
+                    || row.getStudentId().isBlank()
+                    || row.getRoll() == null
+                    || row.getRoll().isBlank()
+                    || row.getReg() == null
+                    || row.getReg().isBlank()
+                    || row.getBatch() == null
+                    || row.getBatch().isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "StudentId, Roll, Reg and Batch are required");
+            }
+
+            if (!studentIds.add(row.getStudentId().trim())) {
+                throw new IllegalArgumentException(
+                        "Duplicate StudentId in Excel: "
+                                + row.getStudentId());
+            }
+
+            if (!rollNumbers.add(row.getRoll().trim())) {
+                throw new IllegalArgumentException(
+                        "Duplicate university Roll in Excel: "
+                                + row.getRoll());
+            }
+
+            if (!registrationNumbers.add(row.getReg().trim())) {
+                throw new IllegalArgumentException(
+                        "Duplicate university Registration Number in Excel: "
+                                + row.getReg());
+            }
+        }
+
+        // Check and update every student for roll and reg no
+        for (UniversityIdentifierExcelRow row : rows) {
+
+            Student student = findByStudentId(
+                    row.getStudentId().trim());
+
+            if (student == null) {
+                throw new IllegalArgumentException(
+                        "Student not found: " + row.getStudentId());
+            }
+
+            if (!student.getSessionId().equalsIgnoreCase(
+                    row.getBatch().trim())) {
+
+                throw new IllegalArgumentException(
+                        "Batch mismatch for StudentId: "
+                                + row.getStudentId());
+            }
+
+            if (!student.getName().trim().equalsIgnoreCase(
+                    row.getName().trim())) {
+
+                throw new IllegalArgumentException(
+                        "Name mismatch for StudentId: "
+                                + row.getStudentId());
+            }
+
+            Student updateStudent = new Student();
+
+            updateStudent.setStudentId(student.getStudentId());
+            updateStudent.setSessionId(row.getBatch().trim());
+            updateStudent.setUniversityRollNo(row.getRoll().trim());
+            updateStudent.setUniversityRegistrationNo(row.getReg().trim());
+
+            boolean updated =
+                    studentDao.updateUniversityIdentifiers(updateStudent);
+
+            if (!updated) {
+                throw new IllegalArgumentException(
+                        "Failed to update university identifiers for: "
+                                + row.getStudentId());
+            }
+        }
+
+        return rows.size();
+    }
     
 }

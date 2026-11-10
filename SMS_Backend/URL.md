@@ -94,3 +94,6 @@ The admin must log in first. Use the admin JWT token when calling this endpoint.
 ---
 
 **Note:** Replace example IDs such as `MCA2026001`, `MCA2026007`, `SEM1`, and `MCAN-103` with the required IDs when testing other records.
+
+## Univ Roll and Reg No. Excel file upload by admin for
+	http://localhost:8080/admin/students/university-identifiers/upload

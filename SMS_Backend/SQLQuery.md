@@ -94,9 +94,6 @@
 		ALTER TABLE student ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
 		
 		
-### MySql Student table add column is_active :----- [Debastab , 02/11/2026 at 7:08 pm]
-		ALTER TABLE student ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
-		
 ### MySql Student table semester_id will now start from 1 :----- [Debastab , 02/11/2026 at 7:58 pm]		
 		ALTER TABLE student MODIFY COLUMN current_semester_id VARCHAR(50) DEFAULT '1';
 		
@@ -120,4 +117,16 @@
     ADD COLUMN email VARCHAR(150) NULL;	
     
     DESC faculty;
+    
+## [Parambrata, 08/11/2026 , 07:26 pm] add roll and reg no field in student table and make them unique field
+	ALTER TABLE student
+	ADD COLUMN university_roll_no VARCHAR(50) NULL,
+	ADD COLUMN university_registration_no VARCHAR(100) NULL;
+	
+	//For making them unique field run below queries:----
+	CREATE UNIQUE INDEX uk_student_university_roll
+	ON student(university_roll_no);
+
+	CREATE UNIQUE INDEX uk_student_university_reg
+	ON student(university_registration_no);
    
