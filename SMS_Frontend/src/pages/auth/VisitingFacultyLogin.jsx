@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../../services/api";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,12 +21,45 @@ export default function VisitingFacultyLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setNotice(
-      "The Visiting Faculty Portal design is ready. Authentication will be connected when the backend endpoint is implemented."
-    );
+    setNotice("");
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/teacher/login", {
+        teacherId: identifier.trim(),
+        password,
+      });
+
+      const { token, teacherId, role, mustChangePassword } = response.data;
+
+      if (!token || !teacherId || role !== "TEACHER") {
+        throw new Error("Invalid teacher login response from server.");
+      }
+
+      localStorage.setItem("sms_token", token);
+      localStorage.setItem("sms_role", "TEACHER");
+      localStorage.setItem("sms_teacher_id", teacherId);
+      localStorage.setItem(
+        "sms_must_change_password",
+        String(mustChangePassword)
+      );
+
+      setNotice(
+        "Login successful. Your visiting faculty account is authenticated."
+      );
+    } catch (error) {
+      setNotice(
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please check your faculty ID and password."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -131,7 +165,8 @@ export default function VisitingFacultyLogin() {
         .vfl-eye { width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;border:0;border-radius:7px;background:transparent;color:#8993a7;cursor:pointer; }
         .vfl-eye:hover { background:#edf1f7;color:#101b35; }
         .vfl-submit { min-height:53px;display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:13px 18px;border:1px solid #101b35;border-radius:11px;background:#101b35;color:white;font:700 13px 'DM Sans',sans-serif;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s; }
-        .vfl-submit:hover { transform:translateY(-2px);background:#1a2a4b;box-shadow:0 10px 22px rgba(16,27,53,.17); }
+        .vfl-submit:hover:not(:disabled) { transform:translateY(-2px);background:#1a2a4b;box-shadow:0 10px 22px rgba(16,27,53,.17); }
+        .vfl-submit:disabled { opacity:.65;cursor:not-allowed; }
         .vfl-notice { margin-top:14px;padding:12px 13px;border:1px solid #d8e1f0;border-radius:10px;background:#f2f6fc;color:#3d557c;font-size:11px;line-height:1.7; }
         .vfl-security { display:flex;align-items:flex-start;gap:10px;margin-top:22px;padding:13px;border:1px solid #e8ebf0;border-radius:11px;background:#f8fafc;color:#6f7a8d;font-size:11px;line-height:1.7; }
         .vfl-security svg { flex-shrink:0;color:#617ba5; }
@@ -150,12 +185,16 @@ export default function VisitingFacultyLogin() {
           <div className="vfl-orbit vfl-orbit-two" />
 
           <div className="vfl-brand">
-            <span className="vfl-brand-icon"><Users size={23} /></span>
+            <span className="vfl-brand-icon">
+              <Users size={23} />
+            </span>
             <span>DPP INSTITUTE OF TECHNOLOGY</span>
           </div>
 
           <div className="vfl-copy">
-            <p className="vfl-eyebrow"><Sparkles size={15} /> A PLACE FOR NEW PERSPECTIVES</p>
+            <p className="vfl-eyebrow">
+              <Sparkles size={15} /> A PLACE FOR NEW PERSPECTIVES
+            </p>
             <h1>Bring your<br /><span>expertise.</span></h1>
             <p className="vfl-description">
               Great ideas travel. Join our academic community, share your
@@ -163,10 +202,14 @@ export default function VisitingFacultyLogin() {
             </p>
 
             <div className="vfl-feature">
-              <div className="vfl-feature-icon"><Globe2 size={20} /></div>
+              <div className="vfl-feature-icon">
+                <Globe2 size={20} />
+              </div>
               <div>
                 <strong>One connected academic community</strong>
-                <span>A dedicated space for visiting educators and guest faculty.</span>
+                <span>
+                  A dedicated space for visiting educators and guest faculty.
+                </span>
               </div>
             </div>
           </div>
@@ -178,10 +221,14 @@ export default function VisitingFacultyLogin() {
         </aside>
 
         <div className="vfl-form-panel">
-          <Link className="vfl-back" to="/"><ArrowLeft size={16} /> Back to home</Link>
+          <Link className="vfl-back" to="/">
+            <ArrowLeft size={16} /> Back to home
+          </Link>
 
           <div className="vfl-mobile-brand">
-            <span className="vfl-mobile-icon"><Users size={22} /></span>
+            <span className="vfl-mobile-icon">
+              <Users size={22} />
+            </span>
             DPP INSTITUTE OF TECHNOLOGY
           </div>
 
@@ -194,15 +241,18 @@ export default function VisitingFacultyLogin() {
             </p>
 
             <form className="vfl-form" onSubmit={handleSubmit}>
-              <label htmlFor="visitingFacultyId">Registered email or faculty ID</label>
+              <label htmlFor="visitingFacultyId">Faculty ID</label>
               <div className="vfl-input">
                 <Mail size={18} />
                 <input
                   id="visitingFacultyId"
                   type="text"
                   value={identifier}
-                  onChange={(event) => { setIdentifier(event.target.value); setNotice(""); }}
-                  placeholder="Enter your registered email or ID"
+                  onChange={(event) => {
+                    setIdentifier(event.target.value);
+                    setNotice("");
+                  }}
+                  placeholder="Enter your faculty ID"
                   autoComplete="username"
                   required
                 />
@@ -215,26 +265,48 @@ export default function VisitingFacultyLogin() {
                   id="visitingFacultyPassword"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(event) => { setPassword(event.target.value); setNotice(""); }}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setNotice("");
+                  }}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
                 />
-                <button className="vfl-eye" type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>
+                <button
+                  className="vfl-eye"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
-              <button className="vfl-submit" type="submit">
-                Continue to visiting faculty <ArrowRight size={17} />
+              <button
+                className="vfl-submit"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Continue to visiting faculty"}
+                {!loading && <ArrowRight size={17} />}
               </button>
             </form>
 
-            {notice && <div className="vfl-notice" role="status">{notice}</div>}
+            {notice && (
+              <div className="vfl-notice" role="status">
+                {notice}
+              </div>
+            )}
 
             <div className="vfl-security">
               <ShieldCheck size={18} />
-              <span><strong>Visiting faculty access</strong><br />This is a frontend-only form until authentication is connected.</span>
+              <span>
+                <strong>Visiting faculty access</strong>
+                <br />
+                Your visiting faculty account is protected by secure
+                authentication.
+              </span>
             </div>
 
             <p className="vfl-help">
@@ -244,7 +316,9 @@ export default function VisitingFacultyLogin() {
             </p>
           </div>
 
-          <p className="vfl-copyright">© {new Date().getFullYear()} DPP Institute of Technology</p>
+          <p className="vfl-copyright">
+            © {new Date().getFullYear()} DPP Institute of Technology
+          </p>
         </div>
       </section>
     </main>

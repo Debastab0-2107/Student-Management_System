@@ -29,6 +29,9 @@ import AdminChangePassword from "./pages/admin/AdminChangePassword";
 import AdminSectionPlaceholder from "./pages/admin/AdminSectionPlaceholder";
 import SubjectManagement from "./pages/admin/SubjectManagement";
 
+// Faculty pages
+import VisitingFacultyDashboard from "./pages/faculty/VisitingFacultyDashboard";
+
 // Admin Student Management
 import StudentManagement, {
   StudentList,
@@ -89,12 +92,14 @@ export default function App() {
         <Route path="subjects" element={<SubjectManagement />} />
 
         {/* University Details - backend not ready yet */}
-        <Route
-          path="university"
-          element={<AdminSectionPlaceholder type="university" />}
-        />
+        <Route path="university" element={<AdminSectionPlaceholder type="university" />} />
       </Route>
 
+       {/* FACULTY SECTION */}
+       <Route
+  path="/faculty/visiting/dashboard"
+  element={<VisitingFacultyDashboard />}
+/>
 
 
       {/* FALLBACK */}

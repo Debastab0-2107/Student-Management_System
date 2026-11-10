@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../../services/api";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,12 +21,43 @@ export default function PermanentFacultyLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setNotice(
-      "The Permanent Faculty Portal design is ready. Authentication will be connected when the backend endpoint is implemented."
-    );
+    setNotice("");
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/teacher/login", {
+        teacherId: identifier.trim(),
+        password,
+      });
+
+      const { token, teacherId, role, mustChangePassword } = response.data;
+
+      if (!token || !teacherId || role !== "TEACHER") {
+        throw new Error("Invalid teacher login response from server.");
+      }
+
+      localStorage.setItem("sms_token", token);
+      localStorage.setItem("sms_role", "TEACHER");
+      localStorage.setItem("sms_teacher_id", teacherId);
+      localStorage.setItem(
+        "sms_must_change_password",
+        String(mustChangePassword)
+      );
+
+      setNotice("Login successful. Your faculty account is authenticated.");
+    } catch (error) {
+      setNotice(
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please check your faculty ID and password."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -85,7 +117,8 @@ export default function PermanentFacultyLogin() {
         .pfl-eye { width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;border:0;border-radius:7px;background:transparent;color:#8993a7;cursor:pointer; }
         .pfl-eye:hover { background:#f1eee6;color:#101b35; }
         .pfl-submit { min-height:53px;display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:13px 18px;border:1px solid #101b35;border-radius:11px;background:#101b35;color:white;font:700 13px 'DM Sans',sans-serif;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s; }
-        .pfl-submit:hover { transform:translateY(-2px);background:#1a2a4b;box-shadow:0 10px 22px rgba(16,27,53,.17); }
+        .pfl-submit:hover:not(:disabled) { transform:translateY(-2px);background:#1a2a4b;box-shadow:0 10px 22px rgba(16,27,53,.17); }
+        .pfl-submit:disabled { opacity:.65;cursor:not-allowed; }
         .pfl-notice { margin-top:14px;padding:12px 13px;border:1px solid #ead9ae;border-radius:10px;background:#fff9eb;color:#765a26;font-size:11px;line-height:1.7; }
         .pfl-security { display:flex;align-items:flex-start;gap:10px;margin-top:22px;padding:13px;border:1px solid #eee8dc;border-radius:11px;background:#fbf9f4;color:#6f7a8d;font-size:11px;line-height:1.7; }
         .pfl-security svg { flex-shrink:0;color:#a27c37; }
@@ -119,10 +152,14 @@ export default function PermanentFacultyLogin() {
 
       <section className="pfl-shell">
         <div className="pfl-form-panel">
-          <Link className="pfl-back" to="/"><ArrowLeft size={16} /> Back to home</Link>
+          <Link className="pfl-back" to="/">
+            <ArrowLeft size={16} /> Back to home
+          </Link>
 
           <div className="pfl-mobile-brand">
-            <span className="pfl-brand-icon"><GraduationCap size={22} /></span>
+            <span className="pfl-brand-icon">
+              <GraduationCap size={22} />
+            </span>
             DPP INSTITUTE OF TECHNOLOGY
           </div>
 
@@ -135,15 +172,18 @@ export default function PermanentFacultyLogin() {
             </p>
 
             <form className="pfl-form" onSubmit={handleSubmit}>
-              <label htmlFor="permanentFacultyId">Faculty ID or institutional email</label>
+              <label htmlFor="permanentFacultyId">Faculty ID</label>
               <div className="pfl-input">
                 <Mail size={18} />
                 <input
                   id="permanentFacultyId"
                   type="text"
                   value={identifier}
-                  onChange={(event) => { setIdentifier(event.target.value); setNotice(""); }}
-                  placeholder="Enter your faculty ID or email"
+                  onChange={(event) => {
+                    setIdentifier(event.target.value);
+                    setNotice("");
+                  }}
+                  placeholder="Enter your faculty ID"
                   autoComplete="username"
                   required
                 />
@@ -156,26 +196,47 @@ export default function PermanentFacultyLogin() {
                   id="permanentFacultyPassword"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(event) => { setPassword(event.target.value); setNotice(""); }}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setNotice("");
+                  }}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
                 />
-                <button className="pfl-eye" type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>
+                <button
+                  className="pfl-eye"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
-              <button className="pfl-submit" type="submit">
-                Enter faculty portal <ArrowRight size={17} />
+              <button
+                className="pfl-submit"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Enter faculty portal"}
+                {!loading && <ArrowRight size={17} />}
               </button>
             </form>
 
-            {notice && <div className="pfl-notice" role="status">{notice}</div>}
+            {notice && (
+              <div className="pfl-notice" role="status">
+                {notice}
+              </div>
+            )}
 
             <div className="pfl-security">
               <ShieldCheck size={18} />
-              <span><strong>Faculty access</strong><br />Backend authentication will be connected in a later step.</span>
+              <span>
+                <strong>Faculty access</strong>
+                <br />
+                Your faculty account is protected by secure authentication.
+              </span>
             </div>
 
             <p className="pfl-help">
@@ -185,7 +246,9 @@ export default function PermanentFacultyLogin() {
             </p>
           </div>
 
-          <p className="pfl-copyright">© {new Date().getFullYear()} DPP Institute of Technology</p>
+          <p className="pfl-copyright">
+            © {new Date().getFullYear()} DPP Institute of Technology
+          </p>
         </div>
 
         <aside className="pfl-visual">
@@ -193,7 +256,9 @@ export default function PermanentFacultyLogin() {
           <div className="pfl-ring pfl-ring-two" />
 
           <div className="pfl-visual-brand">
-            <span className="pfl-brand-icon"><BookOpen size={22} /></span>
+            <span className="pfl-brand-icon">
+              <BookOpen size={22} />
+            </span>
             <span>DPP INSTITUTE OF TECHNOLOGY</span>
           </div>
 
@@ -206,7 +271,10 @@ export default function PermanentFacultyLogin() {
             </p>
 
             <div className="pfl-quote">
-              <p>“Education is not just about filling minds, but opening them to possibility.”</p>
+              <p>
+                “Education is not just about filling minds, but opening them to
+                possibility.”
+              </p>
               <span>FOR EVERY EDUCATOR, EVERY DAY</span>
             </div>
           </div>
