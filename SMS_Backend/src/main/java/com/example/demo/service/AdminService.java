@@ -84,5 +84,17 @@ public interface AdminService {
     boolean deactivateStudent(String studentId);//student de-activation controlled by admin
     
     int uploadUniversityIdentifiers(MultipartFile file);//admin upload excel file for roll and reg no
-    
+
+	/**
+	 * Admin operation to promote all eligible students
+	 * belonging to a selected batch.
+	 *
+	 * @return number of students promoted
+	 */
+	int promoteStudentBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId
+	);
+
 }

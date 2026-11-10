@@ -319,5 +319,70 @@ public class StudentDaoImpl implements StudentDao {
         return updatedRows > 0;
     }
     
-    
+
+	@Override
+	public int promoteBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId,
+	        String nextSemesterId) {
+	
+	    /*
+	     * HQL uses Java entity property names, NOT database column names.
+	     *
+	     * Student.hbm.xml maps:
+	     *   sessionId        -> session_id
+	     *   courseId         -> course_id
+	     *   currentSemesterId -> current_semester_id
+	     *   active           -> is_active
+	     *
+	     * The WHERE clause ensures:
+	     * 1. Only the selected session is affected.
+	     * 2. Only the selected course is affected.
+	     * 3. Only students still in the selected semester are affected.
+	     * 4. Inactive students are excluded.
+	     * 5. NULL semester records are excluded automatically.
+	     */
+	    String hql =
+	            "UPDATE Student s " +
+	            "SET s.currentSemesterId = :nextSemesterId " +
+	            "WHERE s.sessionId = :sessionId " +
+	            "AND s.courseId = :courseId " +
+	            "AND s.currentSemesterId = :currentSemesterId " +
+	            "AND s.active = true";
+	
+	    return sessionFactory.getCurrentSession()
+	            .createQuery(hql)
+	            .setParameter("nextSemesterId", nextSemesterId)
+	            .setParameter("sessionId", sessionId)
+	            .setParameter("courseId", courseId)
+	            .setParameter("currentSemesterId", currentSemesterId)
+	            .executeUpdate();
+	}
+
+
+	@Override
+	public int deactivateBatch(
+	        String sessionId,
+	        String courseId,
+	        String semesterId) {
+	
+	    String hql =
+	        "UPDATE Student s " +
+	        "SET s.active = false " +
+	        "WHERE s.sessionId = :sessionId " +
+	        "AND s.courseId = :courseId " +
+	        "AND s.currentSemesterId = :semesterId " +
+	        "AND s.active = true";
+	
+	    return sessionFactory
+	            .getCurrentSession()
+	            .createQuery(hql)
+	            .setParameter("sessionId", sessionId)
+	            .setParameter("courseId", courseId)
+	            .setParameter("semesterId", semesterId)
+	            .executeUpdate();
+	}
+
+	
 }

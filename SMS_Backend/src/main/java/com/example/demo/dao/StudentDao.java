@@ -129,5 +129,29 @@ public interface StudentDao {
     
     //for adding roll and reg no via excel
     boolean updateUniversityIdentifiers(Student student);
-    
+
+	/**
+	 * Promotes active students in one exact batch from the specified
+	 * current semester to the next semester.
+	 *
+	 * @return number of students updated
+	 */
+	int promoteBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId,
+	        String nextSemesterId
+	);
+
+	/**
+	 * Deactivates all active students matching the supplied batch.
+	 *
+	 * @return number of affected student records
+	 */
+	int deactivateBatch(
+	        String sessionId,
+	        String courseId,
+	        String semesterId
+	);
+
 }

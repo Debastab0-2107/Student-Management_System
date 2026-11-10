@@ -290,7 +290,7 @@
 	Through URLs for checking de-activation and updation 
 	
 	
-### Changing the faculty files for extra features for three fieldsalternate pg, email, educational details	[Debastab, 08/11/26, 10.59am]
+### Changing the faculty files for extra features for three fields alternate pg, email, educational details	[Debastab, 08/11/26, 10.59am]
 	File path:src/main/java/com/example/demo/model/Faculty.java
 	File path:src/main/resources/Faculty.hbm.xml
 	File path:src/main/java/com/example/demo/dao/FacultyDao.java--updateprofile() method added
@@ -299,4 +299,60 @@
 	File path:src/main/java/com/example/demo/serviceimpl/FacultyServiceImpl.java---updatePRofile() method added
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherProfileController.java
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherCredentialController.java
+	
+### Profile updation for individual faculty	[Priyanshu, 10/11/26, 04:31pm]
+	JSON Body:
+	{
+	    "teacherId" : "TEST_RF_2026_004",
+	    "name": "Test Regular Faculty Four",
+	    "phoneNumber": "9000001004",
+	    "alternatePhoneNumber" : "7984568295",
+	    "email": "teacher@example.com",
+	    "educationalDetails": "MCA, PhD",
+	    "facultyType": "REGULAR"
+	}
+	
+###  Batch promotion [Priyanshu, 10/11/26, 06:52pm]
+	1. Add the promotion request DTO class  BatchPromotionRequest.java
+	2. Update StudentDao.java
+	3. Update StudentDaoImpl.java
+	4. Update StudentService.java
+	5. Update StudentServiceImpl.java
+	6. Update AdminService.java
+	7. Update AdminServiceImpl.java
+	8. Update AdminController.java
+	
+### Required 
+	Content-Type: application/json
+	Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+	JSOn Body:
+	{
+    	"sessionId": "2026-28",
+    	"courseId": "MCA",
+    	"currentSemesterId": "1" //2,3,4
+	}
+
+
+### Student Login Body [Priyanshu, 10/11/26, 07:56pm]
+	{
+	    "studentId": "MCA2026003",
+	    "password": "student@26"
+	}
+	
+### Batch De-activation [Priyanshu, 10/11/26, 08:48pm]
+	1. Create the request DTO BatchDeactivationRequest.java
+	2. Update StudentService.java
+	3. Update StudentDao.java
+	4. Update StudentDaoImpl.java
+	5. Update StudentServiceImpl.java
+	6. Update AdminController.java
+	
+### Batch De-activation JSON Body [Priyanshu, 10/11/26, 08:50pm]
+	Content-Type: application/json
+	Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+	{
+    "sessionId": "2026-28",
+    "courseId": "MCA",
+    "semesterId": "4"
+	}
 	
