@@ -300,3 +300,8 @@
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherProfileController.java
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherCredentialController.java
 	
+
+### Changing the following classes for the direct credential entry of faculty	[Debastab, 10/11/26, 10.59am]
+	File path:src/main/java/com/example/demo/dao/FacultyDao.java ---added a method: Faculty saveWithCredentials()
+	File path: src/main/java/com/example/demo/daoimpl/FacultyDaoImpl.java----addea a method : Faculty saveWithCredentials()
+	File path:src/main/java/com/example/demo/serviceimpl/FacultyServiceImpl.java

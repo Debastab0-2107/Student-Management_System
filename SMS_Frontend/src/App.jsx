@@ -1,18 +1,16 @@
-
 import { Route, Routes } from "react-router-dom";
 
-// Public pages
+// PUBLIC PAGES
 import LandingPage from "./pages/landing/LandingPage";
 import ProgramsPage from "./pages/programs/ProgramsPage";
 import ContactPage from "./pages/contact/ContactPage";
 
-// Login pages
+// LOGIN PAGES
 import StudentLogin from "./pages/auth/StudentLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
-import PermanentFacultyLogin from "./pages/auth/PermanentFacultyLogin";
-import VisitingFacultyLogin from "./pages/auth/VisitingFacultyLogin";
+import FacultyLogin from "./pages/auth/FacultyLogin";
 
-// Student pages
+// STUDENT PAGES
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentFeaturePage from "./pages/student/StudentFeaturePage";
 import StudentProfile from "./pages/student/StudentProfile";
@@ -21,47 +19,38 @@ import CourseOverview from "./pages/student/CourseOverview";
 import Announcements from "./pages/student/Announcements";
 import StudentLayout from "./components/layout/StudentLayout";
 
-// Admin pages
+// ADMIN PAGES
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import FacultyManagement from "./pages/admin/FacultyManagement";
 import AdminChangePassword from "./pages/admin/AdminChangePassword";
 import AdminSectionPlaceholder from "./pages/admin/AdminSectionPlaceholder";
 import SubjectManagement from "./pages/admin/SubjectManagement";
-
-// Faculty pages
-import VisitingFacultyDashboard from "./pages/faculty/VisitingFacultyDashboard";
-
-// Admin Student Management
 import StudentManagement, {
   StudentList,
 } from "./pages/admin/StudentManagement";
 
+// FACULTY PAGES
+import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import FacultyProfile from "./pages/faculty/FacultyProfile";
+import FacultyNotices from "./pages/faculty/FacultyNotices";
+import FacultyRoutine from "./pages/faculty/FacultyRoutine";
+import FacultyStudents from "./pages/faculty/FacultyStudents";
+
 export default function App() {
   return (
-
-    
     <Routes>
-      {/* PUBLIC PAGES */}
+      {/* PUBLIC */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/programs" element={<ProgramsPage />} />
       <Route path="/contact" element={<ContactPage />} />
 
-      {/* LOGIN PAGES */}
+      {/* LOGIN */}
       <Route path="/login/student" element={<StudentLogin />} />
       <Route path="/login/admin" element={<AdminLogin />} />
-      <Route
-        path="/login/permanent-faculty"
-        element={<PermanentFacultyLogin />}
-      />
-      <Route
-        path="/login/visiting-faculty"
-        element={<VisitingFacultyLogin />}
-      />
+      <Route path="/login/faculty" element={<FacultyLogin />} />
 
-
-
-      {/* STUDENT SECTION */}
+      {/* STUDENT */}
       <Route path="/student" element={<StudentLayout />}>
         <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="profile" element={<StudentProfile />} />
@@ -72,35 +61,32 @@ export default function App() {
         <Route path=":feature" element={<StudentFeaturePage />} />
       </Route>
 
-
-
-      {/* ADMIN SECTION */}
+      {/* ADMIN */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboard />} />
-
-        {/* Student Management */}
         <Route path="students" element={<StudentManagement />} />
         <Route path="students/list" element={<StudentList />} />
-
-        {/* Faculty Management */}
         <Route path="faculty" element={<FacultyManagement />} />
-
-        {/* Admin Password */}
         <Route path="password" element={<AdminChangePassword />} />
-
-        {/* Subject Management */}
         <Route path="subjects" element={<SubjectManagement />} />
-
-        {/* University Details - backend not ready yet */}
-        <Route path="university" element={<AdminSectionPlaceholder type="university" />} />
+        <Route
+          path="university"
+          element={<AdminSectionPlaceholder type="university" />}
+        />
       </Route>
 
-       {/* FACULTY SECTION */}
-       <Route
-  path="/faculty/visiting/dashboard"
-  element={<VisitingFacultyDashboard />}
-/>
+      {/* PERMANENT FACULTY */}
+      <Route path="/faculty/permanent/dashboard" element={<FacultyDashboard />} />
+      <Route path="/faculty/permanent/profile" element={<FacultyProfile />} />
+      <Route path="/faculty/permanent/notices" element={<FacultyNotices />} />
+      <Route path="/faculty/permanent/routine" element={<FacultyRoutine />} />
+      <Route path="/faculty/permanent/students" element={<FacultyStudents />}/>
 
+      {/* VISITING FACULTY */}
+      <Route path="/faculty/visiting/dashboard" element={<FacultyDashboard />} />
+      <Route path="/faculty/visiting/profile" element={<FacultyProfile />} />
+      <Route path="/faculty/visiting/notices" element={<FacultyNotices />} />
+      <Route path="/faculty/visiting/routine" element={<FacultyRoutine />} />
 
       {/* FALLBACK */}
       <Route path="*" element={<LandingPage />} />

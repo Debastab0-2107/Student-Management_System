@@ -6,7 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-
+import java.sql.PreparedStatement;
 import com.example.demo.dao.FacultyDao;
 import com.example.demo.model.Faculty;
 
@@ -78,6 +78,81 @@ public class FacultyDaoImpl implements FacultyDao {
             }
 
             throw e;
+
+        } finally {
+            session.close();
+        }
+    }
+    
+    /**
+     * Saves faculty information and creates teacher credentials
+     * within the same database transaction.
+     *
+     * If credential creation fails, the faculty insertion
+     * is also rolled back.
+     */
+    @Override
+    public Faculty saveWithCredentials(
+            Faculty faculty,
+            String passwordHash) {
+
+        if (faculty == null) {
+            throw new IllegalArgumentException(
+                    "Faculty cannot be null");
+        }
+
+        if (passwordHash == null || passwordHash.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Password hash is required");
+        }
+
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+
+        try {
+            transaction = session.beginTransaction();
+
+            // Save faculty first.
+            session.persist(faculty);
+
+            // Execute the faculty INSERT before creating credentials.
+            session.flush();
+
+            // Use the same Hibernate connection and transaction.
+            session.doWork(connection -> {
+
+                String sql =
+                        "INSERT INTO teacher_credentials "
+                        + "(teacher_id, password_hash, must_change_password) "
+                        + "VALUES (?, ?, 1)";
+
+                try (PreparedStatement statement =
+                        connection.prepareStatement(sql)) {
+
+                    statement.setString(
+                            1, faculty.getTeacherId());
+
+                    statement.setString(
+                            2, passwordHash);
+
+                    statement.executeUpdate();
+                }
+            });
+
+            transaction.commit();
+
+            return faculty;
+
+        } catch (Exception e) {
+
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+
+            throw new RuntimeException(
+                    "Failed to save faculty and create credentials: "
+                            + e.getMessage(),
+                    e);
 
         } finally {
             session.close();
