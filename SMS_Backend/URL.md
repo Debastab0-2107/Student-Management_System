@@ -1,16 +1,16 @@
-# Student Management System — API Endpoint Reference
+# Student Management System — API Endpoint's Reference
 
 **Base URL:** `http://localhost:8080`
 
----
+========================================================================================
 
 ## Authentication
 
-- `POST http://localhost:8080/auth/login` — Admin login
+- `POST http://localhost:8080/auth/login` — Admin's login
 - `POST http://localhost:8080/auth/student/login` — Student login
 - `POST http://localhost:8080/auth/teacher/login` — Faculty login
 
-## Admin — Student & Faculty
+## Admin's — Student & Faculty
 
 - `POST http://localhost:8080/admin/students/upload`
 - `GET http://localhost:8080/admin/students`
@@ -24,7 +24,7 @@
 - `PUT http://localhost:8080/admin/faculty/visiting/{teacherId}/deactivate`
 - `POST http://localhost:8080/admin/teacher-credentials`
 
-## Admin Password Changing URL
+## Admin's Password Changing URL
 
 - `PUT http://localhost:8080/admin/password`
 
@@ -52,7 +52,7 @@
 - `PUT http://localhost:8080/faculty/password` — Change the logged-in teacher's password  
   **Added:** 08/11/2026, 11:36 AM IST
 
-> **Authentication:** These teacher profile and password endpoints require the logged-in teacher's JWT token. In Thunder Client, add the header `Authorization: Bearer YOUR_TEACHER_TOKEN`.
+> **Authentication:** These teacher profile and password end points require the logged-in teacher's JWT token. In Thunder Client, add the header `Authorization: Bearer YOUR_TEACHER_TOKEN`.
 
 ## Marks Management
 
@@ -85,15 +85,18 @@
 - `GET http://localhost:8080/test-env`
 - `GET http://localhost:8080/git-test-friend1`
 
-## Student Deactivation by Admin
-
-The admin must log in first. Use the admin JWT token when calling this endpoint.
-
+## Student De-Activation by Admin's
 - `PUT http://localhost:8080/admin/students/MCA2026007/deactivate`
-
----
 
 **Note:** Replace example IDs such as `MCA2026001`, `MCA2026007`, `SEM1`, and `MCAN-103` with the required IDs when testing other records.
 
-## Univ Roll and Reg No. Excel file upload by admin for
-	http://localhost:8080/admin/students/university-identifiers/upload
+## University Roll and Registration No. Excel file uploaded by admin's side
+- `POST http://localhost:8080/admin/students/university-identifiers/upload`
+
+### Batch Promotion by Admin's Token
+- `PUT http://localhost:8080/admin/students/promote-batch`
+
+## Batch De-Activation by Admin's Token 
+- `PUT http://localhost:8080/admin/students/deactivate-batch`
+
+

@@ -101,12 +101,10 @@
 	USE mca_student_management;
 	ALTER TABLE subject ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1;
 	
-
-	
 ### Verify the Student table
 	SELECT student_id, name, is_active FROM student;
 
-### [Priyanshu, 07/11/26, 04:30am]
+### CA Number field Removal [Priyanshu, 07/11/26, 04:30am]
 	ALTER TABLE ca_marks DROP COLUMN ca_no, ADD CONSTRAINT uq_ca_marks_student_subject_sem
     UNIQUE (student_id, subject_id, sem);
     
@@ -130,3 +128,26 @@
 	CREATE UNIQUE INDEX uk_student_university_reg
 	ON student(university_registration_no);
    
+### First 5rows of table [Priyanshu, 10/11/26, 05:30am]
+	SELECT * FROM student LIMIT 5;
+	SELECT * FROM subject LIMIT 5;
+	
+### Student table view [Priyanshu, 10/11/26, 08:00pm]
+	SELECT student_id, name, current_semester_id, is_active FROM student WHERE session_id = '2026-28' 	AND course_id = 'MCA' ORDER BY student_id;
+	
+### Entire Batch Status [Priyanshu, 10/11/26, 08:12pm]
+	SELECT    current_semester_id,    is_active,    COUNT(*) AS total_students FROM student 	WHERE 	session_id = '2026-28'  AND course_id = 'MCA' GROUP BY current_semester_id, 	is_active ORDER BY 	current_semester_id, is_active;
+	+---------------------+-----------+----------------+
+	| current_semester_id | is_active | total_students |
+	+---------------------+-----------+----------------+
+	| 2                   |         0 |              1 |
+	| 5                   |         1 |             24 |
+	+---------------------+-----------+----------------+
+	
+### batch de-activation 
+	SELECT    student_id,    name,    session_id,    course_id,    current_semester_id,    	is_active FROM student WHERE session_id = '2026-28'  AND course_id = 'MCA'  AND 	current_semester_id = '4'  AND is_active = 1;
+	Result: Empty set (0.05 sec)
+	
+### Select five randomly deactivated students [Priyanshu, 10/11/26, 08:59pm]
+	SELECT student_id, is_active FROM student WHERE session_id = '2026-28' AND course_id = 	'MCA' AND current_semester_id = '4' AND is_active = 0 ORDER BY RAND() LIMIT 5;
+	

@@ -513,7 +513,7 @@ public class StudentServiceImpl implements StudentService {
             }
         }
 
-        // Check and update every student for roll and reg no
+        // Check and update every student for University roll and reg. no
         for (UniversityIdentifierExcelRow row : rows) {
 
             Student student = findByStudentId(
@@ -559,5 +559,140 @@ public class StudentServiceImpl implements StudentService {
 
         return rows.size();
     }
-    
+
+	@Override
+	@Transactional
+	public int promoteBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId) {
+	
+	    // Validate the batch identifiers.
+	    if (sessionId == null || sessionId.trim().isEmpty()) {
+	        throw new IllegalArgumentException("Session ID is required.");
+	    }
+	
+	    if (courseId == null || courseId.trim().isEmpty()) {
+	        throw new IllegalArgumentException("Course ID is required.");
+	    }
+	
+	    if (currentSemesterId == null ||
+	            currentSemesterId.trim().isEmpty()) {
+	        throw new IllegalArgumentException("Current semester is required.");
+	    }
+	
+	    sessionId = sessionId.trim();
+	    courseId = courseId.trim();
+	    currentSemesterId = currentSemesterId.trim();
+	
+	    // Semester values in the Student table are numeric strings:
+	    // "1", "2", "3", etc.
+	    final int currentSemester;
+	
+	    try {
+	        currentSemester = Integer.parseInt(currentSemesterId);
+	    } catch (NumberFormatException ex) {
+	        throw new IllegalArgumentException(
+	                "Semester must be a valid number, such as 1 or 2."
+	        );
+	    }
+	
+	    // MCA has only four semesters.
+	    // Semester 4 must never be promoted to Semester 5.
+	    if (currentSemester < 1 || currentSemester >= 4) {
+	        throw new IllegalArgumentException(
+	                "Promotion rejected. MCA students can only be promoted "
+	                + "from Semester 1 to 2, Semester 2 to 3, "
+	                + "and Semester 3 to 4. Semester 4 is the final semester."
+	        );
+	    }
+	
+	    // Safely calculate the next semester.
+	    final String nextSemesterId;
+	
+	    try {
+	        nextSemesterId = String.valueOf(
+	                Math.addExact(currentSemester, 1)
+	        );
+	    } catch (ArithmeticException ex) {
+	        throw new IllegalArgumentException(
+	                "Semester value is too large."
+	        );
+	    }
+	
+	    // Delegate the actual database update to the DAO.
+	    // The transaction ensures the batch update is atomic.
+	    return studentDao.promoteBatch(
+	            sessionId,
+	            courseId,
+	            currentSemesterId,
+	            nextSemesterId
+	    );
+	}
+	
+
+	@Override
+	@Transactional
+	public int deactivateBatch(
+	        String sessionId,
+	        String courseId,
+	        String semesterId) {
+	
+	    // Validate required fields.
+	    if (sessionId == null || sessionId.trim().isEmpty()) {
+	        throw new IllegalArgumentException(
+	            "Session ID is required."
+	        );
+	    }
+	
+	    if (courseId == null || courseId.trim().isEmpty()) {
+	        throw new IllegalArgumentException(
+	            "Course ID is required."
+	        );
+	    }
+	
+	    if (semesterId == null || semesterId.trim().isEmpty()) {
+	        throw new IllegalArgumentException(
+	            "Semester ID is required."
+	        );
+	    }
+	
+	    String normalizedSessionId = sessionId.trim();
+	    String normalizedCourseId = courseId.trim().toUpperCase();
+	    String normalizedSemesterId = semesterId.trim();
+	
+	    // Validate numeric semester.
+	    int semester;
+	
+	    try {
+	        semester = Integer.parseInt(normalizedSemesterId);
+	    } catch (NumberFormatException ex) {
+	        throw new IllegalArgumentException(
+	            "Semester ID must be numeric."
+	        );
+	    }
+	
+	    // Current MCA course has four semesters.
+	    // Only its final semester can be batch-deactivated
+	    // through this completed-batch operation.
+	    if ("MCA".equals(normalizedCourseId) && semester != 4) {
+	        throw new IllegalArgumentException(
+	            "Only the completed MCA Semester 4 batch can be deactivated."
+	        );
+	    }
+	
+	    if (semester < 1) {
+	        throw new IllegalArgumentException(
+	            "Invalid semester ID."
+	        );
+	    }
+	
+	    return studentDao.deactivateBatch(
+	        normalizedSessionId,
+	        normalizedCourseId,
+	        normalizedSemesterId
+	    );
+	}
+
+
 }

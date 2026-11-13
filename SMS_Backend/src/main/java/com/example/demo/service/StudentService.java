@@ -134,5 +134,34 @@ public interface StudentService {
     
     int assignUniversityIdentifiers(
             List<UniversityIdentifierExcelRow> rows);
-    
+
+	/**
+	 * Validates and promotes an entire selected student batch
+	 * to the next semester.
+	 *
+	 * @return number of students promoted
+	 */
+	int promoteBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId
+	);
+	
+
+	/**
+	 * Deactivates all active students belonging to a selected batch.
+	 *
+	 * The batch is identified by session, course and semester.
+	 *
+	 * Student records are retained in the database.
+	 *
+	 * @return number of students deactivated
+	 */
+	int deactivateBatch(
+	        String sessionId,
+	        String courseId,
+	        String semesterId
+	);
+
+
 }

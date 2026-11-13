@@ -416,5 +416,18 @@ public class AdminServiceImpl implements AdminService {
         }
     }
     
-    
+
+	@Override
+	public int promoteStudentBatch(
+	        String sessionId,
+	        String courseId,
+	        String currentSemesterId) {
+	
+	    return studentService.promoteBatch(
+	            sessionId,
+	            courseId,
+	            currentSemesterId
+	    );
+}
+
 }

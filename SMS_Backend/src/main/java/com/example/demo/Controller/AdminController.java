@@ -25,6 +25,10 @@ import com.example.demo.service.AuthService;
 import com.example.demo.model.Student;
 import com.example.demo.service.AdminService;
 import com.example.demo.service.SubjectService;
+import com.example.demo.dto.request.BatchPromotionRequest;
+import com.example.demo.dto.request.BatchDeactivationRequest;
+
+
 /**
  * AdminController
  *
@@ -613,6 +617,133 @@ public ResponseEntity<?> deactivateSubjectsFromExcel(
 }
 	
 
+	/**
+	 * Promotes all active students in a selected batch
+	 * from their current semester to the next semester.
+	 *
+	 * Example:
+	 * PUT /admin/students/promote-batch
+	 *
+	 * The request identifies the batch and its current semester.
+	 * The backend calculates the next semester.
+	 */
+	@PutMapping("/students/promote-batch")
+	public ResponseEntity<Map<String, Object>> promoteStudentBatch(
+	        @RequestBody BatchPromotionRequest request) {
+	
+	    if (request == null) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of("message", "Request body is required.")
+	        );
+	    }
+	
+	    try {
+	        int promotedCount = adminService.promoteStudentBatch(
+	                request.getSessionId(),
+	                request.getCourseId(),
+	                request.getCurrentSemesterId()
+	        );
+	
+	        String currentSemester = request.getCurrentSemesterId().trim();
+	        int nextSemester = Integer.parseInt(currentSemester) + 1;
+	
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("success", true);
+	        response.put("message",
+	                promotedCount > 0
+	                        ? "Batch promotion completed successfully."
+	                        : "No eligible active students were found in this batch.");
+	        response.put("sessionId", request.getSessionId());
+	        response.put("courseId", request.getCourseId());
+	        response.put("fromSemester", currentSemester);
+	        response.put("toSemester", String.valueOf(nextSemester));
+	        response.put("promotedCount", promotedCount);
+	
+	        return ResponseEntity.ok(response);
+	
+	    } catch (IllegalArgumentException ex) {
+	        return ResponseEntity.badRequest().body(
+	                Map.of(
+	                        "success", false,
+	                        "message", ex.getMessage()
+	                )
+	        );
+	    } catch (Exception ex) {
+	        // Replace or supplement this with your project's logger
+	        // if one is already configured.
+	        ex.printStackTrace();
+	
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+	                Map.of(
+	                        "success", false,
+	                        "message", "Unable to promote the selected batch."
+	                )
+	        );
+	    }
+	}
+
+
+	/**
+	 * Deactivates all active students in a completed batch.
+	 *
+	 * PUT /admin/students/deactivate-batch
+	 */
+	@PutMapping("/students/deactivate-batch")
+	public ResponseEntity<Map<String, Object>> deactivateStudentBatch(
+	        @RequestBody BatchDeactivationRequest request) {
+	
+	    if (request == null) {
+	        return ResponseEntity.badRequest().body(Map.of(
+	            "success", false,
+	            "message", "Request body is required."
+	        ));
+	    }
+	
+	    try {
+	        int deactivatedCount = studentService.deactivateBatch(
+	            request.getSessionId(),
+	            request.getCourseId(),
+	            request.getSemesterId()
+	        );
+	
+	        Map<String, Object> response = new HashMap<>();
+	
+	        response.put("success", true);
+	
+	        response.put(
+	            "message",
+	            deactivatedCount > 0
+	                ? "Student batch deactivated successfully."
+	                : "No active students were found in the selected batch."
+	        );
+	
+	        response.put("sessionId", request.getSessionId());
+	        response.put("courseId", request.getCourseId());
+	        response.put("semesterId", request.getSemesterId());
+	        response.put("deactivatedCount", deactivatedCount);
+	        response.put("active", false);
+	
+	        return ResponseEntity.ok(response);
+	
+	    } catch (IllegalArgumentException ex) {
+	
+	        return ResponseEntity.badRequest().body(Map.of(
+	            "success", false,
+	            "message", ex.getMessage()
+	        ));
+	
+	    } catch (Exception ex) {
+	
+	        ex.printStackTrace();
+	
+	        return ResponseEntity.status(
+	            HttpStatus.INTERNAL_SERVER_ERROR
+	        ).body(Map.of(
+	            "success", false,
+	            "message", "Unable to deactivate the selected student batch."
+	        ));
+	    }
+	}
 
 
 }
