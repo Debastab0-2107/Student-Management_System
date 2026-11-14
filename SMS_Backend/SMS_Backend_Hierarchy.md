@@ -374,3 +374,7 @@
 	- SubjectTeacherAssignmentServiceImpl.java
 	- SubjectTeacherAssignmentController.java
 ###  Valid and Invalid both types of xlsx sheets are made then validation checking [Priyanshu, 14/11/26, 08:58pm]
+
+
+### NChanges done in following files for frontend value response getting [Debastab, 14/11/26, 10:00pm]
+     File path : SMS_Backend/src/main/java/com/example/demo/Controller/StudentController.java-- updated  for the uni roll and uni reg

@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -8,7 +7,6 @@ import {
   ShieldCheck,
   KeyRound,
   BookPlus,
-  Landmark,
 } from "lucide-react";
 
 const ADMIN_CARDS = [
@@ -68,20 +66,6 @@ const ADMIN_CARDS = [
     tag: "SUBJECT MANAGEMENT",
     number: "04",
   },
-  {
-    title: "University Details",
-    description:
-      "A dedicated workspace for maintaining university information will be available here.",
-    features: [
-      "University information workspace",
-      "Academic affiliation details",
-      "Backend integration pending",
-    ],
-    path: "/admin/university",
-    icon: Landmark,
-    tag: "UNIVERSITY INFORMATION",
-    number: "05",
-  },
 ];
 
 export default function AdminDashboard() {
@@ -118,8 +102,6 @@ export default function AdminDashboard() {
             transform: translateY(0);
           }
         }
-
-        /* PAGE HEADING */
 
         .ad-heading {
           display: flex;
@@ -179,8 +161,6 @@ export default function AdminDashboard() {
           color: #202945;
           font-size: 12px;
         }
-
-        /* WELCOME BANNER */
 
         .ad-welcome {
           position: relative;
@@ -247,8 +227,6 @@ export default function AdminDashboard() {
           background: #ffffff0d;
         }
 
-        /* SECTION HEADING */
-
         .ad-section-heading {
           display: flex;
           justify-content: space-between;
@@ -280,16 +258,12 @@ export default function AdminDashboard() {
           font-size: 10px;
         }
 
-        /* FIVE-COLUMN CARD GRID */
-
         .ad-card-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 13px;
           width: 100%;
         }
-
-        /* ADMIN CARDS */
 
         .ad-card {
           position: relative;
@@ -324,10 +298,6 @@ export default function AdminDashboard() {
 
         .ad-card:nth-child(4) {
           animation-delay: .21s;
-        }
-
-        .ad-card:nth-child(5) {
-          animation-delay: .28s;
         }
 
         @keyframes ad-card-enter {
@@ -476,8 +446,6 @@ export default function AdminDashboard() {
           font-weight: 800;
         }
 
-        /* BOTTOM NOTE */
-
         .ad-bottom-note {
           display: flex;
           align-items: center;
@@ -496,8 +464,6 @@ export default function AdminDashboard() {
           flex-shrink: 0;
           color: #a27c37;
         }
-
-        /* RESPONSIVE LAYOUT */
 
         @media(max-width: 1150px) {
           .ad-card-grid {
@@ -601,7 +567,7 @@ export default function AdminDashboard() {
 
       <div className="ad-section-heading">
         <h2>Administration Sections</h2>
-        <span>05 WORKSPACES</span>
+        <span>04 WORKSPACES</span>
       </div>
 
       <div className="ad-card-grid">
