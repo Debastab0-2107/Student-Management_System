@@ -23,6 +23,8 @@ import { useStudentLayout } from "../../components/layout/StudentLayout";
 
 const EMPTY_PROFILE = {
   studentId: "",
+  universityRollNo: "",
+  universityRegistrationNo: "",
   name: "",
   phoneNumber: "",
   email: "",
@@ -88,7 +90,13 @@ function getPhoneError(value) {
   return "";
 }
 
-function ProfileField({ label, value, icon: Icon, readOnly = false }) {
+function ProfileField({
+  label,
+  value,
+  icon: Icon,
+  readOnly = false,
+  emptyValue = "Not provided",
+}) {
   return (
     <div className="sp-detail">
       <div className="sp-detail-icon">
@@ -98,7 +106,7 @@ function ProfileField({ label, value, icon: Icon, readOnly = false }) {
       <div className="sp-detail-content">
         <span className="sp-detail-label">{label}</span>
         <span className="sp-detail-value">
-          {value || "Not provided"}
+          {value || emptyValue}
         </span>
       </div>
 
@@ -583,6 +591,22 @@ export default function StudentProfile() {
                   value={profile.studentId}
                   icon={ShieldCheck}
                   readOnly
+                />
+
+                <ProfileField
+                  label="University Roll No."
+                  value={profile.universityRollNo}
+                  icon={ShieldCheck}
+                  readOnly
+                  emptyValue="-"
+                />
+
+                <ProfileField
+                  label="University Registration No."
+                  value={profile.universityRegistrationNo}
+                  icon={ShieldCheck}
+                  readOnly
+                  emptyValue="-"
                 />
 
                 <ProfileField
