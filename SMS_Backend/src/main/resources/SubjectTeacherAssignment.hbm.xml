@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="com.example.demo.model.SubjectTeacherAssignment"
+           table="subject_teacher_assignment">
+
+        <composite-id>
+            <key-property name="teacherId" column="teacher_id"/>
+            <key-property name="subjectId" column="subject_id"/>
+            <key-property name="sessionId" column="session_id"/>
+        </composite-id>
+
+        <property name="active" column="is_active" type="boolean" not-null="true"/>
+        <property name="assignedAt" column="assigned_at"/>
+        <property name="updatedAt" column="updated_at"/>
+    </class>
+</hibernate-mapping>
+

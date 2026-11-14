@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,7 @@ import com.example.demo.service.CAExcelParserService;
 import com.example.demo.service.CAExcelRow;
 import com.example.demo.service.CAMarksCalculationService;
 import com.example.demo.service.CAMarksService;
+import com.example.demo.service.SubjectTeacherAssignmentService;
 
 /**
  * Controller for uploading Continuous Assessment marks.
@@ -45,15 +47,18 @@ public class CAMarksController {
     private final CAMarksService caMarksService;
     private final CAExcelParserService excelParser;
     private final CAMarksCalculationService calculationService;
+    private final SubjectTeacherAssignmentService assignmentService;
 
     public CAMarksController(
             CAMarksService caMarksService,
             CAExcelParserService excelParser,
-            CAMarksCalculationService calculationService) {
+            CAMarksCalculationService calculationService,
+            SubjectTeacherAssignmentService assignmentService) {
 
         this.caMarksService = caMarksService;
         this.excelParser = excelParser;
         this.calculationService = calculationService;
+        this.assignmentService = assignmentService;
     }
 
     /**
@@ -150,6 +155,17 @@ public class CAMarksController {
                 }
 
                 /*
+                 * Verify the authenticated teacher has an active assignment
+                 * for this student's session, course and semester.
+                 * The check happens before any CA records are persisted.
+                 */
+                assignmentService.validateTeacherCanUpload(
+                        authenticatedTeacherId,
+                        row.getStudentId(),
+                        row.getSubjectId(),
+                        semesterId);
+
+                /*
                  * Create the unique business key for this CA record.
                  */
                 String businessKey =
@@ -210,6 +226,11 @@ public class CAMarksController {
                     + semesterId
                     + ". Existing records for the same student, "
                     + "subject and semester were updated.");
+
+        } catch (AccessDeniedException exception) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(exception.getMessage());
 
         } catch (IllegalArgumentException exception) {
 

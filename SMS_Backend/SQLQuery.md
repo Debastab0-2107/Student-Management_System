@@ -151,3 +151,37 @@
 ### Select five randomly deactivated students [Priyanshu, 10/11/26, 08:59pm]
 	SELECT student_id, is_active FROM student WHERE session_id = '2026-28' AND course_id = 	'MCA' AND current_semester_id = '4' AND is_active = 0 ORDER BY RAND() LIMIT 5;
 	
+
+### MySql subject_teacher_assignment table Creation [Priyanshu, 14/11/26, 03:30pm]
+	CREATE TABLE subject_teacher_assignment (
+    teacher_id VARCHAR(50) NOT NULL,
+    subject_id VARCHAR(50) NOT NULL,
+    session_id VARCHAR(50) NOT NULL,
+
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+
+    assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (teacher_id, subject_id, session_id),
+
+    INDEX idx_assignment_subject_session
+        (subject_id, session_id, is_active),
+
+    CONSTRAINT fk_assignment_teacher
+        FOREIGN KEY (teacher_id)
+        REFERENCES faculty(teacher_id),
+
+    CONSTRAINT fk_assignment_subject
+        FOREIGN KEY (subject_id)
+        REFERENCES subject(subject_id)
+
+	) ENGINE=InnoDB
+	  DEFAULT CHARSET=utf8mb4
+	  COLLATE=utf8mb4_0900_ai_ci;
+	  
+### Students table view [Priyanshu, 14/11/26, 06:30pm]
+	SELECT    session_id,    course_id,    current_semester_id,    is_active,    COUNT(*) AS total_students FROM student WHERE session_id = '2026-28'  AND course_id = 'MCA' GROUP BY    session_id,    course_id,    current_semester_id,    is_active ORDER BY current_semester_id, is_active;
