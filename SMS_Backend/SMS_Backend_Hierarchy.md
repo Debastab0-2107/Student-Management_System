@@ -337,7 +337,6 @@
     	"currentSemesterId": "1" //2,3,4
 	}
 
-
 ### Student Login Body [Priyanshu, 10/11/26, 07:56pm]
 	{
 	    "studentId": "MCA2026003",
@@ -361,3 +360,17 @@
     "semesterId": "4"
 	}
 	
+### New table created for subjec-wise teacher assignment [Priyanshu, 14/11/26, 03:30pm]
+	Updated classes/files
+	- CAMarksController.java
+	- SecurityConfig.java
+	- HibernateConfig.java
+	- SubjectTeacherAssignment.hbm.xml
+	New classes
+	- SubjectTeacherAssignment.java
+	- SubjectTeacherAssignmentDao.java
+	- SubjectTeacherAssignmentDaoImpl.java
+	- SubjectTeacherAssignmentService.java
+	- SubjectTeacherAssignmentServiceImpl.java
+	- SubjectTeacherAssignmentController.java
+###  Valid and Invalid both types of xlsx sheets are made then validation checking [Priyanshu, 14/11/26, 08:58pm]

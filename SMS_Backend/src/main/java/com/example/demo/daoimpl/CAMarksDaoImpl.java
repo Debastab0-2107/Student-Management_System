@@ -1,5 +1,5 @@
 package com.example.demo.daoimpl;
-
+import java.util.UUID;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -94,9 +94,11 @@ public class CAMarksDaoImpl implements CAMarksDao {
                     if (existingRecords.isEmpty()) {
 
                         /*
-                         * First CA upload for this student, subject
-                         * and semester. Insert a new record.
+                         * Generate a new ID for every newly inserted CA record.
                          */
+
+                        incoming.setMarksId("CA_" + UUID.randomUUID());
+
                         session.persist(incoming);
 
                     } else {

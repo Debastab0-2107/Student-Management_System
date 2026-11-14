@@ -30,7 +30,7 @@
 
 ## CA Marks Uploaded by Teacher
 
-- `POST http://localhost:8080/ca-marks/upload/{semesterId}/{caCode}`
+- `POST http://localhost:8080/ca-marks/upload/{semesterId}`
 
 ## Semester Marks Uploaded by Teacher
 
@@ -99,4 +99,6 @@
 ## Batch De-Activation by Admin's Token 
 - `PUT http://localhost:8080/admin/students/deactivate-batch`
 
+### Teacher-Subject assign by Admin's Token
+- `POST http://localhost:8080/api/admin/upload/assignments`
 

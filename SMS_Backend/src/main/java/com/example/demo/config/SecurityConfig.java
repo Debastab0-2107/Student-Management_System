@@ -62,7 +62,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
-     * Creates the security configuration.
+* Creates the security configuration.
      *
      * @param jwtAuthenticationFilter JWT authentication filter
      */
@@ -109,7 +109,7 @@ public SecurityFilterChain securityFilterChain(
             // Login endpoints must be accessible before obtaining a JWT.
             .requestMatchers("/auth/**", "/error").permitAll()
 
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
 
             .requestMatchers("/student/**").hasRole("STUDENT")
             
