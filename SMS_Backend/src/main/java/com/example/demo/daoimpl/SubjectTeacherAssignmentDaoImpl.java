@@ -88,4 +88,42 @@ public class SubjectTeacherAssignmentDaoImpl implements SubjectTeacherAssignment
             }
         }
     }
+    
+    @Override
+    public boolean isTeacherAssignedForStudentSubjectSemester(
+            String teacherId,
+            String studentId,
+            String subjectId,
+            String semesterId) {
+
+        try (Session session = sessionFactory.openSession()) {
+
+            Number count = (Number) session.createNativeQuery(
+                    "SELECT COUNT(*) " +
+                    "FROM student st " +
+                    "JOIN subject s ON s.subject_id = :subjectId " +
+                    "JOIN subject_teacher_assignment a " +
+                    "ON a.teacher_id = :teacherId " +
+                    "AND a.subject_id = s.subject_id " +
+                    "AND a.session_id = st.session_id " +
+                    "AND a.is_active = 1 " +
+                    "JOIN faculty f ON f.teacher_id = a.teacher_id " +
+                    "AND f.status = 1 " +
+                    "WHERE st.student_id = :studentId " +
+                    "AND st.is_active = 1 " +
+                    "AND s.is_active = 1 " +
+                    "AND st.course_id = s.course_id " +
+                    "AND s.semester_id = :semesterId " +
+                    "AND CAST(st.current_semester_id AS UNSIGNED) = " +
+                    "CAST(REPLACE(:semesterId, 'SEM', '') AS UNSIGNED)"
+            )
+            .setParameter("teacherId", teacherId)
+            .setParameter("studentId", studentId)
+            .setParameter("subjectId", subjectId)
+            .setParameter("semesterId", semesterId)
+            .uniqueResult();
+
+            return count != null && count.longValue() > 0;
+        }
+    }
 }

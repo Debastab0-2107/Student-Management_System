@@ -6,4 +6,9 @@ public interface SubjectTeacherAssignmentDao {
     boolean assignmentExists(String teacherId, String subjectId, String sessionId);
     void activate(String teacherId, String subjectId, String sessionId);
     void deactivate(String teacherId, String subjectId, String sessionId);
+    boolean isTeacherAssignedForStudentSubjectSemester(
+            String teacherId,
+            String studentId,
+            String subjectId,
+            String semesterId);
 }

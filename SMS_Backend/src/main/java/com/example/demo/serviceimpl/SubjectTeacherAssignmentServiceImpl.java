@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.example.demo.dao.SubjectTeacherAssignmentDao;
 import com.example.demo.service.SubjectTeacherAssignmentExcelRow;
@@ -72,10 +73,45 @@ public class SubjectTeacherAssignmentServiceImpl implements SubjectTeacherAssign
         return value == null || value.trim().isEmpty();
     }
 
-	@Override
-	public void validateTeacherCanUpload(String authenticatedTeacherId, String studentId, String subjectId,
-			String semesterId) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void validateTeacherCanUpload(
+            String authenticatedTeacherId,
+            String studentId,
+            String subjectId,
+            String semesterId) {
+
+        if (authenticatedTeacherId == null ||
+                authenticatedTeacherId.trim().isEmpty()) {
+
+            throw new AccessDeniedException(
+                    "Authenticated teacher ID is missing.");
+        }
+        // STEP 1: Check faculty account status first.
+        if (!assignmentDao.isActiveTeacher(authenticatedTeacherId)) {
+
+            throw new AccessDeniedException(
+                    "Inactive faculty cannot upload CA marks. "
+                    + "Teacher ID: " + authenticatedTeacherId);
+        }
+
+        // STEP 2: Check active teacher-subject assignment.
+        boolean assigned =
+                assignmentDao.isTeacherAssignedForStudentSubjectSemester(
+                        authenticatedTeacherId,
+                        studentId,
+                        subjectId,
+                        semesterId);
+
+        if (!assigned) {
+
+            throw new AccessDeniedException(
+                    "You are not authorized to upload CA marks for student "
+                    + studentId
+                    + ", subject "
+                    + subjectId
+                    + " and semester "
+                    + semesterId
+                    + ". No active teacher-subject assignment was found.");
+        }
+    }
 }

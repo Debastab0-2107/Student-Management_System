@@ -185,3 +185,9 @@
 	  
 ### Students table view [Priyanshu, 14/11/26, 06:30pm]
 	SELECT    session_id,    course_id,    current_semester_id,    is_active,    COUNT(*) AS total_students FROM student WHERE session_id = '2026-28'  AND course_id = 'MCA' GROUP BY    session_id,    course_id,    current_semester_id,    is_active ORDER BY current_semester_id, is_active;
+	
+### De-activate the existing assignment temporarily 
+	UPDATE subject_teacher_assignment SET is_active = 0 WHERE teacher_id = 'TEST_RF_2026_004'  AND subject_id = 'MCAN-105'  AND session_id = '2026-28';
+
+### After testing, restore the assignment:
+	UPDATE subject_teacher_assignment SET is_active = 1 WHERE teacher_id = 'TEST_RF_2026_004'  AND subject_id = 'MCAN-105'  AND session_id = '2026-28';

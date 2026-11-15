@@ -369,3 +369,17 @@
 	- SubjectTeacherAssignmentServiceImpl.java
 	- SubjectTeacherAssignmentController.java
 ###  Valid and Invalid both types of xlsx sheets are made then validation checking [Priyanshu, 14/11/26, 08:58pm]
+	../TestData/~$Valid_Teacher_CA_Marks_Upload.xlsx
+        ../TextData/Invalid_Teacher_CA_Marks_Upload.xlsx
+        
+### Problem: a mismatched Excel teacher ID is rejected. However, it does not prove that a teacher is restricted to their assigned subjects. [Priyanshu, 16/11/26, 12:41pm] 
+	1. Modify SubjectTeacherAssignmentDao.java
+	2. Modify SubjectTeacherAssignmentDaoImpl.java
+	3. Modify SubjectTeacherAssignmentServiceImpl.java
+
+### Test those  [Priyanshu, 16/11/26, 01:10pm]
+	Test 1 — Correct teacher, active assignment, correct semester
+	Test 2 — Correct teacher, unassigned subject
+	Test 3 — Correct teacher, deactivated assignment
+	Test 4 — Verify inactive faculty cannot upload marks
+	
