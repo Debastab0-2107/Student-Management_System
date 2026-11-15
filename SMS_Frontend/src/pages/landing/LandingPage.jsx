@@ -19,8 +19,9 @@ import {
   Sparkles,
 } from "lucide-react";
 
+
 const roles = [
-    {
+  {
     role: "admin",
     title: "Administrator Portal",
     description:
@@ -39,24 +40,16 @@ const roles = [
     number: "01",
   },
   {
-    role: "permanent",
-    title: "Permanent Faculty",
+    role: "faculty",
+    title: "Faculty Portal",
     description:
-      "Manage classes, student performance, attendance, and academic records.",
-    to: "/login/permanent-faculty",
-    icon: BookOpen,
+      "Access teaching information, academic responsibilities, student records, and departmental updates.",
+    to: "/login/faculty",
+    icon: Users,
     number: "03",
   },
-  {
-    role: "visiting",
-    title: "Visiting Faculty",
-    description:
-      "Access teaching information and assigned academic responsibilities.",
-    to: "/login/visiting-faculty",
-    icon: Users,
-    number: "04",
-  },
 ];
+
 
 const highlights = [
   {
@@ -1020,10 +1013,10 @@ function LandingPage() {
         }
 
         .rp-portal-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 15px;
-        }
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
 
         .rp-portal-card {
           display: flex;
@@ -2011,8 +2004,7 @@ function LandingPage() {
                 <h4>Portals</h4>
                 <Link to="/login/student">Student</Link>
                 <Link to="/login/admin">Admin Portal</Link>
-                <Link to="/login/permanent-faculty">Permanent Faculty</Link>
-                <Link to="/login/visiting-faculty">Visiting Faculty</Link>
+                <Link to="/login/faculty">Faculty Portal</Link>
               </div>
             </div>
           </div>

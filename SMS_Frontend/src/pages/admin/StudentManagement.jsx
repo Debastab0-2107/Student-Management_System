@@ -23,6 +23,10 @@ const REQUIRED_COLUMNS = [
   "studentId", "name", "phoneNumber", "courseId", "sessionId"
 ];
 
+const UNIVERSITY_IDENTIFIER_COLUMNS = [
+  "StudentId", "Name", "Roll", "Reg", "Batch"
+];
+
 const EMPTY_FILTERS = {
   course: "ALL",
   status: "ALL",
@@ -38,10 +42,16 @@ function Notice({ notice, onClose }) {
         ? <CheckCircle2 size={18} />
         : <AlertCircle size={18} />}
       <span>{notice.text}</span>
-      <button onClick={onClose} aria-label="Close notification"><X size={16} /></button>
+      <button onClick={onClose} aria-label="Close notification">
+        <X size={16} />
+      </button>
     </div>
   );
 }
+
+/* =========================================================
+   ADD STUDENTS EXCEL UPLOAD
+   ========================================================= */
 
 function StudentUploadModal({ open, onClose, onUploaded }) {
   const [file, setFile] = useState(null);
@@ -61,6 +71,7 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
     function closeOnEscape(event) {
       if (event.key === "Escape" && !working) onClose();
     }
+
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [onClose, working]);
@@ -69,6 +80,7 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
 
   function validateFile(selectedFile) {
     if (!selectedFile) return "Please choose an Excel file.";
+
     const extension = selectedFile.name.split(".").pop().toLowerCase();
 
     if (!["xlsx", "xls"].includes(extension)) {
@@ -80,6 +92,7 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
 
   async function handleUpload() {
     const validationMessage = validateFile(file);
+
     if (validationMessage) {
       setError(validationMessage);
       return;
@@ -89,7 +102,6 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
     setError("");
 
     try {
-      // Check the spreadsheet headers before sending it to the backend.
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: "array" });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -104,7 +116,10 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
       });
 
       const headers = (rows[0] || []).map(value => String(value).trim());
-      const missing = REQUIRED_COLUMNS.filter(column => !headers.includes(column));
+
+      const missing = REQUIRED_COLUMNS.filter(
+        column => !headers.includes(column)
+      );
 
       if (missing.length) {
         throw new Error(
@@ -119,14 +134,20 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await api.post("/admin/students/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      const response = await api.post(
+        "/admin/students/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" }
+        }
+      );
 
       const message =
-        response.data?.message || "Student records imported successfully.";
+        response.data?.message ||
+        "Student records imported successfully.";
 
       onUploaded(message);
+
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -145,28 +166,53 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
     ]);
 
     worksheet["!cols"] = [
-      { wch: 20 }, { wch: 26 }, { wch: 18 }, { wch: 14 }, { wch: 18 }
+      { wch: 20 },
+      { wch: 26 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 18 }
     ];
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-    XLSX.writeFile(workbook, "Student_Import_Template.xlsx");
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Students"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      "Student_Import_Template.xlsx"
+    );
   }
 
   return (
-    <div className="sm-modal-backdrop" onMouseDown={event => {
-      if (event.target === event.currentTarget && !working) onClose();
-    }}>
+    <div
+      className="sm-modal-backdrop"
+      onMouseDown={event => {
+        if (event.target === event.currentTarget && !working) onClose();
+      }}
+    >
       <section className="sm-modal" role="dialog" aria-modal="true">
         <div className="sm-modal-head">
-          <div className="sm-modal-icon"><FileSpreadsheet size={25} /></div>
-          <button className="sm-icon-button" onClick={onClose} disabled={working}>
+          <div className="sm-modal-icon">
+            <FileSpreadsheet size={25} />
+          </div>
+
+          <button
+            className="sm-icon-button"
+            onClick={onClose}
+            disabled={working}
+          >
             <X size={19} />
           </button>
         </div>
 
         <span className="sm-eyebrow">STUDENT RECORDS</span>
+
         <h2>Import students</h2>
+
         <p className="sm-modal-description">
           Upload the department-authorised Excel sheet to add student records
           to the system.
@@ -178,7 +224,9 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
           onDragOver={event => event.preventDefault()}
           onDrop={event => {
             event.preventDefault();
+
             const dropped = event.dataTransfer.files?.[0];
+
             setFile(dropped || null);
             setError(validateFile(dropped));
           }}
@@ -190,27 +238,39 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
             hidden
             onChange={event => {
               const selected = event.target.files?.[0] || null;
+
               setFile(selected);
               setError(validateFile(selected));
             }}
           />
+
           <div className="sm-upload-symbol">
-            {file ? <FileSpreadsheet size={28} /> : <FileUp size={28} />}
+            {file
+              ? <FileSpreadsheet size={28} />
+              : <FileUp size={28} />}
           </div>
-          <strong>{file ? file.name : "Choose an Excel file"}</strong>
+
+          <strong>
+            {file ? file.name : "Choose an Excel file"}
+          </strong>
+
           <span>
             {file
               ? `${(file.size / 1024).toFixed(1)} KB · Click to change`
               : "Drag and drop your file here, or click to browse"}
           </span>
+
           <small>Supported formats: .xlsx and .xls</small>
         </div>
 
         <div className="sm-template-note">
           <div>
             <strong>Need the correct format?</strong>
-            <span>Download the sample template before preparing your sheet.</span>
+            <span>
+              Download the sample template before preparing your sheet.
+            </span>
           </div>
+
           <button className="sm-text-button" onClick={downloadTemplate}>
             <Download size={15} /> Template
           </button>
@@ -218,32 +278,373 @@ function StudentUploadModal({ open, onClose, onUploaded }) {
 
         <div className="sm-column-note">
           <strong>Required Excel columns</strong>
+
           <p>{REQUIRED_COLUMNS.join("  ·  ")}</p>
+
           <small>
             Do not add a password column. The backend handles the initial password.
           </small>
         </div>
 
-        {error && <div className="sm-inline-error"><AlertCircle size={15} />{error}</div>}
+        {error && (
+          <div className="sm-inline-error">
+            <AlertCircle size={15} />
+            {error}
+          </div>
+        )}
 
         <div className="sm-modal-actions">
-          <button className="sm-button secondary" onClick={onClose} disabled={working}>
+          <button
+            className="sm-button secondary"
+            onClick={onClose}
+            disabled={working}
+          >
             Cancel
           </button>
+
           <button
             className="sm-button primary"
             onClick={handleUpload}
             disabled={!file || working}
           >
             {working
-              ? <><LoaderCircle className="sm-spin" size={17} /> Importing...</>
-              : <><Upload size={17} /> Import students</>}
+              ? <>
+                  <LoaderCircle className="sm-spin" size={17} />
+                  Importing...
+                </>
+              : <>
+                  <Upload size={17} />
+                  Import students
+                </>}
           </button>
         </div>
       </section>
     </div>
   );
 }
+
+/* =========================================================
+   UNIVERSITY ROLL NUMBER AND REGISTRATION NUMBER UPLOAD
+   ========================================================= */
+
+function UniversityIdentifierUploadModal({
+  open,
+  onClose,
+  onUploaded
+}) {
+  const [file, setFile] = useState(null);
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) {
+      setFile(null);
+      setError("");
+      setWorking(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    function closeOnEscape(event) {
+      if (event.key === "Escape" && !working) onClose();
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose, working]);
+
+  if (!open) return null;
+
+  function validateFile(selectedFile) {
+    if (!selectedFile) {
+      return "Please choose an Excel file.";
+    }
+
+    const extension = selectedFile.name.split(".").pop().toLowerCase();
+
+    if (!["xlsx", "xls"].includes(extension)) {
+      return "Only .xlsx and .xls files are supported.";
+    }
+
+    return "";
+  }
+
+  async function handleUpload() {
+    const validationMessage = validateFile(file);
+
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
+
+    setWorking(true);
+    setError("");
+
+    try {
+      const buffer = await file.arrayBuffer();
+
+      const workbook = XLSX.read(buffer, {
+        type: "array"
+      });
+
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      if (!firstSheet) {
+        throw new Error("The Excel workbook has no worksheet.");
+      }
+
+      const rows = XLSX.utils.sheet_to_json(firstSheet, {
+        header: 1,
+        defval: ""
+      });
+
+      const headers = (rows[0] || []).map(value =>
+        String(value).trim()
+      );
+
+      const validHeaders = UNIVERSITY_IDENTIFIER_COLUMNS.every(
+        (column, index) =>
+          String(headers[index] || "").toLowerCase() === column.toLowerCase()
+      );
+
+      if (!validHeaders) {
+        throw new Error(
+          "Invalid Excel format. Required columns in this exact order: " +
+          UNIVERSITY_IDENTIFIER_COLUMNS.join(", ")
+        );
+      }
+
+      if (rows.length < 2) {
+        throw new Error("The Excel file contains no student records.");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await api.post(
+        "/admin/students/university-identifiers/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+
+      const message =
+        response.data?.message ||
+        "University identifiers uploaded successfully.";
+
+      const count = response.data?.updatedCount;
+
+      onUploaded(
+        count !== undefined
+          ? `${message}. Updated students: ${count}.`
+          : message
+      );
+
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "University identifier upload failed. Please check the Excel file."
+      );
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  function downloadTemplate() {
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      UNIVERSITY_IDENTIFIER_COLUMNS,
+      [
+        "REPLACE_WITH_STUDENT_ID",
+        "REPLACE_WITH_EXACT_STUDENT_NAME",
+        "UNIVERSITY_ROLL_NO",
+        "UNIVERSITY_REGISTRATION_NO",
+        "REPLACE_WITH_STUDENT_BATCH"
+      ]
+    ]);
+
+    worksheet["!cols"] = [
+      { wch: 24 },
+      { wch: 30 },
+      { wch: 24 },
+      { wch: 30 },
+      { wch: 22 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "University Identifiers"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      "University_Identifiers_Template.xlsx"
+    );
+  }
+
+  return (
+    <div
+      className="sm-modal-backdrop"
+      onMouseDown={event => {
+        if (event.target === event.currentTarget && !working) onClose();
+      }}
+    >
+      <section
+        className="sm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="university-upload-title"
+      >
+        <div className="sm-modal-head">
+          <div className="sm-modal-icon">
+            <ShieldCheck size={25} />
+          </div>
+
+          <button
+            className="sm-icon-button"
+            onClick={onClose}
+            disabled={working}
+            aria-label="Close"
+          >
+            <X size={19} />
+          </button>
+        </div>
+
+        <span className="sm-eyebrow">
+          STUDENT UNIVERSITY INFORMATION
+        </span>
+
+        <h2 id="university-upload-title">
+          Add University Details
+        </h2>
+
+        <p className="sm-modal-description">
+          Upload an Excel sheet containing University Roll Numbers and
+          University Registration Numbers for existing students.
+        </p>
+
+        <div
+          className={`sm-dropzone ${file ? "has-file" : ""}`}
+          onClick={() => inputRef.current?.click()}
+          onDragOver={event => event.preventDefault()}
+          onDrop={event => {
+            event.preventDefault();
+
+            const dropped = event.dataTransfer.files?.[0] || null;
+
+            setFile(dropped);
+            setError(validateFile(dropped));
+          }}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            hidden
+            onChange={event => {
+              const selected = event.target.files?.[0] || null;
+
+              setFile(selected);
+              setError(validateFile(selected));
+            }}
+          />
+
+          <div className="sm-upload-symbol">
+            {file
+              ? <FileSpreadsheet size={28} />
+              : <FileUp size={28} />}
+          </div>
+
+          <strong>
+            {file ? file.name : "Choose an Excel file"}
+          </strong>
+
+          <span>
+            {file
+              ? `${(file.size / 1024).toFixed(1)} KB · Click to change`
+              : "Drag and drop your file here, or click to browse"}
+          </span>
+
+          <small>Supported formats: .xlsx and .xls</small>
+        </div>
+
+        <div className="sm-template-note">
+          <div>
+            <strong>Need the correct format?</strong>
+            <span>
+              Download the university identifiers Excel template.
+            </span>
+          </div>
+
+          <button className="sm-text-button" onClick={downloadTemplate}>
+            <Download size={15} />
+            Template
+          </button>
+        </div>
+
+        <div className="sm-column-note">
+          <strong>
+            Required Excel columns — in this exact order
+          </strong>
+
+          <p>{UNIVERSITY_IDENTIFIER_COLUMNS.join("  ·  ")}</p>
+
+          <small>
+            Student ID, name and batch must match the existing student
+            record. Replace all sample values before uploading.
+          </small>
+        </div>
+
+        {error && (
+          <div className="sm-inline-error">
+            <AlertCircle size={15} />
+            {error}
+          </div>
+        )}
+
+        <div className="sm-modal-actions">
+          <button
+            className="sm-button secondary"
+            onClick={onClose}
+            disabled={working}
+          >
+            Cancel
+          </button>
+
+          <button
+            className="sm-button primary"
+            onClick={handleUpload}
+            disabled={!file || working}
+          >
+            {working
+              ? <>
+                  <LoaderCircle className="sm-spin" size={17} />
+                  Uploading...
+                </>
+              : <>
+                  <Upload size={17} />
+                  Upload Excel
+                </>}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* =========================================================
+   COMING SOON MODAL
+   ========================================================= */
 
 function ComingSoonModal({ type, onClose }) {
   if (!type) return null;
@@ -251,29 +652,60 @@ function ComingSoonModal({ type, onClose }) {
   const isMarks = type === "marks";
 
   return (
-    <div className="sm-modal-backdrop" onMouseDown={event => {
-      if (event.target === event.currentTarget) onClose();
-    }}>
-      <section className="sm-modal sm-coming-modal" role="dialog" aria-modal="true">
+    <div
+      className="sm-modal-backdrop"
+      onMouseDown={event => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="sm-modal sm-coming-modal"
+        role="dialog"
+        aria-modal="true"
+      >
         <div className="sm-modal-head">
-          <div className="sm-modal-icon"><Clock3 size={25} /></div>
-          <button className="sm-icon-button" onClick={onClose}><X size={19} /></button>
+          <div className="sm-modal-icon">
+            <Clock3 size={25} />
+          </div>
+
+          <button className="sm-icon-button" onClick={onClose}>
+            <X size={19} />
+          </button>
         </div>
+
         <span className="sm-eyebrow">FEATURE NOT CONNECTED</span>
-        <h2>{isMarks ? "Add semester marks" : "Increase semester"}</h2>
+
+        <h2>
+          {isMarks ? "Add semester marks" : "Increase semester"}
+        </h2>
+
         <p className="sm-modal-description">
           {isMarks
             ? "The Excel-based semester marks workflow will be connected after the backend endpoint and spreadsheet format are finalised."
             : "The semester promotion workflow will be connected after its backend operation and batch/session rules are finalised."}
         </p>
-        <div className="sm-coming-label"><Clock3 size={16} /> Coming soon</div>
+
+        <div className="sm-coming-label">
+          <Clock3 size={16} />
+          Coming soon
+        </div>
+
         <div className="sm-modal-actions">
-          <button className="sm-button primary" onClick={onClose}>Understood</button>
+          <button
+            className="sm-button primary"
+            onClick={onClose}
+          >
+            Understood
+          </button>
         </div>
       </section>
     </div>
   );
 }
+
+/* =========================================================
+   STUDENT MANAGEMENT STYLES
+   ========================================================= */
 
 function StudentManagementStyles() {
   return (
@@ -344,13 +776,19 @@ function StudentManagementStyles() {
   );
 }
 
+/* =========================================================
+   STUDENT MANAGEMENT PAGE
+   ========================================================= */
+
 export default function StudentManagement() {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [universityUploadOpen, setUniversityUploadOpen] = useState(false);
   const [comingSoon, setComingSoon] = useState("");
   const [notice, setNotice] = useState({ type: "", text: "" });
 
   function handleUploaded(message) {
     setUploadOpen(false);
+    setUniversityUploadOpen(false);
     setNotice({ type: "success", text: message });
   }
 
@@ -358,66 +796,157 @@ export default function StudentManagement() {
     <div className="sm-page">
       <StudentManagementStyles />
 
-      <Notice notice={notice} onClose={() => setNotice({ type: "", text: "" })} />
+      <Notice
+        notice={notice}
+        onClose={() => setNotice({ type: "", text: "" })}
+      />
 
       <header className="sm-hero">
         <div>
-          <span className="sm-eyebrow">ADMINISTRATION / STUDENT OPERATIONS</span>
+          <span className="sm-eyebrow">
+            ADMINISTRATION / STUDENT OPERATIONS
+          </span>
+
           <h1>Student Management</h1>
+
           <p>
             Manage department student records, import student data, and access
             student listings from one central workspace.
           </p>
         </div>
-        <div className="sm-hero-icon"><GraduationCap size={38} /></div>
+
+        <div className="sm-hero-icon">
+          <GraduationCap size={38} />
+        </div>
       </header>
 
       <div className="sm-operation-grid">
-        <button className="sm-operation" onClick={() => {
-          setNotice({ type: "", text: "" });
-          setUploadOpen(true);
-        }}>
-          <div className="sm-operation-icon"><FileSpreadsheet size={25} /></div>
+        <button
+          className="sm-operation"
+          onClick={() => {
+            setNotice({ type: "", text: "" });
+            setUploadOpen(true);
+          }}
+        >
+          <div className="sm-operation-icon">
+            <FileSpreadsheet size={25} />
+          </div>
+
           <div className="sm-operation-content">
             <h3>Add Students</h3>
-            <p>Import new student records in bulk using the department Excel sheet.</p>
+
+            <p>
+              Import new student records in bulk using the department Excel sheet.
+            </p>
+
             <div className="sm-operation-meta">
-              <span>EXCEL IMPORT <Upload size={14} /></span>
-              <span className="sm-operation-arrow">Open option →</span>
+              <span>
+                EXCEL IMPORT <Upload size={14} />
+              </span>
+
+              <span className="sm-operation-arrow">
+                Open option →
+              </span>
             </div>
           </div>
         </button>
 
-        <button className="sm-operation disabled" onClick={() => setComingSoon("marks")}>
-          <div className="sm-operation-icon"><FileSpreadsheet size={25} /></div>
+        <button
+          className="sm-operation"
+          onClick={() => {
+            setNotice({ type: "", text: "" });
+            setUniversityUploadOpen(true);
+          }}
+        >
+          <div className="sm-operation-icon">
+            <ShieldCheck size={25} />
+          </div>
+
+          <div className="sm-operation-content">
+            <h3>Add University Details</h3>
+
+            <p>
+              Upload University Roll Numbers and Registration Numbers for
+              existing students using an Excel sheet.
+            </p>
+
+            <div className="sm-operation-meta">
+              <span>
+                UNIVERSITY IDENTIFIERS <Upload size={14} />
+              </span>
+
+              <span className="sm-operation-arrow">
+                Open option →
+              </span>
+            </div>
+          </div>
+        </button>
+
+        <button
+          className="sm-operation disabled"
+          onClick={() => setComingSoon("marks")}
+        >
+          <div className="sm-operation-icon">
+            <FileSpreadsheet size={25} />
+          </div>
+
           <div className="sm-operation-content">
             <h3>Add Semester Marks</h3>
-            <p>Upload semester-wise marks through an authorised Excel workbook.</p>
+
+            <p>
+              Upload semester-wise marks through an authorised Excel workbook.
+            </p>
+
             <div className="sm-operation-meta">
-              <span>EXCEL IMPORT</span><span className="sm-soon">COMING SOON</span>
+              <span>EXCEL IMPORT</span>
+              <span className="sm-soon">COMING SOON</span>
             </div>
           </div>
         </button>
 
-        <button className="sm-operation disabled" onClick={() => setComingSoon("semester")}>
-          <div className="sm-operation-icon"><Layers3 size={25} /></div>
+        <button
+          className="sm-operation disabled"
+          onClick={() => setComingSoon("semester")}
+        >
+          <div className="sm-operation-icon">
+            <Layers3 size={25} />
+          </div>
+
           <div className="sm-operation-content">
             <h3>Increase Semester</h3>
-            <p>Select a course and batch/session to promote the relevant students.</p>
+
+            <p>
+              Select a course and batch/session to promote the relevant students.
+            </p>
+
             <div className="sm-operation-meta">
-              <span>SESSION MANAGEMENT</span><span className="sm-soon">COMING SOON</span>
+              <span>SESSION MANAGEMENT</span>
+              <span className="sm-soon">COMING SOON</span>
             </div>
           </div>
         </button>
 
-        <Link className="sm-operation" to="/admin/students/list">
-          <div className="sm-operation-icon"><List size={25} /></div>
+        <Link
+          className="sm-operation"
+          to="/admin/students/list"
+        >
+          <div className="sm-operation-icon">
+            <List size={25} />
+          </div>
+
           <div className="sm-operation-content">
             <h3>Show Student List</h3>
-            <p>Search, filter, print, export, and manage the status of student records.</p>
+
+            <p>
+              Search, filter, print, export, and manage the status of student records.
+            </p>
+
             <div className="sm-operation-meta">
               <span>STUDENT DIRECTORY</span>
-              <span className="sm-operation-arrow">View records →</span>
+
+              <span className="sm-operation-arrow">
+                View records →
+              </span>
             </div>
           </div>
         </Link>
@@ -425,6 +954,7 @@ export default function StudentManagement() {
 
       <div className="sm-bottom-info">
         <ShieldCheck size={19} />
+
         <span>
           Student records are controlled by the department administrator.
           Imported student details are managed through the authorised Excel format.
@@ -436,7 +966,17 @@ export default function StudentManagement() {
         onClose={() => setUploadOpen(false)}
         onUploaded={handleUploaded}
       />
-      <ComingSoonModal type={comingSoon} onClose={() => setComingSoon("")} />
+
+      <UniversityIdentifierUploadModal
+        open={universityUploadOpen}
+        onClose={() => setUniversityUploadOpen(false)}
+        onUploaded={handleUploaded}
+      />
+
+      <ComingSoonModal
+        type={comingSoon}
+        onClose={() => setComingSoon("")}
+      />
     </div>
   );
 }
@@ -459,10 +999,12 @@ export function StudentList() {
 
   async function loadStudents() {
     setLoading(true);
+
     try {
-      // This endpoint must be added to the backend.
       const response = await api.get("/admin/students");
+
       const payload = response.data;
+
       const records = Array.isArray(payload)
         ? payload
         : Array.isArray(payload?.students)
@@ -473,22 +1015,28 @@ export function StudentList() {
 
       setStudents(records);
       setNotice({ type: "", text: "" });
+
     } catch (error) {
       setStudents([]);
+
       setNotice({
         type: "error",
         text: error.response?.data?.message ||
           "Unable to load student records. The Admin student-list API may not be available yet."
       });
+
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { loadStudents(); }, []);
+  useEffect(() => {
+    loadStudents();
+  }, []);
 
   function activeStudent(student) {
     const value = student.status ?? student.active;
+
     return value === true ||
       String(value).toLowerCase() === "active" ||
       String(value).toLowerCase() === "true";
@@ -499,29 +1047,69 @@ export function StudentList() {
     const sessionQuery = session.trim().toLowerCase();
 
     return students.filter(student => {
-      const studentCourse = String(student.courseId || student.course || "").toUpperCase();
-      const studentSession = String(student.sessionId || student.session || student.admissionYear || "");
-      const studentStatus = activeStudent(student) ? "ACTIVE" : "INACTIVE";
+      const studentCourse = String(
+        student.courseId || student.course || ""
+      ).toUpperCase();
 
-      const matchesCourse = course === "ALL" || studentCourse.includes(course);
-      const matchesStatus = status === "ALL" || studentStatus === status;
-      const matchesSession = !sessionQuery || studentSession.toLowerCase().includes(sessionQuery);
+      const studentSession = String(
+        student.sessionId ||
+        student.session ||
+        student.admissionYear ||
+        ""
+      );
+
+      const studentStatus = activeStudent(student)
+        ? "ACTIVE"
+        : "INACTIVE";
+
+      const matchesCourse =
+        course === "ALL" || studentCourse.includes(course);
+
+      const matchesStatus =
+        status === "ALL" || studentStatus === status;
+
+      const matchesSession =
+        !sessionQuery ||
+        studentSession.toLowerCase().includes(sessionQuery);
 
       const searchable = [
-        student.studentId, student.name, student.phoneNumber,
-        student.email, student.courseId, student.sessionId,
+        student.studentId,
+        student.name,
+        student.phoneNumber,
+        student.email,
+        student.courseId,
+        student.sessionId,
         student.admissionYear
-      ].some(value => String(value ?? "").toLowerCase().includes(query));
+      ].some(value =>
+        String(value ?? "").toLowerCase().includes(query)
+      );
 
-      return matchesCourse && matchesStatus && matchesSession && (!query || searchable);
+      return (
+        matchesCourse &&
+        matchesStatus &&
+        matchesSession &&
+        (!query || searchable)
+      );
     });
   }, [students, search, course, status, session]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize));
-  const pageStudents = filteredStudents.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredStudents.length / pageSize)
+  );
 
-  useEffect(() => { setPage(1); }, [search, course, status, session, pageSize]);
-  useEffect(() => { setPage(current => Math.min(current, totalPages)); }, [totalPages]);
+  const pageStudents = filteredStudents.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, course, status, session, pageSize]);
+
+  useEffect(() => {
+    setPage(current => Math.min(current, totalPages));
+  }, [totalPages]);
 
   const activeCount = filteredStudents.filter(activeStudent).length;
   const inactiveCount = filteredStudents.length - activeCount;
@@ -536,29 +1124,48 @@ export function StudentList() {
 
   async function deactivateStudent(student) {
     const id = String(student.studentId || "").trim();
+
     if (!id) {
-      setNotice({ type: "error", text: "This record does not contain a student ID." });
+      setNotice({
+        type: "error",
+        text: "This record does not contain a student ID."
+      });
       return;
     }
 
     if (!window.confirm(
       `Deactivate ${student.name || id} (${id})?\n\nThe student record will not be deleted.`
-    )) return;
+    )) {
+      return;
+    }
 
     setWorkingId(id);
+
     try {
-      await api.put(`/admin/students/${encodeURIComponent(id)}/deactivate`);
-      setStudents(previous => previous.map(item =>
-        item.studentId === id
-          ? { ...item, status: false, active: false }
-          : item
-      ));
-      setNotice({ type: "success", text: `${student.name || id} has been deactivated.` });
+      await api.put(
+        `/admin/students/${encodeURIComponent(id)}/deactivate`
+      );
+
+      setStudents(previous =>
+        previous.map(item =>
+          item.studentId === id
+            ? { ...item, status: false, active: false }
+            : item
+        )
+      );
+
+      setNotice({
+        type: "success",
+        text: `${student.name || id} has been deactivated.`
+      });
+
     } catch (error) {
       setNotice({
         type: "error",
-        text: error.response?.data?.message || "Unable to deactivate this student."
+        text: error.response?.data?.message ||
+          "Unable to deactivate this student."
       });
+
     } finally {
       setWorkingId("");
     }
@@ -567,12 +1174,17 @@ export function StudentList() {
   const filterName = [
     course === "ALL" ? "AllCourses" : course,
     status === "ALL" ? "AllStatus" : status,
-    session.trim() ? session.trim().replace(/[^a-z0-9_-]/gi, "-") : "AllSessions"
+    session.trim()
+      ? session.trim().replace(/[^a-z0-9_-]/gi, "-")
+      : "AllSessions"
   ].join("_");
 
   function exportExcel() {
     if (!filteredStudents.length) {
-      setNotice({ type: "error", text: "There are no matching student records to export." });
+      setNotice({
+        type: "error",
+        text: "There are no matching student records to export."
+      });
       return;
     }
 
@@ -581,22 +1193,45 @@ export function StudentList() {
       "Student Name": student.name || "",
       "Phone Number": student.phoneNumber || "",
       "Course": student.courseId || student.course || "",
-      "Session / Admission Year": student.sessionId || student.session || student.admissionYear || "",
+      "Session / Admission Year":
+        student.sessionId ||
+        student.session ||
+        student.admissionYear ||
+        "",
       "Status": activeStudent(student) ? "Active" : "Inactive"
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
+
     worksheet["!cols"] = [
-      { wch: 20 }, { wch: 28 }, { wch: 18 }, { wch: 14 }, { wch: 24 }, { wch: 14 }
+      { wch: 20 },
+      { wch: 28 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 24 },
+      { wch: 14 }
     ];
+
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-    XLSX.writeFile(workbook, `Student_List_${filterName}.xlsx`);
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Students"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      `Student_List_${filterName}.xlsx`
+    );
   }
 
   function printStudents() {
     if (!filteredStudents.length) {
-      setNotice({ type: "error", text: "There are no matching student records to print." });
+      setNotice({
+        type: "error",
+        text: "There are no matching student records to print."
+      });
       return;
     }
 
@@ -612,29 +1247,63 @@ export function StudentList() {
       </tr>
     `).join("");
 
-    const printWindow = window.open("", "_blank", "width=1100,height=750");
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=1100,height=750"
+    );
+
     if (!printWindow) {
-      setNotice({ type: "error", text: "Please allow pop-ups to print the student list." });
+      setNotice({
+        type: "error",
+        text: "Please allow pop-ups to print the student list."
+      });
       return;
     }
 
     printWindow.document.write(`
-      <!doctype html><html><head><title>Student List - ${filterName}</title>
-      <style>
-        body{font-family:Arial,sans-serif;padding:28px;color:#202945}
-        h1{font-size:22px;margin:0 0 6px}p{font-size:12px;color:#666;margin:0 0 20px}
-        table{width:100%;border-collapse:collapse;font-size:11px}
-        th,td{border:1px solid #d8dce4;padding:9px;text-align:left}
-        th{background:#202945;color:white}
-        tr{page-break-inside:avoid}
-        @media print{body{padding:0}thead{display:table-header-group}}
-      </style></head><body>
-      <h1>DPP Institute of Technology — Student Directory</h1>
-      <p>Filters: ${filterName} · Total matching records: ${filteredStudents.length}</p>
-      <table><thead><tr><th>#</th><th>Student ID</th><th>Name</th><th>Phone</th><th>Course</th><th>Session</th><th>Status</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-      </body></html>
+      <!doctype html>
+      <html>
+      <head>
+        <title>Student List - ${filterName}</title>
+        <style>
+          body{font-family:Arial,sans-serif;padding:28px;color:#202945}
+          h1{font-size:22px;margin:0 0 6px}
+          p{font-size:12px;color:#666;margin:0 0 20px}
+          table{width:100%;border-collapse:collapse;font-size:11px}
+          th,td{border:1px solid #d8dce4;padding:9px;text-align:left}
+          th{background:#202945;color:white}
+          tr{page-break-inside:avoid}
+          @media print{
+            body{padding:0}
+            thead{display:table-header-group}
+          }
+        </style>
+      </head>
+      <body>
+        <h1>DPP Institute of Technology — Student Directory</h1>
+        <p>
+          Filters: ${filterName} ·
+          Total matching records: ${filteredStudents.length}
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Course</th>
+              <th>Session</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body>
+      </html>
     `);
+
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
@@ -642,13 +1311,18 @@ export function StudentList() {
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
     }[char]));
   }
 
   return (
     <div className="sm-page">
       <StudentManagementStyles />
+
       <style>{`
         .sl-back{display:inline-flex;align-items:center;gap:8px;margin:0 0 17px;color:#8d713e;text-decoration:none;font-size:11px;font-weight:800;}
         .sl-top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:20px;flex-wrap:wrap;}
@@ -695,60 +1369,119 @@ export function StudentList() {
         @media(max-width:480px){.sl-filter-grid{grid-template-columns:1fr;}.sl-stats{grid-template-columns:1fr;}.sl-actions{width:100%;}.sl-actions button{flex:1;}}
       `}</style>
 
-      <Link to="/admin/students" className="sl-back"><ArrowLeft size={15} /> Back to Student Operations</Link>
+      <Link to="/admin/students" className="sl-back">
+        <ArrowLeft size={15} />
+        Back to Student Operations
+      </Link>
 
       <div className="sl-top">
         <div>
-          <span className="sm-eyebrow">ADMINISTRATION / STUDENT DIRECTORY</span>
+          <span className="sm-eyebrow">
+            ADMINISTRATION / STUDENT DIRECTORY
+          </span>
+
           <h1>Student List</h1>
-          <p>Browse student records, refine the listing, and manage student status.</p>
+
+          <p>
+            Browse student records, refine the listing, and manage student status.
+          </p>
         </div>
+
         <div className="sl-actions">
-          <button className="sm-button secondary" onClick={loadStudents} disabled={loading}>
-            <RefreshCw size={15} /> Refresh
+          <button
+            className="sm-button secondary"
+            onClick={loadStudents}
+            disabled={loading}
+          >
+            <RefreshCw size={15} />
+            Refresh
           </button>
-          <button className="sm-button secondary" onClick={printStudents}>
-            <Printer size={15} /> Print
+
+          <button
+            className="sm-button secondary"
+            onClick={printStudents}
+          >
+            <Printer size={15} />
+            Print
           </button>
-          <button className="sm-button primary" onClick={exportExcel}>
-            <FileDown size={15} /> Excel
+
+          <button
+            className="sm-button primary"
+            onClick={exportExcel}
+          >
+            <FileDown size={15} />
+            Excel
           </button>
         </div>
       </div>
 
-      <Notice notice={notice} onClose={() => setNotice({ type: "", text: "" })} />
+      <Notice
+        notice={notice}
+        onClose={() => setNotice({ type: "", text: "" })}
+      />
 
       <div className="sl-stats">
-        <div className="sl-stat"><span>Matching Students</span><strong>{filteredStudents.length}</strong></div>
-        <div className="sl-stat"><span>Active Students</span><strong>{activeCount}</strong></div>
-        <div className="sl-stat"><span>Inactive Students</span><strong>{inactiveCount}</strong></div>
+        <div className="sl-stat">
+          <span>Matching Students</span>
+          <strong>{filteredStudents.length}</strong>
+        </div>
+
+        <div className="sl-stat">
+          <span>Active Students</span>
+          <strong>{activeCount}</strong>
+        </div>
+
+        <div className="sl-stat">
+          <span>Inactive Students</span>
+          <strong>{inactiveCount}</strong>
+        </div>
       </div>
 
       <section className="sl-panel">
         <div className="sl-filter-head">
-          <h3><SlidersHorizontal size={18} /> Refine Student Listing</h3>
-          <button className="sm-text-button" onClick={resetFilters}>Reset all</button>
+          <h3>
+            <SlidersHorizontal size={18} />
+            Refine Student Listing
+          </h3>
+
+          <button
+            className="sm-text-button"
+            onClick={resetFilters}
+          >
+            Reset all
+          </button>
         </div>
 
         <div className="sl-filter-grid">
           <div className="sl-field">
             <label>Course / Department</label>
-            <select value={course} onChange={event => setCourse(event.target.value)}>
+
+            <select
+              value={course}
+              onChange={event => setCourse(event.target.value)}
+            >
               <option value="ALL">All Courses</option>
               <option value="MCA">MCA</option>
               <option value="BCA">BCA</option>
             </select>
           </div>
+
           <div className="sl-field">
             <label>Student Status</label>
-            <select value={status} onChange={event => setStatus(event.target.value)}>
+
+            <select
+              value={status}
+              onChange={event => setStatus(event.target.value)}
+            >
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
             </select>
           </div>
+
           <div className="sl-field">
             <label>Admission Session / Year</label>
+
             <input
               value={session}
               onChange={event => setSession(event.target.value)}
@@ -760,12 +1493,14 @@ export function StudentList() {
         <div className="sl-toolbar">
           <div className="sl-search">
             <Search size={17} />
+
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}
               placeholder="Search student ID, name, phone, course..."
             />
           </div>
+
           <span className="sl-count">
             Showing <strong>{filteredStudents.length}</strong> matching records
           </span>
@@ -775,50 +1510,93 @@ export function StudentList() {
           <table className="sl-table">
             <thead>
               <tr>
-                <th>Student ID</th><th>Student Name</th><th>Phone Number</th>
-                <th>Course</th><th>Session</th><th>Status</th><th>Action</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Phone Number</th>
+                <th>Course</th>
+                <th>Session</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
-                <tr><td colSpan="7"><div className="sl-loading"><LoaderCircle className="sm-spin" size={19} /> Loading student records...</div></td></tr>
+                <tr>
+                  <td colSpan="7">
+                    <div className="sl-loading">
+                      <LoaderCircle className="sm-spin" size={19} />
+                      Loading student records...
+                    </div>
+                  </td>
+                </tr>
               ) : pageStudents.length === 0 ? (
-                <tr><td colSpan="7">
-                  <div className="sl-empty">
-                    <Users size={30} />
-                    {students.length === 0
-                      ? "Student records will appear here when the Admin list API is connected."
-                      : "No students match the selected filters."}
-                  </div>
-                </td></tr>
-              ) : pageStudents.map(student => {
-                const active = activeStudent(student);
-                const id = String(student.studentId || "");
-                return (
-                  <tr key={id}>
-                    <td><strong>{id || "—"}</strong></td>
-                    <td>{student.name || "—"}</td>
-                    <td>{student.phoneNumber || "—"}</td>
-                    <td>{student.courseId || student.course || "—"}</td>
-                    <td>{student.sessionId || student.session || student.admissionYear || "—"}</td>
-                    <td><span className={`sl-status ${active ? "active" : "inactive"}`}>{active ? "ACTIVE" : "INACTIVE"}</span></td>
-                    <td>
-                      {active ? (
-                        <button
-                          className="sl-deactivate"
-                          onClick={() => deactivateStudent(student)}
-                          disabled={workingId === id}
+                <tr>
+                  <td colSpan="7">
+                    <div className="sl-empty">
+                      <Users size={30} />
+
+                      {students.length === 0
+                        ? "Student records will appear here when the Admin list API is connected."
+                        : "No students match the selected filters."}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                pageStudents.map(student => {
+                  const active = activeStudent(student);
+                  const id = String(student.studentId || "");
+
+                  return (
+                    <tr key={id}>
+                      <td>
+                        <strong>{id || "—"}</strong>
+                      </td>
+
+                      <td>{student.name || "—"}</td>
+
+                      <td>{student.phoneNumber || "—"}</td>
+
+                      <td>
+                        {student.courseId || student.course || "—"}
+                      </td>
+
+                      <td>
+                        {student.sessionId ||
+                          student.session ||
+                          student.admissionYear ||
+                          "—"}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`sl-status ${active ? "active" : "inactive"}`}
                         >
-                          {workingId === id
-                            ? <LoaderCircle className="sm-spin" size={13} />
-                            : <UserX size={13} />}
-                          Deactivate
-                        </button>
-                      ) : <span className="sl-count">No action</span>}
-                    </td>
-                  </tr>
-                );
-              })}
+                          {active ? "ACTIVE" : "INACTIVE"}
+                        </span>
+                      </td>
+
+                      <td>
+                        {active ? (
+                          <button
+                            className="sl-deactivate"
+                            onClick={() => deactivateStudent(student)}
+                            disabled={workingId === id}
+                          >
+                            {workingId === id
+                              ? <LoaderCircle className="sm-spin" size={13} />
+                              : <UserX size={13} />}
+
+                            Deactivate
+                          </button>
+                        ) : (
+                          <span className="sl-count">No action</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -826,19 +1604,52 @@ export function StudentList() {
         <div className="sl-pagination">
           <div className="sl-count">
             Page <strong>{page}</strong> of <strong>{totalPages}</strong>
-            {" · "} {filteredStudents.length} records
+            {" · "}
+            {filteredStudents.length} records
           </div>
+
           <div className="sl-page-buttons">
-            <select className="sl-page-size" value={pageSize} onChange={event => setPageSize(Number(event.target.value))}>
+            <select
+              className="sl-page-size"
+              value={pageSize}
+              onChange={event => setPageSize(Number(event.target.value))}
+            >
               <option value={10}>10 / page</option>
               <option value={20}>20 / page</option>
               <option value={50}>50 / page</option>
             </select>
-            <button onClick={() => setPage(1)} disabled={page === 1}><ChevronsLeft size={14} /></button>
-            <button onClick={() => setPage(value => Math.max(1, value - 1))} disabled={page === 1}><ChevronLeft size={14} /></button>
-            <button className="current">{page}</button>
-            <button onClick={() => setPage(value => Math.min(totalPages, value + 1))} disabled={page === totalPages}><ChevronRight size={14} /></button>
-            <button onClick={() => setPage(totalPages)} disabled={page === totalPages}><ChevronsRight size={14} /></button>
+
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+            >
+              <ChevronsLeft size={14} />
+            </button>
+
+            <button
+              onClick={() => setPage(value => Math.max(1, value - 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            <button className="current">
+              {page}
+            </button>
+
+            <button
+              onClick={() => setPage(value => Math.min(totalPages, value + 1))}
+              disabled={page === totalPages}
+            >
+              <ChevronRight size={14} />
+            </button>
+
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+            >
+              <ChevronsRight size={14} />
+            </button>
           </div>
         </div>
       </section>

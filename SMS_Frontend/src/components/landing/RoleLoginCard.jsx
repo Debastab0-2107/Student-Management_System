@@ -1,9 +1,7 @@
-
 import { Link } from "react-router-dom";
 import {
   GraduationCap,
   ShieldCheck,
-  BookOpen,
   Users,
   ArrowRight,
 } from "lucide-react";
@@ -11,8 +9,7 @@ import {
 const roleIcons = {
   student: GraduationCap,
   admin: ShieldCheck,
-  permanent: BookOpen,
-  visiting: Users,
+  faculty: Users,
 };
 
 export default function RoleLoginCard({

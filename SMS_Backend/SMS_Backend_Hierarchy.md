@@ -300,6 +300,11 @@
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherProfileController.java
 	** CREATED: File path: src/main/java/com/example/demo/Controller/TeacherCredentialController.java
 	
+
+### Changing the following classes for the direct credential entry of faculty	[Debastab, 10/11/26, 10.59am]
+	File path:src/main/java/com/example/demo/dao/FacultyDao.java ---added a method: Faculty saveWithCredentials()
+	File path: src/main/java/com/example/demo/daoimpl/FacultyDaoImpl.java----addea a method : Faculty saveWithCredentials()
+	File path:src/main/java/com/example/demo/serviceimpl/FacultyServiceImpl.java
 ### Profile updation for individual faculty	[Priyanshu, 10/11/26, 04:31pm]
 	JSON Body:
 	{
@@ -369,6 +374,7 @@
 	- SubjectTeacherAssignmentServiceImpl.java
 	- SubjectTeacherAssignmentController.java
 ###  Valid and Invalid both types of xlsx sheets are made then validation checking [Priyanshu, 14/11/26, 08:58pm]
+<<<<<<< HEAD
 	../TestData/~$Valid_Teacher_CA_Marks_Upload.xlsx
         ../TextData/Invalid_Teacher_CA_Marks_Upload.xlsx
         
@@ -383,3 +389,9 @@
 	Test 3 — Correct teacher, deactivated assignment
 	Test 4 — Verify inactive faculty cannot upload marks
 	
+=======
+
+
+### NChanges done in following files for frontend value response getting [Debastab, 14/11/26, 10:00pm]
+     File path : SMS_Backend/src/main/java/com/example/demo/Controller/StudentController.java-- updated  for the uni roll and uni reg
+>>>>>>> origin/debastab-branch

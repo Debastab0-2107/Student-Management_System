@@ -8,17 +8,21 @@ const api = axios.create({
   },
 });
 
+// Attach the JWT to every protected API request.
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("sms_token");
 
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default api;

@@ -24,6 +24,12 @@ public interface FacultyDao {
      * @return saved faculty object
      */
     Faculty save(Faculty faculty);
+    
+    /**
+     * Saves a new faculty member and creates their login credentials
+     * in the same database transaction.
+     */
+    Faculty saveWithCredentials(Faculty faculty, String passwordHash);
 
     /**
      * Finds a faculty member using the teacher ID.

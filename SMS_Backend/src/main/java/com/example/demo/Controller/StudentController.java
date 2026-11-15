@@ -242,30 +242,35 @@ public class StudentController {
 	 */
 	private Map<String, Object> buildStudentProfileResponse(Student student) {
 
-		Map<String, Object> response = new LinkedHashMap<>();
+	    Map<String, Object> response = new LinkedHashMap<>();
 
-		response.put("studentId", student.getStudentId());
-		response.put("name", student.getName());
-		response.put("phoneNumber", student.getPhoneNumber());
-		response.put("email", student.getEmail());
-		response.put("dateOfBirth", student.getDateOfBirth());
-		response.put("courseId", student.getCourseId());
-		response.put("sessionId", student.getSessionId());
-		response.put("currentSemesterId", student.getCurrentSemesterId());  //Debastab
-		response.put("fatherName", student.getFatherName());
-		response.put("fatherPhoneNumber", student.getFatherPhoneNumber());
-		response.put("motherName", student.getMotherName());
-		response.put("motherPhoneNumber", student.getMotherPhoneNumber());
+	    response.put("studentId", student.getStudentId());
+	    response.put("name", student.getName());
 
-		/*
-		 * This flag is useful to the frontend because it tells the student whether the
-		 * initial password still needs to be changed.
-		 */
-		response.put("mustChangePassword", student.isMustChangePassword());
+	    // University identification details
+	    response.put("universityRollNo", student.getUniversityRollNo());
+	    response.put("universityRegistrationNo", student.getUniversityRegistrationNo());
 
-		return response;
+	    response.put("phoneNumber", student.getPhoneNumber());
+	    response.put("email", student.getEmail());
+	    response.put("dateOfBirth", student.getDateOfBirth());
+	    response.put("courseId", student.getCourseId());
+	    response.put("sessionId", student.getSessionId());
+	    response.put("currentSemesterId", student.getCurrentSemesterId());
+
+	    response.put("fatherName", student.getFatherName());
+	    response.put("fatherPhoneNumber", student.getFatherPhoneNumber());
+	    response.put("motherName", student.getMotherName());
+	    response.put("motherPhoneNumber", student.getMotherPhoneNumber());
+
+	    /*
+	     * Tells the frontend whether the student
+	     * still needs to change the initial password.
+	     */
+	    response.put("mustChangePassword", student.isMustChangePassword());
+
+	    return response;
 	}
-
 	/**
 	 * Returns CA marks for the currently authenticated student.
 	 *

@@ -1,7 +1,9 @@
+
 package com.example.demo.serviceimpl;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dao.FacultyDao;
@@ -13,39 +15,38 @@ import com.example.demo.service.FacultyService;
  *
  * Implements business logic for Faculty management.
  *
- * Architecture:
- *
- * Controller
- *     ↓
- * FacultyService
- *     ↓
- * FacultyServiceImpl
- *     ↓
- * FacultyDao
- *     ↓
- * Hibernate
+ * Automatically creates login credentials whenever a new
+ * Permanent or Visiting Faculty member is saved.
  */
 @Service
 public class FacultyServiceImpl implements FacultyService {
 
     private final FacultyDao facultyDao;
+    private final PasswordEncoder passwordEncoder;
+
+    private static final String PERMANENT_DEFAULT_PASSWORD =
+            "permanentfaculty@2026";
+
+    private static final String VISITING_DEFAULT_PASSWORD =
+            "visitingfaculty@2026";
 
     /**
      * Constructor-based dependency injection.
-     *
-     * @param facultyDao faculty DAO
      */
-    public FacultyServiceImpl(FacultyDao facultyDao) {
+    public FacultyServiceImpl(
+            FacultyDao facultyDao,
+            PasswordEncoder passwordEncoder) {
+
         this.facultyDao = facultyDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * Saves a new faculty record.
+     * Saves a new faculty record and automatically creates
+     * the corresponding login credentials.
      *
-     * Duplicate teacher IDs are rejected.
-     *
-     * @param faculty faculty to save
-     * @return saved faculty
+     * REGULAR  = Permanent Faculty
+     * VISITING = Visiting Faculty
      */
     @Override
     public Faculty save(Faculty faculty) {
@@ -57,38 +58,66 @@ public class FacultyServiceImpl implements FacultyService {
 
         if (faculty.getTeacherId() == null
                 || faculty.getTeacherId().isBlank()) {
+
             throw new IllegalArgumentException(
                     "Teacher ID is required");
         }
 
         if (faculty.getName() == null
                 || faculty.getName().isBlank()) {
+
             throw new IllegalArgumentException(
                     "Faculty name is required");
         }
 
         if (faculty.getFacultyType() == null
                 || faculty.getFacultyType().isBlank()) {
+
             throw new IllegalArgumentException(
                     "Faculty type is required");
         }
 
-        if (facultyDao.existsById(
-                faculty.getTeacherId())) {
+        if (facultyDao.existsById(faculty.getTeacherId())) {
 
             throw new IllegalArgumentException(
                     "Faculty already exists with teacher ID: "
                             + faculty.getTeacherId());
         }
 
-        return facultyDao.save(faculty);
+        String defaultPassword;
+
+        String facultyType =
+                faculty.getFacultyType().trim();
+
+        if ("REGULAR".equalsIgnoreCase(facultyType)) {
+
+            defaultPassword = PERMANENT_DEFAULT_PASSWORD;
+
+        } else if ("VISITING".equalsIgnoreCase(facultyType)) {
+
+            defaultPassword = VISITING_DEFAULT_PASSWORD;
+
+        } else {
+
+            throw new IllegalArgumentException(
+                    "Invalid faculty type. "
+                    + "Only REGULAR and VISITING are allowed.");
+        }
+
+        // Hash the default password using the existing
+        // Spring Security PasswordEncoder (BCrypt).
+        String passwordHash =
+                passwordEncoder.encode(defaultPassword);
+
+        // Save faculty and credentials together.
+        // The DAO method handles the database transaction.
+        return facultyDao.saveWithCredentials(
+                faculty,
+                passwordHash);
     }
 
     /**
      * Finds faculty by teacher ID.
-     *
-     * @param teacherId faculty identifier
-     * @return faculty if found
      */
     @Override
     public Faculty findById(String teacherId) {
@@ -103,9 +132,6 @@ public class FacultyServiceImpl implements FacultyService {
 
     /**
      * Checks whether a faculty member exists.
-     *
-     * @param teacherId faculty identifier
-     * @return true if exists
      */
     @Override
     public boolean existsById(String teacherId) {
@@ -115,8 +141,6 @@ public class FacultyServiceImpl implements FacultyService {
 
     /**
      * Retrieves all faculty records.
-     *
-     * @return all faculty records
      */
     @Override
     public List<Faculty> findAll() {
@@ -127,8 +151,7 @@ public class FacultyServiceImpl implements FacultyService {
     /**
      * Updates an existing faculty record.
      *
-     * @param faculty updated faculty
-     * @return true if updated
+     * Only Visiting Faculty can be updated through this endpoint.
      */
     @Override
     public boolean update(Faculty faculty) {
@@ -140,6 +163,7 @@ public class FacultyServiceImpl implements FacultyService {
 
         if (faculty.getTeacherId() == null
                 || faculty.getTeacherId().isBlank()) {
+
             throw new IllegalArgumentException(
                     "Teacher ID is required");
         }
@@ -153,6 +177,7 @@ public class FacultyServiceImpl implements FacultyService {
 
         if (!"VISITING".equalsIgnoreCase(
                 existingFaculty.getFacultyType())) {
+
             throw new IllegalArgumentException(
                     "Only visiting faculty can be updated "
                     + "through this endpoint");
@@ -160,6 +185,7 @@ public class FacultyServiceImpl implements FacultyService {
 
         if (faculty.getName() == null
                 || faculty.getName().isBlank()) {
+
             throw new IllegalArgumentException(
                     "Faculty name is required");
         }
@@ -174,9 +200,6 @@ public class FacultyServiceImpl implements FacultyService {
      * Deactivates a faculty member.
      *
      * No physical database deletion occurs.
-     *
-     * @param teacherId faculty identifier
-     * @return true if deactivated
      */
     @Override
     public boolean deactivateById(String teacherId) {
@@ -188,7 +211,7 @@ public class FacultyServiceImpl implements FacultyService {
 
         return facultyDao.deactivateById(teacherId);
     }
-    
+
     /**
      * Updates the editable profile information of a faculty member.
      */
@@ -219,6 +242,7 @@ public class FacultyServiceImpl implements FacultyService {
 
         if (phoneNumber != null && !phoneNumber.isBlank()
                 && !phoneNumber.matches("[0-9+\\-\\s]{7,20}")) {
+
             throw new IllegalArgumentException(
                     "Please enter a valid primary mobile number");
         }
@@ -226,12 +250,14 @@ public class FacultyServiceImpl implements FacultyService {
         if (alternatePhoneNumber != null
                 && !alternatePhoneNumber.isBlank()
                 && !alternatePhoneNumber.matches("[0-9+\\-\\s]{7,20}")) {
+
             throw new IllegalArgumentException(
                     "Please enter a valid alternative mobile number");
         }
 
         if (email != null && !email.isBlank()
                 && !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+
             throw new IllegalArgumentException(
                     "Please enter a valid email address");
         }
