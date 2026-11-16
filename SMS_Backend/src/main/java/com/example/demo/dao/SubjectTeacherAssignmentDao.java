@@ -11,4 +11,11 @@ public interface SubjectTeacherAssignmentDao {
             String studentId,
             String subjectId,
             String semesterId);
+    boolean isActiveStudentInSemester(
+            String studentId,
+            String semesterId);
+
+    boolean isActiveSubjectInSemester(
+            String subjectId,
+            String semesterId);
 }

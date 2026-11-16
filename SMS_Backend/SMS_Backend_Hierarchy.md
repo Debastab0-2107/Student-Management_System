@@ -378,7 +378,15 @@
 	../TestData/~$Valid_Teacher_CA_Marks_Upload.xlsx
         ../TextData/Invalid_Teacher_CA_Marks_Upload.xlsx
         
-### Problem: a mismatched Excel teacher ID is rejected. However, it does not prove that a teacher is restricted to their assigned subjects. [Priyanshu, 16/11/26, 12:41pm] 
+	
+=======
+
+
+### NChanges done in following files for frontend value response getting [Debastab, 14/11/26, 10:00pm]
+     File path : SMS_Backend/src/main/java/com/example/demo/Controller/StudentController.java-- updated  for the uni roll and uni reg
+>>>>>>> origin/debastab-branch
+
+### Problem1: a mismatched Excel teacher ID is rejected. However, it does not prove that a teacher is restricted to their assigned subjects. [Priyanshu, 16/11/26, 12:41pm] 
 	1. Modify SubjectTeacherAssignmentDao.java
 	2. Modify SubjectTeacherAssignmentDaoImpl.java
 	3. Modify SubjectTeacherAssignmentServiceImpl.java
@@ -388,10 +396,10 @@
 	Test 2 — Correct teacher, unassigned subject
 	Test 3 — Correct teacher, deactivated assignment
 	Test 4 — Verify inactive faculty cannot upload marks
+
+### Problem2: Verify student belongs to the selected semester. [Priyanshu, 16/11/26, 05:55pm]
+### Problem3: Verify subject belongs to the selected semester. [Priyanshu, 16/11/26, 06:16pm]
+	1. Modify dao/SubjectTeacherAssignmentDao.java
+	2. Modify daoimpl/SubjectTeacherAssignmentDaoImpl.java
+	3. Modify serviceimpl/SubjectTeacherAssignmentServiceImpl.java
 	
-=======
-
-
-### NChanges done in following files for frontend value response getting [Debastab, 14/11/26, 10:00pm]
-     File path : SMS_Backend/src/main/java/com/example/demo/Controller/StudentController.java-- updated  for the uni roll and uni reg
->>>>>>> origin/debastab-branch

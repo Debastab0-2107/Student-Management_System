@@ -94,24 +94,32 @@ public class SubjectTeacherAssignmentServiceImpl implements SubjectTeacherAssign
                     + "Teacher ID: " + authenticatedTeacherId);
         }
 
-        // STEP 2: Check active teacher-subject assignment.
-        boolean assigned =
-                assignmentDao.isTeacherAssignedForStudentSubjectSemester(
-                        authenticatedTeacherId,
+     // STEP 2: Verify student belongs to selected semester.
+        boolean validStudent =
+                assignmentDao.isActiveStudentInSemester(
                         studentId,
+                        semesterId);
+
+        if (!validStudent) {
+
+            throw new AccessDeniedException(
+                    "Student " + studentId
+                    + " is inactive or does not belong to semester "
+                    + semesterId + ".");
+        }
+
+        // STEP 3: Verify subject belongs to selected semester.
+        boolean validSubject =
+                assignmentDao.isActiveSubjectInSemester(
                         subjectId,
                         semesterId);
 
-        if (!assigned) {
+        if (!validSubject) {
 
             throw new AccessDeniedException(
-                    "You are not authorized to upload CA marks for student "
-                    + studentId
-                    + ", subject "
-                    + subjectId
-                    + " and semester "
-                    + semesterId
-                    + ". No active teacher-subject assignment was found.");
+                    "Subject " + subjectId
+                    + " is inactive or does not belong to semester "
+                    + semesterId + ".");
         }
     }
 }

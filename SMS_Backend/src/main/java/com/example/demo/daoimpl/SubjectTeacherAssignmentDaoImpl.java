@@ -126,4 +126,47 @@ public class SubjectTeacherAssignmentDaoImpl implements SubjectTeacherAssignment
             return count != null && count.longValue() > 0;
         }
     }
+    
+    @Override
+    public boolean isActiveStudentInSemester(
+            String studentId,
+            String semesterId) {
+
+        try (Session session = sessionFactory.openSession()) {
+
+            Number count = (Number) session.createNativeQuery(
+                    "SELECT COUNT(*) FROM student " +
+                    "WHERE student_id = :studentId " +
+                    "AND is_active = 1 " +
+                    "AND CAST(current_semester_id AS UNSIGNED) = " +
+                    "CAST(REPLACE(:semesterId, 'SEM', '') AS UNSIGNED)"
+            )
+            .setParameter("studentId", studentId)
+            .setParameter("semesterId", semesterId)
+            .uniqueResult();
+
+            return count != null && count.longValue() > 0;
+        }
+    }
+
+    @Override
+    public boolean isActiveSubjectInSemester(
+            String subjectId,
+            String semesterId) {
+
+        try (Session session = sessionFactory.openSession()) {
+
+            Number count = (Number) session.createNativeQuery(
+                    "SELECT COUNT(*) FROM subject " +
+                    "WHERE subject_id = :subjectId " +
+                    "AND semester_id = :semesterId " +
+                    "AND is_active = 1"
+            )
+            .setParameter("subjectId", subjectId)
+            .setParameter("semesterId", semesterId)
+            .uniqueResult();
+
+            return count != null && count.longValue() > 0;
+        }
+    }
 }
