@@ -403,3 +403,15 @@
 	2. Modify daoimpl/SubjectTeacherAssignmentDaoImpl.java
 	3. Modify serviceimpl/SubjectTeacherAssignmentServiceImpl.java
 	
+### [Debastab, 18/11/26, 10:10pm] Changong for viewing of student list
+    1. modified : SMS_Backend/src/main/java/com/example/demo/Controller/AdminController.java in getAllStudents() 
+    
+### [Debastab, 19/11/26, 5:10pm] Subject–Faculty Assignment Management: Excel-Based Assignment and UI-Based Update/Delete
+    CREATED :SMS_Backend/src/main/java/com/example/demo/dto/response--SubjectTeacherAssignmentResponse class 
+    ADDED :SMS_Backend/src/main/java/com/example/demo/dao/SubjectTeacherAssignmentDao.java--getActiveAssignments() 
+    ADDED :SMS_Backend/src/main/java/com/example/demo/daoimpl/SubjectTeacherAssignmentDaoImpl.java--getActiveAssignments() 
+    ADDED: SMS_Backend/src/main/java/com/example/demo/service/SubjectTeacherAssignmentService.java--getActiveAssignments()
+    ADDED: SMS_Backend/src/main/java/com/example/demo/serviceimpl/SubjectTeacherAssignmentService.java--getActiveAssignments()
+    ADDED: SMS_Backend/src/main/java/com/example/demo/Controller/SubjectTeacherAssignmentController.java--getAssignments()
+    
+    

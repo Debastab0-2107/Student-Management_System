@@ -8,39 +8,26 @@ import {
   BookOpenCheck,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   ClipboardList,
   GraduationCap,
-  Megaphone,
   Menu,
   ShieldCheck,
   Sparkles,
   UserRound,
   X,
+  Clock3,
+  LayoutDashboard,
+  CalendarCheck,
+  LockKeyhole,
 } from "lucide-react";
 
 import { useStudentLayout } from "../../components/layout/StudentLayout";
 import { getClassesForDay, SECTION_NAMES } from "./routineData";
 import api from "../../services/api";
-
-const ANNOUNCEMENTS = [
-  {
-    tag: "ACADEMIC",
-    title: "Welcome to the student portal",
-    detail: "Important academic updates will appear here.",
-  },
-  {
-    tag: "REMINDER",
-    title: "Keep your profile up to date",
-    detail: "Review your student details when profile editing becomes available.",
-  },
-  {
-    tag: "INFORMATION",
-    title: "Class routine updates",
-    detail: "Your daily classes will appear here after the department routine is added.",
-  },
-];
 
 function getInitials(name = "Student") {
   return (
@@ -70,7 +57,10 @@ export default function StudentDashboard() {
 
   const today = new Date();
 
-  // Load the signed-in student's profile
+  // =========================================
+  // AUTHENTICATION AND PROFILE
+  // =========================================
+
   useEffect(() => {
     let active = true;
 
@@ -84,11 +74,11 @@ export default function StudentDashboard() {
       }
 
       try {
-const response = await api.get("/student/profile");
+        const response = await api.get("/student/profile");
 
-console.log("STUDENT PROFILE RESPONSE:", response.data);
-
-if (active) setProfile(response.data);
+        if (active) {
+          setProfile(response.data);
+        }
       } catch (error) {
         if (!active) return;
 
@@ -114,7 +104,10 @@ if (active) setProfile(response.data);
     };
   }, [navigate]);
 
-  // Fallback information when the profile API is unavailable
+  // =========================================
+  // STUDENT DETAILS
+  // =========================================
+
   const shownProfile = profile || {
     name: "Student Name",
     studentId:
@@ -123,7 +116,9 @@ if (active) setProfile(response.data);
   };
 
   const displayName =
-    shownProfile.name || shownProfile.studentName || "Student";
+    shownProfile.name ||
+    shownProfile.studentName ||
+    "Student";
 
   const studentId =
     shownProfile.studentId ||
@@ -131,83 +126,98 @@ if (active) setProfile(response.data);
     localStorage.getItem("sms_student_id") ||
     "Student ID pending";
 
-const session =
-  shownProfile.sessionId ||
-  shownProfile.session ||
-  "Session not available";
+  const session =
+    shownProfile.sessionId ||
+    shownProfile.session ||
+    "Session not available";
 
-// PASTE THE SEMESTER CODE HERE
-const semesterValue =
-  shownProfile.currentSemesterName ||
-  shownProfile.semesterName ||
-  shownProfile.currentSemester ||
-  shownProfile.currentSemesterId ||
-  shownProfile.semesterId ||
-  null;
+  const semesterValue =
+    shownProfile.currentSemesterName ||
+    shownProfile.semesterName ||
+    shownProfile.currentSemester ||
+    shownProfile.currentSemesterId ||
+    shownProfile.semesterId ||
+    null;
 
-const getSemesterLabel = (value) => {
-  if (value === null || value === undefined || value === "") {
-    return "Semester not assigned";
-  }
+  const getSemesterLabel = (value) => {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return "Semester not assigned";
+    }
 
-  if (typeof value === "string" && /semester/i.test(value)) {
-    return value;
-  }
+    if (
+      typeof value === "string" &&
+      /semester/i.test(value)
+    ) {
+      return value;
+    }
 
-  const semesterNumber = Number(value);
+    const semesterNumber = Number(value);
 
-  if (!Number.isInteger(semesterNumber) || semesterNumber < 1) {
-    return String(value);
-  }
+    if (
+      !Number.isInteger(semesterNumber) ||
+      semesterNumber < 1
+    ) {
+      return String(value);
+    }
 
-  const suffix =
-    semesterNumber % 100 >= 11 && semesterNumber % 100 <= 13
-      ? "th"
-      : semesterNumber % 10 === 1
-      ? "st"
-      : semesterNumber % 10 === 2
-      ? "nd"
-      : semesterNumber % 10 === 3
-      ? "rd"
-      : "th";
+    const suffix =
+      semesterNumber % 100 >= 11 &&
+      semesterNumber % 100 <= 13
+        ? "th"
+        : semesterNumber % 10 === 1
+        ? "st"
+        : semesterNumber % 10 === 2
+        ? "nd"
+        : semesterNumber % 10 === 3
+        ? "rd"
+        : "th";
 
-  return `${semesterNumber}${suffix} Semester`;
-};
+    return `${semesterNumber}${suffix} Semester`;
+  };
 
-const currentSemesterLabel = getSemesterLabel(semesterValue);
-  
-    
+  const currentSemesterLabel =
+    getSemesterLabel(semesterValue);
 
-    
-    const courseCode = String(
-  shownProfile.courseId ||
-  shownProfile.courseCode ||
-  shownProfile.course?.courseId ||
-  shownProfile.course?.courseCode ||
-  ""
-).trim().toUpperCase();
+  const courseCode = String(
+    shownProfile.courseId ||
+      shownProfile.courseCode ||
+      shownProfile.course?.courseId ||
+      shownProfile.course?.courseCode ||
+      ""
+  )
+    .trim()
+    .toUpperCase();
 
-const courseDetails = {
-  MCA: {
-    name: "MCA",
-    fullName: "Master of Computer Applications",
-    department: "MCA DEPARTMENT",
-  },
-  BCA: {
-    name: "BCA",
-    fullName: "Bachelor of Computer Applications",
-    department: "BCA DEPARTMENT",
-  },
-};
+  const courseDetails = {
+    MCA: {
+      name: "MCA",
+      fullName: "Master of Computer Applications",
+      department: "MCA DEPARTMENT",
+    },
+    BCA: {
+      name: "BCA",
+      fullName: "Bachelor of Computer Applications",
+      department: "BCA DEPARTMENT",
+    },
+  };
 
-const course = courseDetails[courseCode] || {
-  name: courseCode || "Course",
-  fullName: "Course details unavailable",
-  department: "STUDENT DEPARTMENT",
-};
+  const course = courseDetails[courseCode] || {
+    name: courseCode || "Course",
+    fullName: "Course details unavailable",
+    department: "STUDENT DEPARTMENT",
+  };
 
-const courseDisplay = `${course.name} — ${course.fullName}`;
-  // Calendar calculations
+  const courseDisplay =
+    `${course.name} — ${course.fullName}`;
+
+  // =========================================
+  // CALENDAR
+  // =========================================
+
   const monthStart = new Date(
     calendarDate.getFullYear(),
     calendarDate.getMonth(),
@@ -239,207 +249,396 @@ const courseDisplay = `${course.name} — ${course.fullName}`;
     setSelectedDate(now);
   };
 
+  // =========================================
+  // TODAY'S CLASSES
+  // =========================================
+
+  const getTodayClasses = (section) => {
+    return getClassesForDay(
+      today.getDay(),
+      section,
+      courseCode
+    );
+  };
+
+  const totalClasses = SECTION_NAMES.reduce(
+    (total, section) =>
+      total + getTodayClasses(section).length,
+    0
+  );
+
+  // =========================================
+  // RENDER
+  // =========================================
+
   return (
-    <div className="sd-app">
+    <div className="academic-dashboard">
+
       <style>{`
+
         /* =========================================
-           BASE AND BACKGROUND
+           DESIGN SYSTEM
         ========================================= */
 
-        .sd-app {
+        .academic-dashboard {
           --navy: #202945;
-          --navy-light: #303b5d;
+          --navy-2: #303b5d;
+          --navy-3: #3c4b72;
+
           --gold: #c19a52;
           --gold-light: #fbf4e7;
+
+          --mint: #e4f5ed;
+          --mint-dark: #398a69;
+
+          --blue-light: #e9efff;
+          --blue-dark: #526eae;
+
+          --lavender: #f0edff;
+          --lavender-dark: #7966bb;
+
           --ink: #252c43;
           --muted: #858ba0;
-          --line: #e9ebf1;
 
+          --border: #dce1ec;
+          --surface: #ffffff;
+
+          min-height: 100vh;
+          width: 100%;
           position: relative;
           isolation: isolate;
-          display: flex;
-          min-height: 100vh;
-          overflow: clip;
+          overflow: hidden;
+
           color: var(--ink);
-          background: transparent;
-          font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-            BlinkMacSystemFont, "Segoe UI", sans-serif;
-          font-size: 15px;
+
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+
+          background:
+            radial-gradient(
+              circle at 5% 5%,
+              rgba(193,154,82,.12),
+              transparent 28%
+            ),
+            radial-gradient(
+              circle at 95% 30%,
+              rgba(103,129,190,.14),
+              transparent 30%
+            ),
+            linear-gradient(
+              135deg,
+              #f0f3fa 0%,
+              #e9eef8 48%,
+              #f5f2ec 100%
+            );
         }
 
-        .sd-app *,
-        .sd-app *::before,
-        .sd-app *::after {
+        .academic-dashboard *,
+        .academic-dashboard *::before,
+        .academic-dashboard *::after {
           box-sizing: border-box;
         }
 
-        .sd-app button,
-        .sd-app a,
-        .sd-app input,
-        .sd-app select {
+        .academic-dashboard button,
+        .academic-dashboard a,
+        .academic-dashboard select {
           font: inherit;
         }
 
-        .sd-app button {
+        .academic-dashboard button {
           cursor: pointer;
         }
 
-        .sd-app a {
-          color: inherit;
+        .academic-dashboard a {
           text-decoration: none;
+          color: inherit;
         }
 
-        /* Fixed animated background */
+        /* =========================================
+           BACKGROUND DECORATIONS
+        ========================================= */
 
-        .sd-bg-effects {
-          position: fixed;
+        .ad-background {
+          position: absolute;
           inset: 0;
-          z-index: 0;
-          overflow: hidden;
+          z-index: -1;
           pointer-events: none;
-          background-color: #f7f1e9;
-          background-image:
+          overflow: hidden;
+        }
+
+        .ad-orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(2px);
+          animation: orbFloat 10s ease-in-out infinite;
+        }
+
+        .ad-orb-one {
+          width: 360px;
+          height: 360px;
+          background: rgba(193,154,82,.09);
+          top: 100px;
+          left: -190px;
+        }
+
+        .ad-orb-two {
+          width: 450px;
+          height: 450px;
+          background: rgba(101,124,188,.09);
+          right: -220px;
+          top: 420px;
+          animation-delay: -4s;
+        }
+
+        .ad-orb-three {
+          width: 220px;
+          height: 220px;
+          background: rgba(85,170,132,.07);
+          left: 40%;
+          bottom: -120px;
+          animation-delay: -7s;
+        }
+
+        @keyframes orbFloat {
+          0%,100% {
+            transform: translate3d(0,0,0);
+          }
+          50% {
+            transform: translate3d(18px,-22px,0);
+          }
+        }
+
+        /* =========================================
+           MAIN CONTAINER
+        ========================================= */
+
+        .ad-main {
+          width: 100%;
+          max-width: 1580px;
+          margin: 0 auto;
+          min-height: 100vh;
+        }
+
+        .ad-content {
+          padding: 25px 36px 35px;
+        }
+
+        /* =========================================
+           TOP NAVIGATION
+        ========================================= */
+
+        .ad-topbar {
+          height: 72px;
+          padding: 0 36px;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          background: rgba(255,255,255,.78);
+          border-bottom: 1px solid rgba(32,41,69,.10);
+
+          backdrop-filter: blur(18px);
+        }
+
+        .ad-top-left,
+        .ad-top-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .ad-brand-icon {
+          width: 43px;
+          height: 43px;
+          display: grid;
+          place-items: center;
+
+          color: white;
+          background: var(--navy);
+          border-radius: 14px;
+
+          box-shadow: 0 5px 14px rgba(32,41,69,.2);
+        }
+
+        .ad-brand-copy strong {
+          display: block;
+          font-size: 14px;
+          font-weight: 850;
+          color: var(--navy);
+        }
+
+        .ad-brand-copy span {
+          display: block;
+          margin-top: 3px;
+          color: var(--muted);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 1.2px;
+        }
+
+        .ad-breadcrumb {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin-left: 24px;
+          color: var(--muted);
+          font-size: 12px;
+        }
+
+        .ad-breadcrumb strong {
+          color: var(--navy);
+        }
+
+        .ad-menu-button,
+        .ad-notification,
+        .ad-avatar {
+          display: grid;
+          place-items: center;
+          border: 1px solid var(--border);
+          transition: .25s ease;
+        }
+
+        .ad-menu-button {
+          width: 40px;
+          height: 40px;
+          color: var(--navy);
+          background: white;
+          border-radius: 12px;
+        }
+
+        .ad-menu-button:hover {
+          background: var(--navy);
+          color: white;
+        }
+
+        .ad-notification {
+          width: 42px;
+          height: 42px;
+          position: relative;
+          color: var(--navy);
+          background: white;
+          border-radius: 14px;
+        }
+
+        .ad-notification:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 7px 17px rgba(32,41,69,.12);
+        }
+
+        .ad-notification-dot {
+          position: absolute;
+          top: 8px;
+          right: 9px;
+          width: 8px;
+          height: 8px;
+          border: 2px solid white;
+          background: #e16c6c;
+          border-radius: 50%;
+        }
+
+        .ad-avatar {
+          width: 43px;
+          height: 43px;
+          color: white;
+          font-size: 13px;
+          font-weight: 850;
+          background: linear-gradient(
+            140deg,
+            var(--navy),
+            #52628c
+          );
+          border-radius: 15px;
+          box-shadow: 0 4px 12px rgba(32,41,69,.16);
+        }
+
+        .ad-avatar:hover {
+          transform: rotate(-5deg) scale(1.06);
+        }
+
+        .ad-secure {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          color: var(--mint-dark);
+          font-size: 11px;
+          font-weight: 750;
+        }
+
+        /* =========================================
+           PREVIEW NOTICE
+        ========================================= */
+
+        .ad-preview {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          padding: 13px 17px;
+          margin-bottom: 20px;
+
+          border: 1px solid #e6c87f;
+          border-radius: 13px;
+
+          background: #fff8e8;
+          color: #8b692a;
+
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        /* =========================================
+           HERO SECTION
+        ========================================= */
+
+        .ad-hero {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 30px;
+
+          min-height: 265px;
+          padding: 40px 48px;
+
+          color: white;
+
+          background:
             radial-gradient(
-              ellipse at 12% 16%,
-              rgba(232, 197, 126, .34),
-              transparent 38%
-            ),
-            radial-gradient(
-              ellipse at 88% 18%,
-              rgba(145, 165, 231, .32),
-              transparent 42%
-            ),
-            radial-gradient(
-              ellipse at 48% 88%,
-              rgba(190, 171, 235, .30),
-              transparent 44%
-            ),
-            radial-gradient(
-              ellipse at 95% 90%,
-              rgba(222, 194, 151, .22),
-              transparent 36%
+              circle at 78% 30%,
+              rgba(193,154,82,.19),
+              transparent 24%
             ),
             linear-gradient(
-              125deg,
-              #fbf4e7,
-              #e9eafa,
-              #dce5fa,
-              #f0e9f8,
-              #fbf1e2
+              115deg,
+              #17213e 0%,
+              #202945 52%,
+              #344365 100%
             );
-          background-size: 240% 240%;
-          animation: sdBackgroundDrift 24s ease-in-out infinite alternate;
-          will-change: background-position;
-        }
 
-        @keyframes sdBackgroundDrift {
-          0% {
-            background-position: 0% 20%;
-          }
-          25% {
-            background-position: 75% 0%;
-          }
-          50% {
-            background-position: 100% 75%;
-          }
-          75% {
-            background-position: 25% 100%;
-          }
-          100% {
-            background-position: 0% 20%;
-          }
-        }
+          border: 1px solid rgba(255,255,255,.15);
+          border-radius: 27px;
 
-        .sd-bg-effects::before,
-        .sd-bg-effects::after {
-          content: "";
-          position: absolute;
-          pointer-events: none;
-          border: 1px solid rgba(75, 89, 133, .12);
-          border-radius: 50%;
-        }
-
-        .sd-bg-effects::before {
-          width: 550px;
-          height: 550px;
-          top: 12%;
-          left: -270px;
           box-shadow:
-            0 0 0 35px rgba(75, 89, 133, .025),
-            0 0 0 75px rgba(75, 89, 133, .02),
-            0 0 0 120px rgba(75, 89, 133, .015);
+            0 18px 42px rgba(32,41,69,.20),
+            inset 0 1px rgba(255,255,255,.13);
+
+          animation: heroEnter .75s cubic-bezier(.2,.8,.2,1) both;
         }
 
-        .sd-bg-effects::after {
-          width: 680px;
-          height: 680px;
-          right: -360px;
-          bottom: -160px;
-          border-color: rgba(193, 154, 82, .13);
-          box-shadow:
-            0 0 0 40px rgba(193, 154, 82, .035),
-            0 0 0 90px rgba(193, 154, 82, .025);
-        }
-
-        .sd-bg-orb {
-          position: absolute;
-          width: 420px;
-          height: 420px;
-          border-radius: 50%;
-          filter: blur(88px);
-          opacity: .22;
-          animation: sdFloat 22s ease-in-out infinite alternate;
-        }
-
-        .sd-bg-orb-one {
-          top: -160px;
-          left: 8%;
-          background: #e4bd72;
-        }
-
-        .sd-bg-orb-two {
-          top: 30%;
-          right: -180px;
-          background: #8299e8;
-          animation-delay: -6s;
-        }
-
-        .sd-bg-orb-three {
-          bottom: -210px;
-          left: 35%;
-          background: #b9a0ed;
-          animation-delay: -11s;
-        }
-
-        @keyframes sdFloat {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          50% {
-            transform: translate3d(45px, 35px, 0) scale(1.12);
-          }
-          100% {
-            transform: translate3d(-25px, 65px, 0) scale(.94);
-          }
-        }
-
-        .sd-bg-grid {
-          position: absolute;
-          inset: 0;
-          opacity: .19;
-          background-image:
-            radial-gradient(
-              rgba(74, 87, 127, .48) .8px,
-              transparent .8px
-            );
-          background-size: 29px 29px;
-          mask-image: linear-gradient(to bottom, black, transparent 85%);
-        }
-
-        @keyframes sdRise {
+        @keyframes heroEnter {
           from {
             opacity: 0;
-            transform: translateY(14px);
+            transform: translateY(22px);
           }
           to {
             opacity: 1;
@@ -447,1716 +646,1746 @@ const courseDisplay = `${course.name} — ${course.fullName}`;
           }
         }
 
-        /* =========================================
-           MAIN LAYOUT AND TOPBAR
-        ========================================= */
-
-        .sd-main {
-          position: relative;
-          z-index: 1;
-          flex: 1;
-          min-width: 0;
-        }
-
-        .sd-topbar {
-          position: sticky;
-          top: 0;
-          z-index: 20;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          min-height: 82px;
-          padding: 0 42px;
-          border-bottom: 1px solid rgba(231, 233, 240, .85);
-          background: rgba(255, 255, 255, .76);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
-
-        /* Keep the sidebar toggle visible at every screen size */
-
-        .sd-mobile-menu {
-          display: grid !important;
-          flex-shrink: 0;
-        }
-
-        .sd-breadcrumb {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          color: #9298a9;
-          font-size: 14px;
-        }
-
-        .sd-breadcrumb strong {
-          color: var(--navy);
-          font-weight: 750;
-        }
-
-        .sd-topbar-right {
-          display: flex;
-          align-items: center;
-          gap: 18px;
-        }
-
-        .sd-secure-label {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          color: #737b91;
-          font-size: 13px;
-        }
-
-        .sd-secure-label svg {
-          color: #4e967a;
-        }
-
-        .sd-notification-button,
-        .sd-icon-button {
-          position: relative;
-          display: grid;
-          place-items: center;
-          width: 46px;
-          height: 46px;
-          border: 1px solid var(--line);
-          border-radius: 12px;
-          color: #505872;
-          background: rgba(255, 255, 255, .82);
-          backdrop-filter: blur(10px);
-          transition:
-            transform .35s ease,
-            box-shadow .35s ease,
-            background .35s ease;
-        }
-
-        .sd-notification-button > span {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          width: 7px;
-          height: 7px;
-          border: 1px solid white;
-          border-radius: 50%;
-          background: #c39a50;
-        }
-
-        .sd-notification-button:hover,
-        .sd-icon-button:hover {
-          background: #f5f6fa;
-          transform: translateY(-2px);
-          box-shadow: 0 7px 18px rgba(32, 41, 69, .12);
-        }
-
-        .sd-mini-avatar,
-        .sd-profile-avatar {
-          display: grid;
-          place-items: center;
-          flex-shrink: 0;
-          border-radius: 50%;
-          color: white;
-          background: linear-gradient(135deg, #3b496e, #202945);
-          font-weight: 800;
-        }
-
-        .sd-mini-avatar {
-          width: 45px;
-          height: 45px;
-          font-size: 16px;
-        }
-
-        .sd-mini-avatar-button {
-          padding: 0;
-          border: 0;
-          cursor: pointer;
-          transition:
-            transform .35s ease,
-            box-shadow .35s ease;
-        }
-
-        .sd-mini-avatar-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 14px rgba(32, 41, 69, .22);
-        }
-
-        /* =========================================
-           CONTENT WRAPPER
-        ========================================= */
-
-        .sd-content {
-          width: 100%;
-          max-width: 2200px;
-          padding: 43px 48px 38px;
-          margin: 0 auto;
-          animation: sdRise .45s ease both;
-        }
-
-        .sd-preview-notice {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 14px 17px;
-          margin-bottom: 20px;
-          border: 1px solid #eadbb9;
-          border-radius: 13px;
-          color: #80612a;
-          background: rgba(255, 249, 237, .88);
-          backdrop-filter: blur(10px);
-          font-size: 13px;
-          line-height: 1.7;
-        }
-
-        .sd-preview-notice svg {
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        /* =========================================
-           WELCOME BANNER
-        ========================================= */
-
-        .sd-welcome {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 28px;
-          min-height: 315px;
-          padding: 48px;
-          overflow: hidden;
-          border: 1px solid #ffffff1c;
-          border-radius: 28px;
-          color: white;
-          background:
-            radial-gradient(circle at 80% 0%, #c9a86936, transparent 33%),
-            linear-gradient(120deg, #202945, #303b5b);
-          box-shadow:
-            0 20px 55px rgba(32, 41, 69, .15),
-            inset 0 1px 0 rgba(255, 255, 255, .12);
-          animation: sdRise .55s ease both;
-        }
-
-        .sd-welcome::after {
+        .ad-hero::before {
           content: "";
           position: absolute;
-          width: 250px;
-          height: 250px;
-          right: 80px;
-          bottom: -190px;
-          border: 1px solid #e5c37e27;
+          z-index: -1;
+          width: 430px;
+          height: 430px;
+          right: 5%;
+          top: -280px;
+          border: 1px solid rgba(255,255,255,.12);
           border-radius: 50%;
           box-shadow:
-            0 0 0 35px #e5c37e0c,
-            0 0 0 70px #e5c37e08;
+            0 0 0 30px rgba(255,255,255,.025),
+            0 0 0 65px rgba(255,255,255,.025),
+            0 0 0 100px rgba(255,255,255,.02);
         }
 
-        .sd-welcome-copy {
+        .ad-hero::after {
+          content: "✦";
+          position: absolute;
+          right: 34%;
+          top: 24%;
+          color: #e9c77f;
+          font-size: 26px;
+          opacity: .75;
+          animation: sparkle 3s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+          0%,100% {
+            opacity: .45;
+            transform: scale(.8) rotate(0);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.25) rotate(35deg);
+          }
+        }
+
+        .ad-hero-copy {
+          max-width: 730px;
           position: relative;
           z-index: 2;
-          min-width: 0;
         }
 
-        .sd-welcome-eyebrow {
+        .ad-eyebrow {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          color: #e1c17f;
-          font-size: 12px;
-          font-weight: 800;
+          gap: 9px;
+
+          padding: 8px 13px;
+
+          border: 1px solid rgba(255,255,255,.17);
+          border-radius: 30px;
+
+          background: rgba(255,255,255,.09);
+
+          color: #e9cb8c;
+          font-size: 10px;
+          font-weight: 850;
           letter-spacing: 1.7px;
         }
 
-        .sd-welcome h1 {
-          margin: 18px 0 13px;
-          font-size: clamp(38px, 3.5vw, 53px);
-          line-height: 1.16;
-          letter-spacing: -1.4px;
+        .ad-hero h1 {
+          margin: 22px 0 9px;
+          font-size: clamp(31px, 4vw, 47px);
+          line-height: 1.12;
+          font-weight: 850;
+          letter-spacing: -1.8px;
         }
 
-        .sd-welcome h1 span {
-          color: #e8ca8b;
-          overflow-wrap: anywhere;
+        .ad-hero h1 span {
+          color: #e6c47d;
         }
 
-        .sd-welcome-copy > p {
-          max-width: 720px;
+        .ad-hero-description {
           margin: 0;
-          color: #c1c8d9;
-          font-size: 16px;
+          max-width: 590px;
+          color: rgba(255,255,255,.72);
+          font-size: 13px;
           line-height: 1.8;
         }
 
-        .sd-welcome-meta {
+        .ad-hero-meta {
           display: flex;
           flex-wrap: wrap;
-          align-items: center;
-          gap: 17px;
-          margin-top: 25px;
-          color: #e5e8ef;
-          font-size: 14px;
+          gap: 10px;
+          margin-top: 23px;
         }
 
-        .sd-welcome-meta span {
+        .ad-meta-pill {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
+          gap: 8px;
+
+          padding: 9px 13px;
+
+          border: 1px solid rgba(255,255,255,.16);
+          border-radius: 30px;
+
+          background: rgba(255,255,255,.09);
+
+          color: #fff;
+          font-size: 11px;
+          font-weight: 650;
         }
 
-        .sd-welcome-meta i {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #c5a260;
+        .ad-meta-pill svg {
+          color: #e8c67f;
         }
 
-        .sd-welcome-art {
+        .ad-hero-art {
           position: relative;
+          flex-shrink: 0;
+
+          width: 185px;
+          height: 185px;
+
           display: grid;
           place-items: center;
-          width: 170px;
-          height: 170px;
-          flex: 0 0 170px;
-          margin-right: 42px;
-          color: #e5c37e;
         }
 
-        .sd-art-ring {
+        .ad-hero-ring {
           position: absolute;
-          border: 1px solid #e4c4803d;
+          border: 1px solid rgba(235,204,141,.45);
           border-radius: 50%;
+          animation: ringRotate 17s linear infinite;
         }
 
-        .sd-ring-a {
-          width: 165px;
-          height: 165px;
+        .ad-hero-ring.one {
+          inset: 0;
         }
 
-        .sd-ring-b {
-          width: 125px;
-          height: 125px;
+        .ad-hero-ring.two {
+          inset: 18px;
           border-style: dashed;
+          animation-direction: reverse;
         }
 
-        .sd-art-book {
+        @keyframes ringRotate {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .ad-hero-book {
+          width: 105px;
+          height: 105px;
+
           display: grid;
           place-items: center;
-          width: 90px;
-          height: 90px;
-          border: 1px solid #e6c98f55;
-          border-radius: 26px;
-          background: #ffffff10;
-          transform: rotate(-7deg);
-          animation: sdBookFloat 5s ease-in-out infinite;
+
+          color: #f4d99e;
+
+          border: 1px solid rgba(255,255,255,.3);
+          border-radius: 30px;
+
+          background: linear-gradient(
+            145deg,
+            #485b82,
+            #202945
+          );
+
+          box-shadow:
+            0 12px 35px rgba(0,0,0,.25),
+            inset 0 1px rgba(255,255,255,.3);
+
+          transform: rotate(-8deg);
+          animation: bookFloat 4s ease-in-out infinite;
         }
 
-        @keyframes sdBookFloat {
-          0%, 100% {
-            transform: translateY(0) rotate(-7deg);
+        @keyframes bookFloat {
+          0%,100% {
+            transform: translateY(0) rotate(-8deg);
           }
           50% {
-            transform: translateY(-8px) rotate(-3deg);
+            transform: translateY(-10px) rotate(-3deg);
           }
         }
 
-        .sd-art-star {
-          position: absolute;
-          color: #efd79f;
-          font-size: 27px;
-        }
-
-        .sd-star-a {
-          top: 0;
-          right: 5px;
-        }
-
-        .sd-star-b {
-          bottom: 0;
-          left: 0;
-        }
-
-        .sd-welcome-ribbon {
+        .ad-hero-ribbon {
           position: absolute;
           top: 0;
-          right: 28px;
-          padding: 10px 14px;
-          border-radius: 0 0 10px 10px;
-          color: #e9d3a3;
-          background: #ffffff12;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1.3px;
-        }
+          right: 34px;
 
-        .sd-ribbon-dot {
-          display: inline-block;
-          width: 6px;
-          height: 6px;
-          margin-right: 7px;
-          border-radius: 50%;
-          background: #d9b66e;
-        }
+          padding: 10px 17px;
 
-        /* =========================================
-           STUDENT SUMMARY CARDS
-        ========================================= */
+          border-radius: 0 0 12px 12px;
 
-        .sd-stat-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 23px;
-          margin: 28px 0 41px;
-        }
-
-        .sd-stat-card {
-          position: relative;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          min-width: 0;
-          min-height: 145px;
-          padding: 27px;
-          border: 1px solid #e8eaf1;
-          border-radius: 21px;
-          background: rgba(255, 255, 255, .78);
-          box-shadow: 0 10px 28px rgba(32, 41, 69, .055);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
-        }
-
-        .sd-stat-card:hover {
-          transform: translateY(-3px);
-          border-color: rgba(193, 154, 82, .48);
-          box-shadow: 0 17px 35px rgba(32, 41, 69, .10);
-        }
-
-        .sd-stat-icon {
-          display: grid;
-          place-items: center;
-          width: 57px;
-          height: 57px;
-          flex-shrink: 0;
-          border-radius: 16px;
-        }
-
-        .stat-gold {
-          color: #a67c34;
-          background: #fbf3e4;
-        }
-
-        .stat-blue {
-          color: #526d9c;
-          background: #eef2fb;
-        }
-
-        .stat-green {
-          color: #44866d;
-          background: #eaf6ef;
-        }
-
-        .sd-stat-copy {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-          min-width: 0;
-        }
-
-        .sd-stat-copy > span {
-          color: #83899d;
-          font-size: 13px;
-        }
-
-        .sd-stat-copy strong {
           color: var(--navy);
-          font-size: 19px;
-          overflow-wrap: anywhere;
-        }
+          background: #f0d99f;
 
-        .sd-stat-copy small {
-          color: #a0a5b3;
-          font-size: 12px;
-          line-height: 1.5;
-        }
-
-        .sd-status-pulse {
-          position: absolute;
-          top: 18px;
-          right: 18px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #51a783;
-          box-shadow: 0 0 0 5px #e9f6ef;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 1px;
         }
 
         /* =========================================
-           DASHBOARD COLUMNS
+           SECTION LABELS
         ========================================= */
 
-        .sd-dashboard-grid {
-          display: grid;
-          grid-template-columns:
-            minmax(0, 1fr)
-            minmax(340px, 410px);
-          align-items: start;
-          gap: 32px;
-        }
-
-        .sd-left-column,
-        .sd-right-column {
-          display: flex;
-          flex-direction: column;
-          gap: 34px;
-          min-width: 0;
-        }
-
-        .sd-section-block {
-          min-width: 0;
-        }
-
-        .sd-section-heading {
+        .ad-section-title {
           display: flex;
           align-items: flex-end;
           justify-content: space-between;
-          gap: 14px;
-          margin-bottom: 20px;
+          gap: 15px;
+          margin-bottom: 18px;
         }
 
-        .sd-section-eyebrow {
-          color: #b08a46;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 1.7px;
+        .ad-section-title > div > span {
+          display: block;
+          margin-bottom: 7px;
+
+          color: #a17c3d;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1.6px;
         }
 
-        .sd-section-heading h2 {
-          margin: 9px 0 7px;
+        .ad-section-title h2 {
+          margin: 0;
           color: var(--navy);
-          font-size: 28px;
+          font-size: 24px;
+          font-weight: 850;
           letter-spacing: -.6px;
         }
 
-        .sd-section-heading p {
-          margin: 0;
-          color: #898fa2;
-          font-size: 14px;
-          line-height: 1.7;
+        .ad-section-title p {
+          margin: 6px 0 0;
+          color: var(--muted);
+          font-size: 12px;
+          line-height: 1.6;
         }
 
-        .sd-text-link {
+        .ad-text-link {
           display: inline-flex;
           align-items: center;
           gap: 7px;
           flex-shrink: 0;
-          color: #8b6a2e !important;
-          font-size: 14px !important;
-          font-weight: 750 !important;
-          transition:
-            color .35s ease,
-            gap .35s ease,
-            transform .35s ease;
+
+          color: var(--navy);
+          font-size: 12px;
+          font-weight: 800;
+
+          transition: .25s ease;
         }
 
-        .sd-text-link:hover {
-          gap: 10px;
-          color: #b18438 !important;
+        .ad-text-link:hover {
+          gap: 12px;
+          color: #a47b35;
+        }
+
+        /* =========================================
+           OVERVIEW CAPSULES
+        ========================================= */
+
+        .ad-overview {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0,1fr));
+          gap: 17px;
+          margin: 23px 0 34px;
+        }
+
+        .ad-overview-card {
+          position: relative;
+          overflow: hidden;
+
+          min-height: 124px;
+          padding: 21px;
+
+          display: flex;
+          align-items: center;
+          gap: 16px;
+
+          border: 1px solid var(--border);
+          border-radius: 20px;
+
+          background: rgba(255,255,255,.91);
+
+          box-shadow: 0 6px 18px rgba(32,41,69,.06);
+
+          transition:
+            transform .35s cubic-bezier(.2,.8,.2,1),
+            box-shadow .35s ease,
+            border-color .35s ease;
+
+          animation: cardEnter .65s both;
+        }
+
+        .ad-overview-card:nth-child(2) {
+          animation-delay: .1s;
+        }
+
+        .ad-overview-card:nth-child(3) {
+          animation-delay: .2s;
+        }
+
+        @keyframes cardEnter {
+          from {
+            opacity: 0;
+            transform: translateY(17px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .ad-overview-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 14px 28px rgba(32,41,69,.11);
+          border-color: #c3cddd;
+        }
+
+        .ad-overview-icon {
+          width: 53px;
+          height: 53px;
+          flex-shrink: 0;
+
+          display: grid;
+          place-items: center;
+
+          border-radius: 17px;
+        }
+
+        .ad-overview-icon.gold {
+          color: #a27a32;
+          background: var(--gold-light);
+        }
+
+        .ad-overview-icon.blue {
+          color: var(--blue-dark);
+          background: var(--blue-light);
+        }
+
+        .ad-overview-icon.mint {
+          color: var(--mint-dark);
+          background: var(--mint);
+        }
+
+        .ad-overview-copy {
+          min-width: 0;
+        }
+
+        .ad-overview-copy span {
+          display: block;
+          margin-bottom: 6px;
+
+          color: var(--muted);
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        .ad-overview-copy strong {
+          display: block;
+          color: var(--navy);
+          font-size: 18px;
+          font-weight: 850;
+          line-height: 1.3;
+          overflow-wrap: anywhere;
+        }
+
+        .ad-overview-copy small {
+          display: block;
+          margin-top: 5px;
+          color: var(--muted);
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .ad-overview-check {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          color: #4caa7c;
+        }
+
+        /* =========================================
+           MAIN WORKSPACE
+        ========================================= */
+
+        .ad-workspace {
+          display: grid;
+          grid-template-columns:
+            minmax(0, 1.65fr)
+            minmax(290px, .8fr);
+          gap: 23px;
+          align-items: start;
+        }
+
+        .ad-primary-column,
+        .ad-side-column {
+          display: flex;
+          flex-direction: column;
+          gap: 28px;
+          min-width: 0;
+        }
+
+        /* =========================================
+           PANEL SURFACE
+        ========================================= */
+
+        .ad-panel {
+          min-width: 0;
+          padding: 24px;
+
+          border: 1px solid #d9dfeb;
+          border-radius: 21px;
+
+          background: rgba(255,255,255,.93);
+
+          box-shadow:
+            0 7px 22px rgba(32,41,69,.07),
+            inset 0 1px rgba(255,255,255,.9);
+
+          transition:
+            transform .3s ease,
+            box-shadow .3s ease,
+            border-color .3s ease;
+        }
+
+        .ad-panel:hover {
+          border-color: #c5cede;
+          box-shadow: 0 13px 29px rgba(32,41,69,.10);
         }
 
         /* =========================================
            TODAY'S TIMETABLE
         ========================================= */
 
-        .sd-today-routine {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 19px;
-        }
-
-        .sd-today-section {
-          min-width: 0;
-          padding: 23px;
-          border: 1px solid #e8eaf1;
-          border-radius: 19px;
-          background: rgba(255, 255, 255, .78);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
-        }
-
-        .sd-today-section:hover {
-          transform: translateY(-2px);
-          border-color: rgba(193, 154, 82, .42);
-          box-shadow: 0 14px 30px rgba(32, 41, 69, .08);
-        }
-
-        .sd-today-section-heading {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 9px;
-          margin-bottom: 13px;
-        }
-
-        .sd-today-section-heading strong {
-          color: var(--navy);
-          font-size: 15px;
-        }
-
-        .sd-today-section-heading span {
-          padding: 7px 11px;
-          color: #94702f;
-          background: #fbf4e7;
-          border-radius: 7px;
-          font-size: 11px;
-          font-weight: 800;
-          white-space: nowrap;
-        }
-
-        .sd-today-class-list {
-          display: grid;
-          gap: 10px;
-        }
-
-        .sd-today-class {
-          display: grid;
-          grid-template-columns: 78px minmax(0, 1fr);
-          gap: 14px;
-          padding: 16px 0;
-          border-top: 1px solid #f0f1f5;
-          border-radius: 10px;
-          transition:
-            padding .35s ease,
-            background .35s ease;
-        }
-
-        .sd-today-class:hover {
-          padding-left: 4px;
-          background: rgba(238, 241, 250, .65);
-        }
-
-        .sd-today-class-time {
-          display: grid;
-          align-content: start;
-          gap: 5px;
-          color: #8e692b;
-          font-size: 13px;
-          font-weight: 800;
-        }
-
-        .sd-today-class-time small {
-          color: #8b91a3;
-          font-size: 11px;
-          font-weight: 500;
-        }
-
-        .sd-today-class strong {
-          color: #303752;
-          font-size: 14px;
-        }
-
-        .sd-today-class p {
-          margin: 5px 0;
-          color: #747c91;
-          font-size: 13px;
-          line-height: 1.5;
-        }
-
-        .sd-today-class div > small {
-          color: #9096a7;
-          font-size: 12px;
-        }
-
-        .sd-no-classes {
-          padding: 19px 0 7px;
-          margin: 0;
-          color: #7e879b;
-          font-size: 14px;
-          line-height: 1.7;
-        }
-
-        /* =========================================
-           DATE PANEL
-        ========================================= */
-
-        .sd-date-panel {
-          position: relative;
-          padding: 29px;
-          overflow: hidden;
-          border: 1px solid #e8eaf1;
-          border-radius: 22px;
-          background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, .84),
-            rgba(252, 250, 245, .72)
-          );
-          box-shadow: 0 11px 30px rgba(32, 41, 69, .06);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
-        }
-
-        .sd-date-panel::after {
-          position: absolute;
-          top: -40px;
-          right: -35px;
-          width: 130px;
-          height: 130px;
-          border: 1px solid #f0e3c9;
-          border-radius: 50%;
-          content: "";
-        }
-
-        .sd-date-panel:hover {
-          transform: translateY(-2px);
-          border-color: rgba(193, 154, 82, .38);
-          box-shadow: 0 16px 32px rgba(32, 41, 69, .09);
-        }
-
-        .sd-date-top {
-          position: relative;
-          z-index: 1;
+        .ad-routine-heading {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
+          margin-bottom: 19px;
         }
 
-        .sd-date-top > span {
-          color: #a27b37;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 1.7px;
-        }
-
-        .sd-date-icon {
-          display: grid;
-          place-items: center;
-          width: 49px;
-          height: 49px;
-          border-radius: 13px;
-          color: #a57e39;
-          background: #f7edd9;
-        }
-
-        .sd-date-content {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          margin-top: 25px;
-        }
-
-        .sd-date-number {
-          display: grid;
-          place-items: center;
-          width: 100px;
-          height: 110px;
-          flex-shrink: 0;
-          border-radius: 20px;
-          color: white;
-          background: var(--navy);
-          box-shadow: 0 9px 20px #20294525;
-        }
-
-        .sd-date-number strong {
-          font-size: 46px;
-          line-height: 1;
-          letter-spacing: -1px;
-        }
-
-        .sd-date-number span {
-          margin-top: -8px;
-          color: #e5c986;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 1.3px;
-          text-transform: uppercase;
-        }
-
-        .sd-date-copy {
-          min-width: 0;
-        }
-
-        .sd-date-copy h3 {
-          margin: 0 0 7px;
-          color: var(--navy);
-          font-size: 21px;
-          line-height: 1.4;
-        }
-
-        .sd-date-copy p {
-          margin: 0 0 5px;
-          color: #858ba0;
-          font-size: 13px;
-          line-height: 1.7;
-        }
-
-        .sd-date-footer {
+        .ad-routine-date {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-top: 23px;
-          padding-top: 15px;
-          border-top: 1px solid #eee8dc;
-          color: #687e70;
-          font-size: 13px;
+
+          padding: 8px 12px;
+
+          color: var(--navy-2);
+          background: #eef1f8;
+
+          border: 1px solid #e1e5ef;
+          border-radius: 30px;
+
+          font-size: 10px;
+          font-weight: 750;
         }
 
-        .sd-date-footer svg {
-          color: #4f9b7b;
+        .ad-routine-sections {
+          display: grid;
+          grid-template-columns: repeat(2,minmax(0,1fr));
+          gap: 14px;
+        }
+
+        .ad-section-card {
+          min-width: 0;
+          padding: 17px;
+
+          border: 1px solid #dfe4ee;
+          border-radius: 17px;
+
+          background: linear-gradient(
+            145deg,
+            #ffffff,
+            #f8f9fc
+          );
+
+          transition: .3s ease;
+        }
+
+        .ad-section-card:hover {
+          transform: translateY(-3px);
+          border-color: #c3cde0;
+          box-shadow: 0 9px 20px rgba(32,41,69,.07);
+        }
+
+        .ad-section-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+
+          padding-bottom: 13px;
+          border-bottom: 1px solid #e9edf3;
+        }
+
+        .ad-section-card-header strong {
+          color: var(--navy);
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .ad-class-count {
+          padding: 6px 9px;
+          border-radius: 30px;
+          color: #8e6b2d;
+          background: #f9efd9;
+          font-size: 9px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        .ad-class-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ad-class-item {
+          display: grid;
+          grid-template-columns: 73px minmax(0,1fr);
+          gap: 12px;
+
+          padding: 15px 0;
+
+          border-bottom: 1px solid #edf0f5;
+        }
+
+        .ad-class-item:last-child {
+          border-bottom: none;
+          padding-bottom: 2px;
+        }
+
+        .ad-class-time {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+
+          color: #997535;
+          font-size: 10px;
+          font-weight: 850;
+        }
+
+        .ad-class-time small {
+          color: var(--muted);
+          font-size: 9px;
+          font-weight: 600;
+        }
+
+        .ad-class-details {
+          min-width: 0;
+        }
+
+        .ad-class-details strong {
+          display: block;
+          color: var(--navy);
+          font-size: 12px;
+          font-weight: 850;
+        }
+
+        .ad-class-details p {
+          margin: 5px 0;
+          color: #50596f;
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
+        .ad-class-details small {
+          display: inline-block;
+          padding: 5px 8px;
+          border-radius: 7px;
+
+          color: #59745f;
+          background: #eaf5ed;
+
+          font-size: 9px;
+          font-weight: 700;
+          line-height: 1.5;
+        }
+
+        .ad-empty-classes {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          min-height: 100px;
+
+          color: var(--muted);
+          font-size: 11px;
+          line-height: 1.7;
+        }
+
+        .ad-empty-classes svg {
+          flex-shrink: 0;
+          color: var(--gold);
+        }
+
+        /* =========================================
+           DATE WIDGET
+        ========================================= */
+
+        .ad-date-widget {
+          position: relative;
+          overflow: hidden;
+
+          padding: 24px;
+
+          border: 1px solid #e5d9bd;
+          border-radius: 21px;
+
+          background:
+            radial-gradient(
+              circle at 100% 0%,
+              rgba(193,154,82,.15),
+              transparent 42%
+            ),
+            linear-gradient(
+              145deg,
+              #fffdf8,
+              #f7efdf
+            );
+
+          box-shadow: 0 9px 23px rgba(32,41,69,.07);
+
+          transition: .3s ease;
+        }
+
+        .ad-date-widget:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 14px 27px rgba(32,41,69,.11);
+        }
+
+        .ad-date-widget-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .ad-date-widget-top > span {
+          color: #98753c;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1.5px;
+        }
+
+        .ad-date-widget-icon {
+          width: 42px;
+          height: 42px;
+          display: grid;
+          place-items: center;
+
+          color: #a47d39;
+          background: #f5e9cf;
+          border: 1px solid #e8d9b8;
+          border-radius: 14px;
+        }
+
+        .ad-date-main {
+          display: flex;
+          align-items: center;
+          gap: 17px;
+          margin-top: 20px;
+        }
+
+        .ad-date-number {
+          width: 78px;
+          height: 83px;
+          flex-shrink: 0;
+
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 5px;
+
+          color: white;
+          background: linear-gradient(
+            145deg,
+            #303b5d,
+            #17213e
+          );
+
+          border-radius: 16px;
+
+          box-shadow: 0 7px 16px rgba(32,41,69,.22);
+        }
+
+        .ad-date-number strong {
+          font-size: 34px;
+          line-height: 1;
+          font-weight: 900;
+        }
+
+        .ad-date-number span {
+          color: #e8c982;
+          font-size: 10px;
+          font-weight: 850;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+        }
+
+        .ad-date-copy h3 {
+          margin: 0 0 6px;
+          color: var(--navy);
+          font-size: 18px;
+          font-weight: 850;
+        }
+
+        .ad-date-copy p {
+          margin: 0 0 5px;
+          color: #777f91;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .ad-date-footer {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          margin-top: 20px;
+          padding-top: 15px;
+
+          border-top: 1px solid #e9dfcb;
+
+          color: #54816b;
+          font-size: 10px;
+          font-weight: 700;
         }
 
         /* =========================================
            CALENDAR
         ========================================= */
 
-        .sd-calendar-panel {
-          padding: 29px;
-          border: 1px solid #e8eaf1;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, .78);
-          box-shadow: 0 11px 30px rgba(32, 41, 69, .06);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
+        .ad-calendar-panel {
+          padding: 22px;
+
+          border: 1px solid #d9dfeb;
+          border-radius: 21px;
+
+          background: white;
+
+          box-shadow: 0 8px 23px rgba(32,41,69,.07);
         }
 
-        .sd-calendar-panel:hover {
-          transform: translateY(-2px);
-          border-color: rgba(193, 154, 82, .38);
-          box-shadow: 0 16px 32px rgba(32, 41, 69, .09);
-        }
-
-        .sd-calendar-heading {
+        .ad-calendar-header {
           display: flex;
-          align-items: center;
           justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-
-        .sd-calendar-heading span,
-        .sd-calendar-selected span {
-          color: #a77e36;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 1.6px;
-        }
-
-        .sd-calendar-heading h3 {
-          margin: 6px 0 0;
-          color: #252c43;
-          font-size: 23px;
-        }
-
-        .sd-calendar-heading button {
-          padding: 9px 12px;
-          border: 1px solid #f0e3c9;
-          border-radius: 9px;
-          color: #8a6528;
-          background: #fbf4e7;
-          font-size: 12px;
-          font-weight: 700;
-          transition: all .35s ease;
-        }
-
-        .sd-calendar-heading button:hover {
-          transform: translateY(-1px);
-          background: #f2e8d6;
-          border-color: #d9bd83;
-        }
-
-        .sd-calendar-controls {
-          display: grid;
-          grid-template-columns: 38px minmax(0, 1fr) 86px 38px;
-          gap: 7px;
+          align-items: center;
+          gap: 10px;
           margin-bottom: 18px;
         }
 
-        .sd-calendar-controls button {
-          border: 1px solid #e9ebf1;
-          border-radius: 9px;
-          color: #29324f;
-          background: #f8f9fc;
-          font-size: 22px;
-          transition: all .35s ease;
+        .ad-calendar-header span {
+          display: block;
+          margin-bottom: 5px;
+
+          color: #a17c3d;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 1.4px;
         }
 
-        .sd-calendar-controls button:hover {
-          transform: translateY(-1px);
-          background: #f2e8d6;
-          border-color: #d9bd83;
+        .ad-calendar-header h3 {
+          margin: 0;
+          color: var(--navy);
+          font-size: 19px;
+          font-weight: 850;
         }
 
-        .sd-calendar-controls select {
-          min-width: 0;
-          padding: 9px 6px;
-          border: 1px solid #e9ebf1;
-          border-radius: 9px;
-          color: #343b57;
-          background: rgba(255, 255, 255, .82);
-          font-size: 12px;
-        }
+        .ad-today-button {
+          padding: 7px 11px;
+          border: 1px solid #e6d5ae;
+          border-radius: 30px;
 
-        .sd-calendar-controls select:hover {
-          border-color: #c19a52;
-        }
+          color: #987333;
+          background: #fcf5e8;
 
-        .sd-calendar-grid {
-          display: grid;
-          grid-template-columns: repeat(7, minmax(0, 1fr));
-          gap: 5px;
-          text-align: center;
-        }
-
-        .sd-calendar-weekdays {
-          margin-bottom: 9px;
-          color: #8a91a5;
-          font-size: 13px;
+          font-size: 10px;
           font-weight: 800;
+
+          transition: .2s ease;
         }
 
-        .sd-calendar-weekdays span {
-          padding: 7px 0;
+        .ad-today-button:hover {
+          color: white;
+          background: var(--navy);
+          border-color: var(--navy);
         }
 
-        .sd-calendar-days button,
-        .sd-calendar-blank {
+        .ad-calendar-controls {
+          display: grid;
+          grid-template-columns: 34px minmax(0,1fr) minmax(0,.8fr) 34px;
+          gap: 7px;
+          margin-bottom: 17px;
+        }
+
+        .ad-calendar-controls button {
+          width: 34px;
+          height: 34px;
+
+          border: 1px solid #e1e5ed;
+          border-radius: 10px;
+
+          color: var(--navy);
+          background: #f7f8fb;
+
+          font-size: 20px;
+          line-height: 1;
+
+          transition: .2s ease;
+        }
+
+        .ad-calendar-controls button:hover {
+          color: white;
+          background: var(--navy);
+        }
+
+        .ad-calendar-controls select {
+          width: 100%;
+          min-width: 0;
+          padding: 0 7px;
+
+          border: 1px solid #e1e5ed;
+          border-radius: 9px;
+
+          color: var(--navy);
+          background: #f7f8fb;
+
+          font-size: 10px;
+          font-weight: 700;
+          outline: none;
+        }
+
+        .ad-calendar-controls select:focus {
+          border-color: var(--gold);
+        }
+
+        .ad-calendar-grid {
+          display: grid;
+          grid-template-columns: repeat(7,minmax(0,1fr));
+          gap: 5px;
+        }
+
+        .ad-calendar-weekdays {
+          margin-bottom: 8px;
+        }
+
+        .ad-calendar-weekdays span {
           display: grid;
           place-items: center;
+          height: 28px;
+
+          color: #9299a9;
+          font-size: 9px;
+          font-weight: 850;
+        }
+
+        .ad-calendar-days button,
+        .ad-calendar-blank {
+          width: 100%;
           aspect-ratio: 1;
           min-width: 0;
-          border: 1px solid transparent;
-          border-radius: 11px;
-          color: #3a415c;
-          background: transparent;
-          font-size: 13px;
-        }
 
-        .sd-calendar-days button {
-          transition:
-            transform .35s ease,
-            background .35s ease,
-            box-shadow .35s ease;
-        }
-
-        .sd-calendar-days button:hover {
-          transform: translateY(-1px);
-          background: #f4ead7;
-          box-shadow: 0 5px 12px rgba(32, 41, 69, .08);
-        }
-
-        .sd-calendar-days button.is-today {
-          border-color: #c19a52;
-          color: #946c27;
-          font-weight: 800;
-        }
-
-        .sd-calendar-days button.is-selected {
-          border-color: #202945;
-          color: white;
-          background: #202945;
-          box-shadow: 0 5px 12px #20294530;
-        }
-
-        .sd-calendar-days button.is-selected:hover {
-          color: white;
-          background: #303b5d;
-        }
-
-        .sd-calendar-selected {
-          display: grid;
-          gap: 7px;
-          margin-top: 17px;
-          padding-top: 16px;
-          border-top: 1px solid #eef0f5;
-        }
-
-        .sd-calendar-selected strong {
-          color: #333a55;
-          font-size: 14px;
-        }
-
-        /* =========================================
-           MARKS CARDS
-        ========================================= */
-
-        .sd-marks-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 19px;
-        }
-
-        .sd-mark-card {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          min-width: 0;
-          padding: 27px;
-          border: 1px solid #e8eaf1;
-          border-radius: 20px;
-          text-align: left;
-          background: rgba(255, 255, 255, .78);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
-        }
-
-        .sd-mark-card:hover {
-          transform: translateY(-2px);
-          border-color: #d9bd83;
-          box-shadow: 0 17px 35px rgba(32, 41, 69, .11);
-        }
-
-        .sd-mark-icon {
           display: grid;
           place-items: center;
-          width: 54px;
-          height: 54px;
-          margin-bottom: 19px;
-          border-radius: 14px;
-          transition: transform .35s ease;
+
+          border-radius: 10px;
         }
 
-        .ca-card .sd-mark-icon {
-          color: #a57c35;
-          background: #faf1e1;
+        .ad-calendar-days button {
+          border: 1px solid transparent;
+          color: #4d566c;
+          background: transparent;
+
+          font-size: 10px;
+          font-weight: 650;
+
+          transition: .2s ease;
         }
 
-        .uni-card .sd-mark-icon {
-          color: #5974a7;
-          background: #eef2fb;
+        .ad-calendar-days button:hover {
+          color: var(--navy);
+          background: #f2f4fa;
+          border-color: #dfe4ee;
+          transform: scale(1.07);
         }
 
-        .sd-mark-kicker {
-          color: #9a9fb0;
-          font-size: 11px;
-          font-weight: 800;
+        .ad-calendar-days button.is-today {
+          border: 1px solid #c6a35e;
+          color: #997333;
+          background: #fbf4e7;
+          font-weight: 900;
+        }
+
+        .ad-calendar-days button.is-selected {
+          color: white;
+          background: var(--navy);
+          border-color: var(--navy);
+          box-shadow: 0 4px 10px rgba(32,41,69,.22);
+        }
+
+        .ad-calendar-days button.is-selected:hover {
+          color: white;
+          background: var(--navy-2);
+        }
+
+        .ad-selected-date {
+          margin-top: 17px;
+          padding: 13px;
+
+          border: 1px solid #dce5f3;
+          border-radius: 12px;
+
+          background: #f3f6fc;
+        }
+
+        .ad-selected-date span {
+          display: block;
+          margin-bottom: 6px;
+
+          color: #7082a8;
+          font-size: 9px;
+          font-weight: 900;
           letter-spacing: 1px;
         }
 
-        .sd-mark-card > strong {
-          margin-top: 8px;
+        .ad-selected-date strong {
           color: var(--navy);
-          font-size: 20px;
+          font-size: 11px;
+          line-height: 1.6;
         }
 
-        .sd-mark-card > p {
-          margin: 9px 0 18px;
-          color: #858ba0;
-          font-size: 14px;
+        /* =========================================
+           MARKS SECTION
+        ========================================= */
+
+        .ad-marks-section {
+          margin-top: 31px;
+        }
+
+        .ad-marks-grid {
+          display: grid;
+          grid-template-columns: repeat(2,minmax(0,1fr));
+          gap: 17px;
+        }
+
+        .ad-mark-card {
+          position: relative;
+          overflow: hidden;
+
+          min-height: 230px;
+          padding: 24px;
+
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          text-align: left;
+
+          border: 1px solid #dce1ec;
+          border-radius: 21px;
+
+          background: white;
+
+          box-shadow: 0 7px 20px rgba(32,41,69,.06);
+
+          transition:
+            transform .35s cubic-bezier(.2,.8,.2,1),
+            box-shadow .35s ease,
+            border-color .35s ease;
+        }
+
+        .ad-mark-card::after {
+          content: "";
+          position: absolute;
+          width: 150px;
+          height: 150px;
+          right: -65px;
+          bottom: -85px;
+          border-radius: 50%;
+          background: rgba(193,154,82,.09);
+          transition: .4s ease;
+        }
+
+        .ad-mark-card:hover {
+          transform: translateY(-7px);
+          box-shadow: 0 16px 30px rgba(32,41,69,.12);
+          border-color: #c1cada;
+        }
+
+        .ad-mark-card:hover::after {
+          transform: scale(1.7);
+        }
+
+        .ad-mark-card.ca {
+          border-top: 4px solid #c19a52;
+          background: linear-gradient(
+            145deg,
+            #fffefa,
+            #fbf7ed
+          );
+        }
+
+        .ad-mark-card.university {
+          border-top: 4px solid #7186c1;
+          background: linear-gradient(
+            145deg,
+            #ffffff,
+            #f1f4fc
+          );
+        }
+
+        .ad-mark-icon {
+          width: 52px;
+          height: 52px;
+
+          display: grid;
+          place-items: center;
+
+          margin-bottom: 19px;
+
+          border-radius: 17px;
+        }
+
+        .ad-mark-card.ca .ad-mark-icon {
+          color: #a47c35;
+          background: #f7ecd3;
+        }
+
+        .ad-mark-card.university .ad-mark-icon {
+          color: #5872ad;
+          background: #e3eafa;
+        }
+
+        .ad-mark-kicker {
+          color: #9a7a44;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 1.2px;
+        }
+
+        .ad-mark-card > strong {
+          margin-top: 8px;
+          color: var(--navy);
+          font-size: 21px;
+          font-weight: 900;
+        }
+
+        .ad-mark-card > p {
+          margin: 9px 0 19px;
+          color: #777f91;
+          font-size: 11px;
           line-height: 1.7;
         }
 
-        .sd-mark-action {
+        .ad-mark-action {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
+          gap: 8px;
+
           margin-top: auto;
-          color: #92702f;
-          font-size: 14px;
-          font-weight: 750;
+
+          color: var(--navy);
+          font-size: 11px;
+          font-weight: 850;
+
+          transition: .25s ease;
         }
 
-        .sd-demo-disclaimer {
+        .ad-mark-card:hover .ad-mark-action {
+          gap: 13px;
+          color: #a47c35;
+        }
+
+        .ad-disclaimer {
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          margin: 12px 0 0;
-          color: #9298a8;
-          font-size: 11px;
-          line-height: 1.7;
-        }
 
-        .sd-demo-disclaimer svg {
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
+          margin: 14px 0 0;
 
-        /* =========================================
-           ANNOUNCEMENTS
-        ========================================= */
-
-        .sd-announcement-list {
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          border: 1px solid #e8eaf1;
-          border-radius: 17px;
-          background: rgba(255, 255, 255, .78);
-          backdrop-filter: blur(14px);
-        }
-
-        .sd-announcement {
-          display: flex;
-          align-items: flex-start;
-          gap: 17px;
-          padding: 23px;
-          border-bottom: 1px solid #f0f1f5;
-          animation: sdRise .4s ease both;
-          animation-delay: calc(var(--announcement-index) * 70ms);
-          transition:
-            background .35s ease,
-            transform .35s ease;
-        }
-
-        .sd-announcement:hover {
-          background: #f5f6fc;
-          transform: translateX(2px);
-        }
-
-        .sd-announcement:last-child {
-          border-bottom: 0;
-        }
-
-        .sd-announcement-icon {
-          display: grid;
-          place-items: center;
-          width: 49px;
-          height: 49px;
-          flex-shrink: 0;
-          border-radius: 15px;
-          transition: transform .35s ease;
-        }
-
-        .ann-0 {
-          color: #a57d35;
-          background: #faf1e1;
-        }
-
-        .ann-1 {
-          color: #5673a8;
-          background: #eef2fb;
-        }
-
-        .ann-2 {
-          color: #4c9277;
-          background: #eaf5ef;
-        }
-
-        .sd-announcement-body {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .sd-announcement-meta {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 9px;
-        }
-
-        .sd-announcement-meta span {
-          color: #a17c38;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: .8px;
-        }
-
-        .sd-announcement-meta small {
-          color: #a0a5b3;
-          font-size: 12px;
-        }
-
-        .sd-announcement h3 {
-          margin: 7px 0 5px;
-          color: var(--navy);
-          font-size: 15px;
-          line-height: 1.5;
-        }
-
-        .sd-announcement p {
-          margin: 0;
           color: #858ba0;
-          font-size: 13px;
+          font-size: 10px;
           line-height: 1.7;
         }
 
-        .sd-announcement-arrow {
+        .ad-disclaimer svg {
           flex-shrink: 0;
-          margin-top: 12px;
-          color: #a5aabb;
+          color: var(--mint-dark);
         }
 
         /* =========================================
-           SECURITY STRIP AND FOOTER
+           SECURITY STRIP
         ========================================= */
 
-        .sd-bottom-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 15px;
+        .ad-security {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+
           margin-top: 30px;
-        }
+          padding: 22px 25px;
 
-        .sd-security-strip {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          min-width: 0;
-          padding: 25px;
-          border: 1px solid #e8eaf1;
+          border: 1px solid #cbd4e6;
           border-radius: 19px;
-          background: rgba(255, 255, 255, .78);
-          backdrop-filter: blur(14px);
-          transition:
-            transform .38s ease,
-            box-shadow .38s ease,
-            border-color .38s ease;
+
+          background: linear-gradient(
+            110deg,
+            #202945,
+            #303d62
+          );
+
+          color: white;
+
+          box-shadow: 0 8px 20px rgba(32,41,69,.13);
+
+          transition: .3s ease;
         }
 
-        .sd-security-strip:hover {
-          transform: translateY(-2px);
-          border-color: rgba(78, 150, 122, .4);
-          box-shadow: 0 14px 30px rgba(32, 41, 69, .09);
+        .ad-security:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 13px 26px rgba(32,41,69,.18);
         }
 
-        .sd-security-icon {
+        .ad-security-icon {
+          width: 51px;
+          height: 51px;
+          flex-shrink: 0;
+
           display: grid;
           place-items: center;
-          width: 53px;
-          height: 53px;
-          flex-shrink: 0;
-          border-radius: 13px;
-          color: #4b9277;
-          background: #eaf5ef;
+
+          color: #e8ca8c;
+          background: rgba(255,255,255,.1);
+
+          border: 1px solid rgba(255,255,255,.14);
+          border-radius: 16px;
         }
 
-        .sd-security-strip strong {
-          color: var(--navy);
-          font-size: 15px;
-        }
-
-        .sd-security-strip p {
-          margin: 6px 0 0;
-          color: #858ba0;
+        .ad-security-copy strong {
+          display: block;
+          color: white;
           font-size: 13px;
+          font-weight: 850;
+        }
+
+        .ad-security-copy p {
+          margin: 6px 0 0;
+          color: rgba(255,255,255,.69);
+          font-size: 10px;
           line-height: 1.7;
         }
 
-        .sd-footer {
+        .ad-security-badge {
+          margin-left: auto;
+          flex-shrink: 0;
+
+          display: flex;
+          align-items: center;
+          gap: 7px;
+
+          padding: 9px 13px;
+
+          color: #b9e7cf;
+          background: rgba(89,178,130,.14);
+
+          border: 1px solid rgba(130,210,163,.23);
+          border-radius: 30px;
+
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
+        .ad-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
           gap: 15px;
-          padding: 32px 2px 8px;
-          color: #858da2;
-          font-size: 13px;
+
+          margin-top: 27px;
+          padding: 19px 5px 5px;
+
+          border-top: 1px solid rgba(32,41,69,.12);
+
+          color: #858ba0;
+          font-size: 10px;
         }
 
-        .sd-footer button {
+        .ad-footer button {
           display: inline-flex;
           align-items: center;
           gap: 7px;
-          padding: 0;
-          border: 0;
-          color: #737b91;
-          background: transparent;
-          font-size: 13px;
-          transition:
-            color .35s ease,
-            transform .35s ease;
+
+          padding: 9px 15px;
+
+          color: var(--navy);
+          background: white;
+
+          border: 1px solid #dce1ec;
+          border-radius: 30px;
+
+          font-size: 10px;
+          font-weight: 800;
+
+          transition: .25s ease;
         }
 
-        .sd-footer button:hover {
-          color: #a47a32;
-          transform: translateY(-1px);
-        }
-
-        .sd-footer-star {
-          color: #b48b45;
+        .ad-footer button:hover {
+          color: white;
+          background: var(--navy);
+          transform: translateY(-2px);
         }
 
         /* =========================================
            HELP PANEL
         ========================================= */
 
-        .sd-help-panel {
+        .ad-help-panel {
           position: fixed;
-          right: 24px;
-          bottom: 24px;
-          z-index: 80;
-          width: min(360px, calc(100vw - 32px));
-          padding: 22px;
-          border: 1px solid #e8eaf1;
-          border-radius: 18px;
+          z-index: 100;
+          right: 25px;
+          bottom: 25px;
+
+          width: min(350px, calc(100vw - 30px));
+
+          padding: 21px;
+
+          border: 1px solid #d9dfeb;
+          border-radius: 19px;
+
           background: white;
-          box-shadow: 0 20px 60px #18244225;
-          animation: sdRise .25s ease both;
+
+          box-shadow: 0 18px 50px rgba(32,41,69,.2);
+
+          animation: helpEnter .3s ease both;
         }
 
-        .sd-help-panel-header {
+        @keyframes helpEnter {
+          from {
+            opacity: 0;
+            transform: translateY(15px) scale(.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .ad-help-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 12px;
+          gap: 10px;
         }
 
-        .sd-help-panel h3 {
+        .ad-help-header h3 {
           margin: 0;
           color: var(--navy);
-          font-size: 17px;
+          font-size: 18px;
+          font-weight: 850;
         }
 
-        .sd-help-panel p {
-          color: #778197;
-          font-size: 13px;
-          line-height: 1.7;
-        }
-
-        .sd-help-panel .sd-icon-button {
+        .ad-help-close {
           width: 34px;
           height: 34px;
+          display: grid;
+          place-items: center;
+
+          color: var(--navy);
+          background: #f0f2f7;
+          border: none;
+          border-radius: 10px;
+        }
+
+        .ad-help-panel p {
+          margin: 15px 0;
+          color: #777f91;
+          font-size: 12px;
+          line-height: 1.8;
+        }
+
+        .ad-help-done {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+
+          padding: 9px 15px;
+
+          color: white;
+          background: var(--navy);
+          border: none;
+          border-radius: 30px;
+
+          font-size: 11px;
+          font-weight: 800;
         }
 
         /* =========================================
-           FOCUS ACCESSIBILITY
+           ACCESSIBILITY
         ========================================= */
 
-        .sd-app button:focus-visible,
-        .sd-app a:focus-visible,
-        .sd-app select:focus-visible {
-          outline: 3px solid rgba(193, 154, 82, .65);
-          outline-offset: 3px;
-        }
-
-        .sd-mini-avatar-button:focus-visible {
-          outline: 3px solid #c19a52;
+        .academic-dashboard button:focus-visible,
+        .academic-dashboard a:focus-visible,
+        .academic-dashboard select:focus-visible {
+          outline: 3px solid rgba(193,154,82,.7);
           outline-offset: 3px;
         }
 
         /* =========================================
-           TABLET RESPONSIVENESS
+           LARGE SCREENS
         ========================================= */
 
-        @media (max-width: 1150px) {
-          .sd-content {
-            padding: 32px 27px;
+        @media (min-width: 1450px) {
+          .ad-content {
+            padding-left: 48px;
+            padding-right: 48px;
           }
 
-          .sd-dashboard-grid {
+          .ad-hero {
+            min-height: 290px;
+          }
+
+          .ad-panel {
+            padding: 28px;
+          }
+        }
+
+        /* =========================================
+           TABLET
+        ========================================= */
+
+        @media (max-width: 1050px) {
+          .ad-content {
+            padding: 23px 23px 30px;
+          }
+
+          .ad-topbar {
+            padding: 0 23px;
+          }
+
+          .ad-hero {
+            padding: 35px;
+          }
+
+          .ad-hero-art {
+            width: 145px;
+            height: 145px;
+          }
+
+          .ad-hero-book {
+            width: 85px;
+            height: 85px;
+          }
+
+          .ad-workspace {
             grid-template-columns:
-              minmax(0, 1fr)
-              minmax(290px, 340px);
-            gap: 22px;
+              minmax(0,1fr)
+              minmax(270px,.8fr);
+            gap: 17px;
           }
 
-          .sd-welcome {
-            padding: 36px;
+          .ad-panel {
+            padding: 19px;
           }
 
-          .sd-welcome-art {
-            margin-right: 10px;
-            transform: scale(.9);
-          }
-
-          .sd-stat-card {
-            padding: 20px;
-          }
-
-          .sd-date-panel,
-          .sd-calendar-panel {
-            padding: 22px;
+          .ad-section-card {
+            padding: 13px;
           }
         }
 
-        @media (max-width: 850px) {
-          .sd-topbar {
-            padding: 0 20px;
+        @media (max-width: 820px) {
+          .ad-workspace {
+            grid-template-columns: 1fr;
           }
 
-          .sd-dashboard-grid {
-            grid-template-columns: minmax(0, 1fr);
-          }
-
-          .sd-right-column {
+          .ad-side-column {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2,minmax(0,1fr));
             align-items: start;
           }
 
-          .sd-calendar-panel {
+          .ad-calendar-panel {
             grid-column: span 2;
           }
 
-          .sd-welcome-art {
-            width: 120px;
-            height: 120px;
-            flex-basis: 120px;
+          .ad-date-widget {
+            min-height: 100%;
           }
 
-          .sd-ring-a {
-            width: 120px;
-            height: 120px;
+          .ad-overview {
+            gap: 11px;
           }
 
-          .sd-ring-b {
-            width: 94px;
-            height: 94px;
+          .ad-overview-card {
+            padding: 15px;
+            gap: 11px;
           }
 
-          .sd-topbar-right {
-            margin-left: auto;
+          .ad-overview-icon {
+            width: 44px;
+            height: 44px;
           }
 
-          .sd-stat-card {
-            min-height: 125px;
+          .ad-overview-copy strong {
+            font-size: 15px;
           }
         }
 
         /* =========================================
-           MOBILE RESPONSIVENESS
+           MOBILE
         ========================================= */
 
-        @media (max-width: 650px) {
-          .sd-topbar {
-            min-height: 65px;
+        @media (max-width: 600px) {
+          .ad-content {
+            padding: 17px 13px 25px;
+          }
+
+          .ad-topbar {
+            height: 64px;
             padding: 0 13px;
           }
 
-          .sd-breadcrumb {
-            gap: 5px;
-            font-size: 11px;
+          .ad-top-left,
+          .ad-top-right {
+            gap: 9px;
           }
 
-          .sd-topbar-right {
-            gap: 8px;
+          .ad-brand-icon {
+            width: 37px;
+            height: 37px;
           }
 
-          .sd-secure-label {
-            display: none;
-          }
-
-          .sd-notification-button,
-          .sd-icon-button {
-            width: 36px;
-            height: 36px;
-          }
-
-          .sd-mini-avatar {
-            width: 35px;
-            height: 35px;
-            font-size: 13px;
-          }
-
-          .sd-content {
-            padding: 19px 13px 24px;
-          }
-
-          .sd-welcome {
-            min-height: auto;
-            padding: 28px 21px;
-            border-radius: 19px;
-          }
-
-          .sd-welcome h1 {
-            font-size: 31px;
-          }
-
-          .sd-welcome-copy > p {
+          .ad-brand-copy strong {
             font-size: 12px;
           }
 
-          .sd-welcome-art {
-            display: none;
-          }
-
-          .sd-welcome-ribbon {
-            right: 12px;
+          .ad-brand-copy span {
             font-size: 8px;
           }
 
-          .sd-welcome-meta {
-            gap: 9px;
-            margin-top: 18px;
-            padding-bottom: 10px;
-            font-size: 10px;
+          .ad-breadcrumb,
+          .ad-secure {
+            display: none;
           }
 
-          .sd-stat-grid {
+          .ad-avatar,
+          .ad-notification {
+            width: 37px;
+            height: 37px;
+          }
+
+          .ad-hero {
+            min-height: 0;
+            padding: 27px 21px;
+            border-radius: 20px;
+          }
+
+          .ad-hero h1 {
+            margin-top: 19px;
+            font-size: 32px;
+          }
+
+          .ad-hero-description {
+            font-size: 11px;
+          }
+
+          .ad-hero-art {
+            display: none;
+          }
+
+          .ad-hero-ribbon {
+            right: 13px;
+            font-size: 8px;
+          }
+
+          .ad-hero-meta {
+            margin-top: 17px;
+            gap: 8px;
+          }
+
+          .ad-meta-pill {
+            padding: 8px 10px;
+            font-size: 9px;
+          }
+
+          .ad-overview {
             grid-template-columns: 1fr;
             gap: 10px;
             margin: 17px 0 27px;
           }
 
-          .sd-stat-card {
-            min-height: 105px;
-            padding: 17px;
+          .ad-overview-card {
+            min-height: 91px;
+            padding: 15px;
+            border-radius: 16px;
           }
 
-          .sd-dashboard-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 25px;
-          }
-
-          .sd-left-column,
-          .sd-right-column {
-            gap: 25px;
-          }
-
-          .sd-right-column {
-            display: flex;
-          }
-
-          .sd-calendar-panel {
-            width: 100%;
-          }
-
-          .sd-section-heading {
-            align-items: flex-start;
-          }
-
-          .sd-section-heading h2 {
-            font-size: 23px;
-          }
-
-          .sd-section-heading p {
-            max-width: 260px;
-            font-size: 13px;
-          }
-
-          .sd-text-link {
-            padding-top: 8px;
-            font-size: 11px !important;
-          }
-
-          .sd-today-routine {
-            grid-template-columns: 1fr;
-          }
-
-          .sd-today-section {
-            padding: 18px;
-          }
-
-          .sd-marks-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .sd-mark-card {
-            padding: 21px;
-          }
-
-          .sd-date-panel,
-          .sd-calendar-panel {
-            padding: 20px;
-          }
-
-          .sd-date-number {
-            width: 76px;
-            height: 83px;
-          }
-
-          .sd-date-number strong {
-            font-size: 36px;
-          }
-
-          .sd-date-copy h3 {
+          .ad-overview-copy strong {
             font-size: 16px;
           }
 
-          .sd-calendar-controls {
-            grid-template-columns: 32px minmax(0, 1fr) 76px 32px;
+          .ad-section-title h2 {
+            font-size: 21px;
           }
 
-          .sd-calendar-days button,
-          .sd-calendar-blank {
-            border-radius: 8px;
+          .ad-section-title p {
             font-size: 11px;
           }
 
-          .sd-announcement {
-            padding: 17px;
-            gap: 11px;
+          .ad-workspace {
+            gap: 22px;
           }
 
-          .sd-announcement-icon {
-            width: 39px;
-            height: 39px;
+          .ad-primary-column,
+          .ad-side-column {
+            gap: 22px;
           }
 
-          .sd-bottom-grid {
-            margin-top: 22px;
+          .ad-panel {
+            padding: 16px;
+            border-radius: 17px;
           }
 
-          .sd-security-strip {
+          .ad-routine-heading {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .ad-routine-sections {
+            grid-template-columns: 1fr;
+          }
+
+          .ad-section-card {
+            padding: 15px;
+          }
+
+          .ad-side-column {
+            display: flex;
+          }
+
+          .ad-calendar-panel {
+            width: 100%;
+          }
+
+          .ad-date-widget {
+            padding: 20px;
+          }
+
+          .ad-marks-section {
+            margin-top: 26px;
+          }
+
+          .ad-marks-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .ad-mark-card {
+            min-height: 205px;
+            padding: 20px;
+          }
+
+          .ad-security {
             align-items: flex-start;
             padding: 17px;
+            gap: 12px;
           }
 
-          .sd-footer {
-            justify-content: flex-start;
-            gap: 12px 17px;
+          .ad-security-icon {
+            width: 42px;
+            height: 42px;
           }
 
-          .sd-bg-orb {
-            filter: blur(65px);
+          .ad-security-badge {
+            display: none;
           }
 
-          .sd-bg-effects::before {
-            width: 350px;
-            height: 350px;
-            left: -230px;
-          }
-
-          .sd-bg-effects::after {
-            width: 400px;
-            height: 400px;
-            right: -280px;
-          }
-        }
-
-        @media (max-width: 370px) {
-          .sd-content {
-            padding: 15px 10px 20px;
-          }
-
-          .sd-welcome {
-            padding: 23px 16px;
-          }
-
-          .sd-welcome h1 {
-            font-size: 27px;
-          }
-
-          .sd-section-heading {
+          .ad-footer {
+            justify-content: center;
+            text-align: center;
             flex-direction: column;
-            gap: 7px;
+            gap: 12px;
           }
 
-          .sd-text-link {
-            padding-top: 0;
-          }
-
-          .sd-date-content {
-            gap: 10px;
-          }
-
-          .sd-date-number {
-            width: 64px;
-            height: 74px;
-          }
-
-          .sd-date-number strong {
-            font-size: 30px;
-          }
-
-          .sd-calendar-controls {
-            grid-template-columns: 28px minmax(0, 1fr) 66px 28px;
-            gap: 4px;
-          }
-
-          .sd-calendar-controls select {
-            font-size: 10px;
-          }
-
-          .sd-calendar-grid {
-            gap: 2px;
+          .ad-help-panel {
+            right: 15px;
+            bottom: 15px;
           }
         }
 
         /* =========================================
-           REDUCED MOTION ACCESSIBILITY
+           VERY SMALL MOBILE
+        ========================================= */
+
+        @media (max-width: 360px) {
+          .ad-content {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .ad-hero h1 {
+            font-size: 28px;
+          }
+
+          .ad-hero {
+            padding: 25px 16px;
+          }
+
+          .ad-calendar-controls {
+            grid-template-columns: 30px minmax(0,1fr) minmax(0,.8fr) 30px;
+            gap: 4px;
+          }
+
+          .ad-calendar-controls button {
+            width: 30px;
+          }
+
+          .ad-calendar-grid {
+            gap: 3px;
+          }
+        }
+
+        /* =========================================
+           REDUCED MOTION
         ========================================= */
 
         @media (prefers-reduced-motion: reduce) {
-          .sd-app *,
-          .sd-app *::before,
-          .sd-app *::after {
+          .academic-dashboard *,
+          .academic-dashboard *::before,
+          .academic-dashboard *::after {
             animation-duration: .01ms !important;
             animation-iteration-count: 1 !important;
-            scroll-behavior: auto !important;
             transition-duration: .01ms !important;
-          }
-
-          .sd-bg-effects {
-            animation: none !important;
+            scroll-behavior: auto !important;
           }
         }
+
       `}</style>
 
-      {/* Animated background */}
-      <div className="sd-bg-effects" aria-hidden="true">
-        <div className="sd-bg-orb sd-bg-orb-one" />
-        <div className="sd-bg-orb sd-bg-orb-two" />
-        <div className="sd-bg-orb sd-bg-orb-three" />
-        <div className="sd-bg-grid" />
+      {/* BACKGROUND */}
+      <div className="ad-background" aria-hidden="true">
+        <div className="ad-orb ad-orb-one" />
+        <div className="ad-orb ad-orb-two" />
+        <div className="ad-orb ad-orb-three" />
       </div>
 
-      <main className="sd-main">
-        {/* TOPBAR */}
-        <header className="sd-topbar">
-          <button
-            type="button"
-            className="sd-icon-button sd-mobile-menu"
-            onClick={openSidebar}
-            aria-label="Toggle navigation"
-            title="Toggle navigation"
-          >
-            <Menu size={21} />
-          </button>
+      <main className="ad-main">
 
-          <div className="sd-breadcrumb">
-            <span>Student Portal</span>
-            <ChevronRight size={15} />
-            <strong>Dashboard</strong>
+        {/* =====================================
+            TOP NAVIGATION
+        ===================================== */}
+
+        <header className="ad-topbar">
+
+          <div className="ad-top-left">
+
+            <button
+              type="button"
+              className="ad-menu-button"
+              onClick={openSidebar}
+              aria-label="Open navigation"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div className="ad-brand-icon">
+              <GraduationCap size={23} />
+            </div>
+
+            <div className="ad-brand-copy">
+              <strong>Student Portal</strong>
+              <span>ACADEMIC MANAGEMENT</span>
+            </div>
+
+            <div className="ad-breadcrumb">
+              <ChevronRight size={14} />
+              <strong>Dashboard</strong>
+            </div>
+
           </div>
 
-          <div className="sd-topbar-right">
-            <span className="sd-secure-label">
-              <ShieldCheck size={17} />
-              Secure student access
+          <div className="ad-top-right">
+
+            <span className="ad-secure">
+              <ShieldCheck size={16} />
+              Secure Access
             </span>
 
             <button
               type="button"
-              className="sd-notification-button"
+              className="ad-notification"
               aria-label="Open announcements"
               onClick={() => navigate("/student/notices")}
+              title="Announcements"
             >
-              <Bell size={19} />
-              <span />
+              <Bell size={18} />
+              <span className="ad-notification-dot" />
             </button>
 
             <button
               type="button"
-              className="sd-mini-avatar sd-mini-avatar-button"
+              className="ad-avatar"
               onClick={() => navigate("/student/profile")}
               aria-label="Open my profile"
-              title="My profile"
+              title="My Profile"
             >
               {getInitials(displayName)}
             </button>
+
           </div>
+
         </header>
 
-        <div className="sd-content">
-          {/* PROFILE PREVIEW NOTICE */}
+        <div className="ad-content">
+
+          {/* =====================================
+              PROFILE PREVIEW NOTICE
+          ===================================== */}
+
           {profilePreview && (
-            <div className="sd-preview-notice" role="status">
+            <div className="ad-preview" role="status">
               <ShieldCheck size={17} />
-              Live profile details are unavailable right now. Preview
-              information is shown where needed.
+
+              Live profile details are unavailable right now.
+              Preview information is shown where needed.
             </div>
           )}
 
-          {/* WELCOME BANNER */}
-          <section className="sd-welcome">
-            <div className="sd-welcome-copy">
-              <span className="sd-welcome-eyebrow">
-                <Sparkles size={16} />
+          {/* =====================================
+              HERO
+          ===================================== */}
+
+          <section className="ad-hero">
+
+            <div className="ad-hero-copy">
+
+              <span className="ad-eyebrow">
+                <Sparkles size={14} />
                 YOUR ACADEMIC SPACE
               </span>
 
@@ -2166,327 +2395,385 @@ const courseDisplay = `${course.name} — ${course.fullName}`;
                 <span>{displayName}</span>
               </h1>
 
-              <p>
-                Everything you need for your {course.name} journey, thoughtfully
-brought together in one place.
+              <p className="ad-hero-description">
+                Everything you need for your {course.name} journey,
+                thoughtfully brought together in one place.
               </p>
 
-              <div className="sd-welcome-meta">
-                <span>
-                  <UserRound size={16} />
+              <div className="ad-hero-meta">
+
+                <span className="ad-meta-pill">
+                  <UserRound size={14} />
                   {studentId}
                 </span>
 
-                <i />
-
-                <span>
-                  <GraduationCap size={17} />
+                <span className="ad-meta-pill">
+                  <GraduationCap size={15} />
                   {courseDisplay}
                 </span>
+
               </div>
+
             </div>
 
-            <div className="sd-welcome-art" aria-hidden="true">
-              <div className="sd-art-ring sd-ring-a" />
-              <div className="sd-art-ring sd-ring-b" />
-              <div className="sd-art-book">
-                <BookOpen size={52} />
+            <div className="ad-hero-art" aria-hidden="true">
+
+              <div className="ad-hero-ring one" />
+              <div className="ad-hero-ring two" />
+
+              <div className="ad-hero-book">
+                <BookOpen size={48} />
               </div>
-              <div className="sd-art-star sd-star-a">✦</div>
-              <div className="sd-art-star sd-star-b">✧</div>
+
             </div>
 
-            <div className="sd-welcome-ribbon">
-              <span className="sd-ribbon-dot" />
-              {course.department}
+            <div className="ad-hero-ribbon">
+              ✦ {course.department}
             </div>
+
           </section>
 
-          {/* STUDENT SUMMARY */}
-          <section className="sd-stat-grid" aria-label="Student summary">
-            <article className="sd-stat-card">
-              <div className="sd-stat-icon stat-green">
-                <GraduationCap size={21} />
+          {/* =====================================
+              OVERVIEW CARDS
+          ===================================== */}
+
+          <section
+            className="ad-overview"
+            aria-label="Student overview"
+          >
+
+            <article className="ad-overview-card">
+
+              <div className="ad-overview-icon gold">
+                <GraduationCap size={25} />
               </div>
 
-              <div className="sd-stat-copy">
+              <div className="ad-overview-copy">
                 <span>Current semester</span>
                 <strong>{currentSemesterLabel}</strong>
                 <small>{course.fullName}</small>
               </div>
 
-              <span className="sd-status-pulse" />
+              <CheckCircle2
+                className="ad-overview-check"
+                size={17}
+              />
+
             </article>
 
-            <article className="sd-stat-card">
-              <div className="sd-stat-icon stat-blue">
+            <article className="ad-overview-card">
+
+              <div className="ad-overview-icon blue">
                 <CalendarDays size={24} />
               </div>
 
-              <div className="sd-stat-copy">
+              <div className="ad-overview-copy">
                 <span>Academic session</span>
                 <strong>{session}</strong>
                 <small>Department registration</small>
               </div>
+
             </article>
 
-            <article className="sd-stat-card">
-              <div className="sd-stat-icon stat-green">
+            <article className="ad-overview-card">
+
+              <div className="ad-overview-icon mint">
                 <CheckCircle2 size={24} />
               </div>
 
-              <div className="sd-stat-copy">
+              <div className="ad-overview-copy">
                 <span>Portal status</span>
                 <strong>Signed in</strong>
                 <small>Student account session</small>
               </div>
 
-              <span className="sd-status-pulse" />
+              <CheckCircle2
+                className="ad-overview-check"
+                size={17}
+              />
+
             </article>
+
           </section>
 
-          {/* DASHBOARD CONTENT */}
-          <div className="sd-dashboard-grid">
-            <div className="sd-left-column">
-              {/* TODAY'S CLASSES */}
-              <section className="sd-section-block">
-                <div className="sd-section-heading">
+          {/* =====================================
+              MAIN WORKSPACE
+          ===================================== */}
+
+          <div className="ad-workspace">
+
+            {/* LEFT COLUMN */}
+
+            <div className="ad-primary-column">
+
+              {/* =================================
+                  TODAY'S ROUTINE
+              ================================= */}
+
+              <section className="ad-section-block">
+
+                <div className="ad-section-title">
+
                   <div>
-                    <span className="sd-section-eyebrow">
-                      YOUR TIMETABLE
-                    </span>
+                    <span>YOUR TIMETABLE</span>
 
                     <h2>Today's classes</h2>
 
                     <p>
+                      Your daily academic schedule and classroom details.
+                    </p>
+                  </div>
+
+                  <Link
+                    className="ad-text-link"
+                    to="/student/routine"
+                  >
+                    Full routine <ArrowRight size={16} />
+                  </Link>
+
+                </div>
+
+                <div className="ad-panel">
+
+                  <div className="ad-routine-heading">
+
+                    <div className="ad-routine-date">
+                      <CalendarCheck size={15} />
+
                       {formatDate(today, {
                         weekday: "long",
                         day: "numeric",
                         month: "long",
                         year: "numeric",
                       })}
-                    </p>
+                    </div>
+
+                    <div className="ad-routine-date">
+                      <Clock3 size={14} />
+                      {totalClasses}{" "}
+                      {totalClasses === 1 ? "Class" : "Classes"} Today
+                    </div>
+
                   </div>
 
-                  <Link className="sd-text-link" to="/student/routine">
-                    View routine <ArrowRight size={17} />
-                  </Link>
-                </div>
+                  <div className="ad-routine-sections">
 
-                <div className="sd-today-routine">
-                  {SECTION_NAMES.map((section) => {
-                    const classes = getClassesForDay(
-                      today.getDay(),
-                      section,
-                      courseCode
-                    );
+                    {SECTION_NAMES.map((section) => {
+                      const classes = getTodayClasses(section);
 
-                    return (
-                      <section
-                        className="sd-today-section"
-                        key={section}
-                      >
-                        <div className="sd-today-section-heading">
-                          <strong>{section}</strong>
+                      return (
+                        <section
+                          className="ad-section-card"
+                          key={section}
+                        >
 
-                          <span>
-                            {classes.length}{" "}
-                            {classes.length === 1 ? "class" : "classes"}
-                          </span>
-                        </div>
+                          <div className="ad-section-card-header">
 
-                        {classes.length ? (
-                          <div className="sd-today-class-list">
-                            {classes.map((item) => (
-                              <article
-                                className="sd-today-class"
-                                key={`${section}-${item.start}-${item.code}`}
-                              >
-                                <span className="sd-today-class-time">
-                                  {item.start}
-                                  <small>{item.end}</small>
-                                </span>
+                            <strong>{section}</strong>
 
-                                <div>
-                                  <strong>{item.code}</strong>
-                                  <p>{item.name}</p>
-                                  <small>
-                                    {item.faculty} · Room {item.room}
-                                  </small>
-                                </div>
-                              </article>
-                            ))}
+                            <span className="ad-class-count">
+                              {classes.length}{" "}
+                              {classes.length === 1
+                                ? "class"
+                                : "classes"}
+                            </span>
+
                           </div>
-                        ) : (
-                          <p className="sd-no-classes">
-                            No classes scheduled for today.
-                          </p>
-                        )}
-                      </section>
-                    );
-                  })}
+
+                          {classes.length ? (
+
+                            <div className="ad-class-list">
+
+                              {classes.map((item) => (
+
+                                <article
+                                  className="ad-class-item"
+                                  key={`${section}-${item.start}-${item.code}`}
+                                >
+
+                                  <div className="ad-class-time">
+                                    {item.start}
+
+                                    <small>{item.end}</small>
+                                  </div>
+
+                                  <div className="ad-class-details">
+
+                                    <strong>{item.code}</strong>
+
+                                    <p>{item.name}</p>
+
+                                    <small>
+                                      {item.faculty} · Room {item.room}
+                                    </small>
+
+                                  </div>
+
+                                </article>
+
+                              ))}
+
+                            </div>
+
+                          ) : (
+
+                            <div className="ad-empty-classes">
+                              <CalendarDays size={20} />
+
+                              No classes scheduled for today.
+                            </div>
+
+                          )}
+
+                        </section>
+                      );
+                    })}
+
+                  </div>
+
                 </div>
+
               </section>
 
-              {/* MARKS */}
-              <section className="sd-section-block">
-                <div className="sd-section-heading">
-                  <div>
-                    <span className="sd-section-eyebrow">
-                      ACADEMIC RECORDS
-                    </span>
+              {/* =================================
+                  MARKS SECTION
+              ================================= */}
 
-                    <h2>Marks at a glance</h2>
+              <section className="ad-marks-section">
+
+                <div className="ad-section-title">
+
+                  <div>
+                    <span>ACADEMIC RECORDS</span>
+
+                    <h2>Academic performance</h2>
 
                     <p>
-                      CA and university marks are kept separate.
+                      Access your internal assessment and university
+                      examination records separately.
                     </p>
                   </div>
+
                 </div>
 
-                <div className="sd-marks-grid">
+                <div className="ad-marks-grid">
+
+                  {/* CA MARKS */}
+
                   <button
                     type="button"
-                    className="sd-mark-card ca-card"
+                    className="ad-mark-card ca"
                     onClick={() => navigate("/student/ca-marks")}
                   >
-                    <span className="sd-mark-icon">
-                      <ClipboardList size={24} />
+
+                    <span className="ad-mark-icon">
+                      <ClipboardList size={25} />
                     </span>
 
-                    <span className="sd-mark-kicker">
+                    <span className="ad-mark-kicker">
                       CONTINUOUS ASSESSMENT
                     </span>
 
                     <strong>CA Marks</strong>
 
                     <p>
-                      Internal assessment marks by subject.
+                      View your internal assessment marks
+                      subject by subject.
                     </p>
 
-                    <span className="sd-mark-action">
-                      Open CA marks <ArrowRight size={17} />
+                    <span className="ad-mark-action">
+                      Explore CA marks
+                      <ArrowRight size={17} />
                     </span>
+
                   </button>
+
+                  {/* UNIVERSITY MARKS */}
 
                   <button
                     type="button"
-                    className="sd-mark-card uni-card"
+                    className="ad-mark-card university"
                     onClick={() =>
                       navigate("/student/university-marks")
                     }
                   >
-                    <span className="sd-mark-icon">
-                      <BookOpenCheck size={24} />
+
+                    <span className="ad-mark-icon">
+                      <BookOpenCheck size={25} />
                     </span>
 
-                    <span className="sd-mark-kicker">
+                    <span className="ad-mark-kicker">
                       UNIVERSITY EXAMINATION
                     </span>
 
                     <strong>University Marks</strong>
 
                     <p>
-                      University examination marks and result status.
+                      View your university examination marks
+                      and result status.
                     </p>
 
-                    <span className="sd-mark-action">
-                      Open university marks <ArrowRight size={17} />
+                    <span className="ad-mark-action">
+                      Explore university marks
+                      <ArrowRight size={17} />
                     </span>
+
                   </button>
+
                 </div>
 
-                <p className="sd-demo-disclaimer">
+                <p className="ad-disclaimer">
                   <ShieldCheck size={15} />
-                  No real marks or CGPA are displayed here. Marks will be
-                  shown when the student-specific data is connected.
+
+                  No real marks or CGPA are displayed here.
+                  Marks will be shown when student-specific data
+                  is connected.
                 </p>
+
               </section>
 
-              {/* ANNOUNCEMENTS */}
-              <section className="sd-section-block">
-                <div className="sd-section-heading">
-                  <div>
-                    <span className="sd-section-eyebrow">
-                      FROM YOUR DEPARTMENT
-                    </span>
-
-                    <h2>Announcements</h2>
-
-                    <p>
-                      Sample notices preview how updates will appear.
-                    </p>
-                  </div>
-
-                  <Link className="sd-text-link" to="/student/notices">
-                    View all <ArrowRight size={17} />
-                  </Link>
-                </div>
-
-                <div className="sd-announcement-list">
-                  {ANNOUNCEMENTS.map((item, index) => (
-                    <article
-                      className="sd-announcement"
-                      key={item.title}
-                      style={{
-                        "--announcement-index": index,
-                      }}
-                    >
-                      <div
-                        className={`sd-announcement-icon ann-${index}`}
-                      >
-                        <Megaphone size={21} />
-                      </div>
-
-                      <div className="sd-announcement-body">
-                        <div className="sd-announcement-meta">
-                          <span>{item.tag}</span>
-                          <small>Sample notice</small>
-                        </div>
-
-                        <h3>{item.title}</h3>
-                        <p>{item.detail}</p>
-                      </div>
-
-                      <ArrowRight
-                        className="sd-announcement-arrow"
-                        size={19}
-                      />
-                    </article>
-                  ))}
-                </div>
-
-                <p className="sd-demo-disclaimer">
-                  <Bell size={15} />
-                  These are dummy announcements for interface testing.
-                </p>
-              </section>
             </div>
 
             {/* RIGHT COLUMN */}
-            <aside className="sd-right-column">
-              {/* TODAY'S DATE */}
-              <section className="sd-date-panel">
-                <div className="sd-date-top">
+
+            <aside className="ad-side-column">
+
+              {/* =================================
+                  DATE CARD
+              ================================= */}
+
+              <section className="ad-date-widget">
+
+                <div className="ad-date-widget-top">
+
                   <span>TODAY'S DATE</span>
 
-                  <div className="sd-date-icon">
-                    <CalendarDays size={24} />
+                  <div className="ad-date-widget-icon">
+                    <CalendarDays size={21} />
                   </div>
+
                 </div>
 
-                <div className="sd-date-content">
-                  <div className="sd-date-number">
+                <div className="ad-date-main">
+
+                  <div className="ad-date-number">
+
                     <strong>{today.getDate()}</strong>
 
                     <span>
-                      {formatDate(today, { month: "short" })}
+                      {formatDate(today, {
+                        month: "short",
+                      })}
                     </span>
+
                   </div>
 
-                  <div className="sd-date-copy">
+                  <div className="ad-date-copy">
+
                     <h3>
-                      {formatDate(today, { weekday: "long" })}
+                      {formatDate(today, {
+                        weekday: "long",
+                      })}
                     </h3>
 
                     <p>
@@ -2504,38 +2791,52 @@ brought together in one place.
                         year: "numeric",
                       })}
                     </p>
+
                   </div>
+
                 </div>
 
-                <div className="sd-date-footer">
-                  <CheckCircle2 size={17} />
+                <div className="ad-date-footer">
+                  <CheckCircle2 size={16} />
                   Your dashboard is ready for today
                 </div>
+
               </section>
 
-              {/* INTERACTIVE CALENDAR */}
+              {/* =================================
+                  CALENDAR
+              ================================= */}
+
               <section
-                className="sd-calendar-panel"
-                aria-label="Calendar"
+                className="ad-calendar-panel"
+                aria-label="Interactive calendar"
               >
-                <div className="sd-calendar-heading">
+
+                <div className="ad-calendar-header">
+
                   <div>
                     <span>CALENDAR</span>
                     <h3>Explore dates</h3>
                   </div>
 
-                  <button type="button" onClick={goToToday}>
+                  <button
+                    type="button"
+                    className="ad-today-button"
+                    onClick={goToToday}
+                  >
                     Today
                   </button>
+
                 </div>
 
-                <div className="sd-calendar-controls">
+                <div className="ad-calendar-controls">
+
                   <button
                     type="button"
                     aria-label="Previous month"
                     onClick={() => changeMonth(-1)}
                   >
-                    ‹
+                    <ChevronLeft size={17} />
                   </button>
 
                   <select
@@ -2551,14 +2852,19 @@ brought together in one place.
                       )
                     }
                   >
-                    {Array.from({ length: 12 }, (_, month) => (
-                      <option key={month} value={month}>
-                        {new Date(2000, month, 1).toLocaleDateString(
-                          "en-IN",
-                          { month: "long" }
-                        )}
-                      </option>
-                    ))}
+
+                    {Array.from(
+                      { length: 12 },
+                      (_, month) => (
+                        <option key={month} value={month}>
+                          {new Date(2000, month, 1).toLocaleDateString(
+                            "en-IN",
+                            { month: "long" }
+                          )}
+                        </option>
+                      )
+                    )}
+
                   </select>
 
                   <select
@@ -2574,15 +2880,19 @@ brought together in one place.
                       )
                     }
                   >
+
                     {Array.from(
                       { length: 81 },
                       (_, index) =>
                         new Date().getFullYear() - 40 + index
                     ).map((year) => (
+
                       <option key={year} value={year}>
                         {year}
                       </option>
+
                     ))}
+
                   </select>
 
                   <button
@@ -2590,24 +2900,28 @@ brought together in one place.
                     aria-label="Next month"
                     onClick={() => changeMonth(1)}
                   >
-                    ›
+                    <ChevronRight size={17} />
                   </button>
+
                 </div>
 
-                <div className="sd-calendar-grid sd-calendar-weekdays">
+                <div className="ad-calendar-grid ad-calendar-weekdays">
+
                   {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(
                     (day) => (
                       <span key={day}>{day}</span>
                     )
                   )}
+
                 </div>
 
-                <div className="sd-calendar-grid sd-calendar-days">
+                <div className="ad-calendar-grid ad-calendar-days">
+
                   {Array.from(
                     { length: calendarStartDay },
                     (_, index) => (
                       <span
-                        className="sd-calendar-blank"
+                        className="ad-calendar-blank"
                         key={`blank-${index}`}
                       />
                     )
@@ -2625,7 +2939,8 @@ brought together in one place.
                       );
 
                       const isToday =
-                        date.toDateString() === today.toDateString();
+                        date.toDateString() ===
+                        today.toDateString();
 
                       const isSelected =
                         date.toDateString() ===
@@ -2647,9 +2962,11 @@ brought together in one place.
                       );
                     }
                   )}
+
                 </div>
 
-                <div className="sd-calendar-selected">
+                <div className="ad-selected-date">
+
                   <span>SELECTED DATE</span>
 
                   <strong>
@@ -2660,85 +2977,120 @@ brought together in one place.
                       year: "numeric",
                     })}
                   </strong>
+
                 </div>
+
               </section>
+
             </aside>
+
           </div>
 
-          {/* SECURITY INFORMATION */}
-          <section className="sd-bottom-grid">
-            <article className="sd-security-strip">
-              <div className="sd-security-icon">
-                <ShieldCheck size={26} />
-              </div>
+          {/* =====================================
+              SECURITY STRIP
+          ===================================== */}
 
-              <div>
-                <strong>Your records stay personal</strong>
+          <section className="ad-security">
 
-                <p>
-                  Never share your password or login token. Student
-                  records should only be accessible to the signed-in
-                  student.
-                </p>
-              </div>
-            </article>
+            <div className="ad-security-icon">
+              <LockKeyhole size={24} />
+            </div>
+
+            <div className="ad-security-copy">
+
+              <strong>Your student records stay protected</strong>
+
+              <p>
+                Never share your password or login token.
+                Your academic information should only be
+                accessible to your authenticated account.
+              </p>
+
+            </div>
+
+            <div className="ad-security-badge">
+              <ShieldCheck size={15} />
+              Secure Portal
+            </div>
+
           </section>
 
-          {/* FOOTER */}
-          <footer className="sd-footer">
-            <span>© {today.getFullYear()} DPP Institute</span>
+          {/* =====================================
+              FOOTER
+          ===================================== */}
+
+          <footer className="ad-footer">
 
             <span>
-              {course.name} Department Student Portal{" "}
-              <span className="sd-footer-star">✦</span>
+              © {today.getFullYear()} DPP Institute
+            </span>
+
+            <span>
+              {course.name} Department Student Portal
             </span>
 
             <button
               type="button"
               onClick={() => setShowHelp(true)}
             >
-              <CircleHelp size={16} />
-              Help
+              <CircleHelp size={15} />
+              Need help?
             </button>
+
           </footer>
+
         </div>
+
       </main>
 
-      {/* HELP PANEL */}
+      {/* =====================================
+          HELP PANEL
+      ===================================== */}
+
       {showHelp && (
+
         <div
-          className="sd-help-panel"
+          className="ad-help-panel"
           role="dialog"
           aria-modal="false"
-          aria-labelledby="sd-help-title"
+          aria-labelledby="ad-help-title"
         >
-          <div className="sd-help-panel-header">
-            <h3 id="sd-help-title">Need help?</h3>
+
+          <div className="ad-help-header">
+
+            <h3 id="ad-help-title">
+              Need help?
+            </h3>
 
             <button
               type="button"
-              className="sd-icon-button"
+              className="ad-help-close"
               aria-label="Close help"
               onClick={() => setShowHelp(false)}
             >
               <X size={17} />
             </button>
+
           </div>
 
           <p>
-            For account support, profile issues, or student record
-            questions, please contact your department administrator.
+            For account support, profile issues, or student
+            record questions, please contact your department
+            administrator.
           </p>
 
           <button
             type="button"
-            className="sd-text-link"
+            className="ad-help-done"
             onClick={() => setShowHelp(false)}
           >
-            Got it <ArrowRight size={16} />
+            Got it <ArrowRight size={15} />
           </button>
+
         </div>
+
       )}
+
     </div>
   );
 }

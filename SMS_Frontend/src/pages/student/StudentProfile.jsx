@@ -16,10 +16,17 @@ import {
   X,
   LoaderCircle,
   AlertCircle,
+  GraduationCap,
+  BookOpen,
+  BadgeCheck,
 } from "lucide-react";
 
 import api from "../../services/api";
 import { useStudentLayout } from "../../components/layout/StudentLayout";
+
+// ======================================================
+// DEFAULT PROFILE DATA
+// ======================================================
 
 const EMPTY_PROFILE = {
   studentId: "",
@@ -38,7 +45,10 @@ const EMPTY_PROFILE = {
   mustChangePassword: false,
 };
 
-// Password rules — consistent with Admin password validation.
+// ======================================================
+// PASSWORD VALIDATION RULES
+// ======================================================
+
 const PASSWORD_RULES = [
   {
     label: "At least 8 characters",
@@ -62,6 +72,10 @@ const PASSWORD_RULES = [
   },
 ];
 
+// ======================================================
+// HELPER FUNCTIONS
+// ======================================================
+
 function getErrorMessage(error) {
   return (
     error?.response?.data?.message ||
@@ -71,12 +85,11 @@ function getErrorMessage(error) {
   );
 }
 
-// Returns the warning message for a phone number.
 function getPhoneError(value) {
   if (!value) return "";
 
   if (/[^0-9]/.test(value)) {
-    return "Only numbers are allowed. Please remove letters and special characters.";
+    return "Only numbers are allowed.";
   }
 
   if (value.length > 10) {
@@ -84,11 +97,17 @@ function getPhoneError(value) {
   }
 
   if (value.length < 10) {
-    return `Phone number must contain exactly 10 digits. ${10 - value.length} more digit(s) required.`;
+    return `Phone number must contain exactly 10 digits. ${
+      10 - value.length
+    } more digit(s) required.`;
   }
 
   return "";
 }
+
+// ======================================================
+// PROFILE INFORMATION FIELD
+// ======================================================
 
 function ProfileField({
   label,
@@ -97,23 +116,52 @@ function ProfileField({
   readOnly = false,
   emptyValue = "Not provided",
 }) {
+  const isEmpty = !value || String(value).trim() === "";
+
+  // Only editable fields receive the missing-data warning.
+  const needsUpdate = !readOnly && isEmpty;
+
   return (
-    <div className="sp-detail">
+    <div
+      className={`sp-detail ${
+        needsUpdate ? "sp-detail-missing" : ""
+      }`}
+    >
       <div className="sp-detail-icon">
         <Icon size={19} strokeWidth={1.9} />
       </div>
 
       <div className="sp-detail-content">
         <span className="sp-detail-label">{label}</span>
-        <span className="sp-detail-value">
+
+        <span
+          className={`sp-detail-value ${
+            isEmpty ? "sp-value-empty" : ""
+          }`}
+        >
           {value || emptyValue}
         </span>
       </div>
 
-      {readOnly && <span className="sp-readonly">Fixed</span>}
+      {readOnly && (
+        <span className="sp-readonly">
+          Fixed
+        </span>
+      )}
+
+      {needsUpdate && (
+        <span className="sp-missing-badge">
+          <AlertCircle size={11} />
+          Update
+        </span>
+      )}
     </div>
   );
 }
+
+// ======================================================
+// PROFILE UPDATE FORM FIELD
+// ======================================================
 
 function FormField({
   label,
@@ -125,19 +173,30 @@ function FormField({
   warning = "",
   inputMode,
 }) {
+  const isEmpty = !value || String(value).trim() === "";
+
   return (
     <label className="sp-form-field">
-      <span>{label}</span>
+      <span className="sp-form-label">
+        {label}
+      </span>
 
       <input
         type={type}
         name={name}
         value={value ?? ""}
         onChange={onChange}
-        placeholder={placeholder || `Enter ${label.toLowerCase()}`}
+        placeholder={
+          placeholder || `Enter ${label.toLowerCase()}`
+        }
         inputMode={inputMode}
         aria-invalid={Boolean(warning)}
-        className={warning ? "sp-input-invalid" : ""}
+        className={[
+          warning ? "sp-input-invalid" : "",
+          isEmpty ? "sp-input-empty" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         autoComplete="off"
       />
 
@@ -151,17 +210,27 @@ function FormField({
   );
 }
 
+// ======================================================
+// MAIN STUDENT PROFILE COMPONENT
+// ======================================================
+
 export default function StudentProfile() {
   const { notify } = useStudentLayout();
 
   const [profile, setProfile] = useState(EMPTY_PROFILE);
+
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
 
   const [activeModal, setActiveModal] = useState("");
+
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  // --------------------------------------------------
+  // PROFILE FORM
+  // --------------------------------------------------
 
   const [profileForm, setProfileForm] = useState({
     email: "",
@@ -171,6 +240,10 @@ export default function StudentProfile() {
     motherName: "",
     motherPhoneNumber: "",
   });
+
+  // --------------------------------------------------
+  // PASSWORD FORM
+  // --------------------------------------------------
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -184,6 +257,10 @@ export default function StudentProfile() {
     confirm: false,
   });
 
+  // --------------------------------------------------
+  // PHONE VALIDATION
+  // --------------------------------------------------
+
   const fatherPhoneWarning = getPhoneError(
     profileForm.fatherPhoneNumber
   );
@@ -192,7 +269,10 @@ export default function StudentProfile() {
     profileForm.motherPhoneNumber
   );
 
-  // Live password validation.
+  // --------------------------------------------------
+  // LIVE PASSWORD VALIDATION
+  // --------------------------------------------------
+
   const passwordRules = PASSWORD_RULES.map((rule) => ({
     ...rule,
     passed: rule.test(passwordForm.newPassword),
@@ -206,7 +286,10 @@ export default function StudentProfile() {
     passwordForm.confirmPassword.length > 0 &&
     passwordForm.newPassword === passwordForm.confirmPassword;
 
-  // Fetch the authenticated student's profile.
+  // ==================================================
+  // LOAD STUDENT PROFILE
+  // ==================================================
+
   useEffect(() => {
     let active = true;
 
@@ -221,7 +304,10 @@ export default function StudentProfile() {
 
         const data = response.data || {};
 
-        setProfile({ ...EMPTY_PROFILE, ...data });
+        setProfile({
+          ...EMPTY_PROFILE,
+          ...data,
+        });
 
         setProfileForm({
           email: data.email || "",
@@ -248,7 +334,9 @@ export default function StudentProfile() {
 
         setPageError(getErrorMessage(error));
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -259,7 +347,10 @@ export default function StudentProfile() {
     };
   }, []);
 
-  // Close the successful modal first, then show the layout notification.
+  // ==================================================
+  // SUCCESS NOTIFICATION
+  // ==================================================
+
   useEffect(() => {
     if (!successMessage) return;
 
@@ -267,11 +358,16 @@ export default function StudentProfile() {
       setActiveModal("");
       setSuccessMessage("");
       setModalError("");
+
       notify(successMessage);
     }, 1100);
 
     return () => window.clearTimeout(timer);
   }, [successMessage, notify]);
+
+  // ==================================================
+  // OPEN PROFILE UPDATE MODAL
+  // ==================================================
 
   function openProfileModal() {
     setProfileForm({
@@ -285,8 +381,13 @@ export default function StudentProfile() {
 
     setModalError("");
     setSuccessMessage("");
+
     setActiveModal("profile");
   }
+
+  // ==================================================
+  // OPEN PASSWORD MODAL
+  // ==================================================
 
   function openPasswordModal() {
     setPasswordForm({
@@ -303,8 +404,13 @@ export default function StudentProfile() {
 
     setModalError("");
     setSuccessMessage("");
+
     setActiveModal("password");
   }
+
+  // ==================================================
+  // CLOSE MODAL
+  // ==================================================
 
   function closeModal() {
     if (saving || successMessage) return;
@@ -313,16 +419,22 @@ export default function StudentProfile() {
     setModalError("");
   }
 
+  // ==================================================
+  // HANDLE PROFILE FORM CHANGE
+  // ==================================================
+
   function handleProfileChange(event) {
     const { name, value } = event.target;
 
-    // Keep the entered value so invalid characters can be shown
-    // to the user with a warning instead of silently removing them.
     setProfileForm((previous) => ({
       ...previous,
       [name]: value,
     }));
   }
+
+  // ==================================================
+  // HANDLE PASSWORD FORM CHANGE
+  // ==================================================
 
   function handlePasswordChange(event) {
     const { name, value } = event.target;
@@ -333,29 +445,40 @@ export default function StudentProfile() {
     }));
   }
 
+  // ==================================================
+  // UPDATE PROFILE
+  // ==================================================
+
   async function submitProfile(event) {
     event.preventDefault();
+
     setModalError("");
 
     // Validate father's phone number.
     if (
       profileForm.fatherPhoneNumber &&
-      !/^\d{10}$/.test(profileForm.fatherPhoneNumber)
+      !/^\d{10}$/.test(
+        profileForm.fatherPhoneNumber
+      )
     ) {
       setModalError(
         "Please enter a valid father's phone number containing exactly 10 digits."
       );
+
       return;
     }
 
     // Validate mother's phone number.
     if (
       profileForm.motherPhoneNumber &&
-      !/^\d{10}$/.test(profileForm.motherPhoneNumber)
+      !/^\d{10}$/.test(
+        profileForm.motherPhoneNumber
+      )
     ) {
       setModalError(
         "Please enter a valid mother's phone number containing exactly 10 digits."
       );
+
       return;
     }
 
@@ -366,12 +489,17 @@ export default function StudentProfile() {
         email: profileForm.email.trim(),
         dateOfBirth: profileForm.dateOfBirth,
         fatherName: profileForm.fatherName.trim(),
-        fatherPhoneNumber: profileForm.fatherPhoneNumber.trim(),
+        fatherPhoneNumber:
+          profileForm.fatherPhoneNumber.trim(),
         motherName: profileForm.motherName.trim(),
-        motherPhoneNumber: profileForm.motherPhoneNumber.trim(),
+        motherPhoneNumber:
+          profileForm.motherPhoneNumber.trim(),
       };
 
-      const response = await api.put("/student/profile", payload);
+      const response = await api.put(
+        "/student/profile",
+        payload
+      );
 
       const updatedProfile = response.data || {
         ...profile,
@@ -387,9 +515,11 @@ export default function StudentProfile() {
         email: updatedProfile.email || "",
         dateOfBirth: updatedProfile.dateOfBirth || "",
         fatherName: updatedProfile.fatherName || "",
-        fatherPhoneNumber: updatedProfile.fatherPhoneNumber || "",
+        fatherPhoneNumber:
+          updatedProfile.fatherPhoneNumber || "",
         motherName: updatedProfile.motherName || "",
-        motherPhoneNumber: updatedProfile.motherPhoneNumber || "",
+        motherPhoneNumber:
+          updatedProfile.motherPhoneNumber || "",
       });
 
       setSuccessMessage(
@@ -402,17 +532,28 @@ export default function StudentProfile() {
     }
   }
 
+  // ==================================================
+  // CHANGE PASSWORD
+  // ==================================================
+
   async function submitPassword(event) {
     event.preventDefault();
+
     setModalError("");
 
     if (!passwordForm.currentPassword.trim()) {
-      setModalError("Please enter your current password.");
+      setModalError(
+        "Please enter your current password."
+      );
+
       return;
     }
 
     if (!passwordForm.newPassword) {
-      setModalError("Please enter your new password.");
+      setModalError(
+        "Please enter your new password."
+      );
+
       return;
     }
 
@@ -420,24 +561,29 @@ export default function StudentProfile() {
       setModalError(
         "Please satisfy all the password requirements before continuing."
       );
+
       return;
     }
 
     if (
-      passwordForm.newPassword === passwordForm.currentPassword
+      passwordForm.newPassword ===
+      passwordForm.currentPassword
     ) {
       setModalError(
         "Your new password must be different from your current password."
       );
+
       return;
     }
 
     if (
-      passwordForm.newPassword !== passwordForm.confirmPassword
+      passwordForm.newPassword !==
+      passwordForm.confirmPassword
     ) {
       setModalError(
         "The new password and confirmation do not match."
       );
+
       return;
     }
 
@@ -465,6 +611,10 @@ export default function StudentProfile() {
     }
   }
 
+  // ==================================================
+  // SHOW / HIDE PASSWORD
+  // ==================================================
+
   function togglePassword(field) {
     setShowPasswords((previous) => ({
       ...previous,
@@ -472,51 +622,89 @@ export default function StudentProfile() {
     }));
   }
 
+  // ==================================================
+  // LOADING SCREEN
+  // ==================================================
+
   if (loading) {
     return (
       <main className="sp-page">
-        <div className="sp-loading">
-          <LoaderCircle className="sp-spinner" size={30} />
-          <p>Loading your profile...</p>
-        </div>
-
         <ProfileStyles />
+
+        <div className="sp-loading">
+          <div className="sp-loading-icon">
+            <LoaderCircle
+              className="sp-spinner"
+              size={32}
+            />
+          </div>
+
+          <h2>Loading your profile</h2>
+
+          <p>
+            Please wait while we retrieve your details.
+          </p>
+        </div>
       </main>
     );
   }
 
+  // ==================================================
+  // MAIN PAGE
+  // ==================================================
+
   return (
     <main className="sp-page">
       <ProfileStyles />
+
+      {/* Background decorations */}
 
       <div className="sp-background-circle sp-circle-one" />
       <div className="sp-background-circle sp-circle-two" />
       <div className="sp-background-circle sp-circle-three" />
 
       <div className="sp-container">
-        <Link to="/student/dashboard" className="sp-back">
+
+        {/* Back button */}
+
+        <Link
+          to="/student/dashboard"
+          className="sp-back"
+        >
           <ArrowLeft size={16} />
           Back to dashboard
         </Link>
+
+        {/* Page heading */}
 
         <header className="sp-heading">
           <div className="sp-heading-icon">
             <UserRound size={25} />
           </div>
 
-          <div>
-            <span className="sp-eyebrow">STUDENT PORTAL</span>
+          <div className="sp-heading-text">
+            <span className="sp-eyebrow">
+              STUDENT PORTAL
+            </span>
+
             <h1>My Profile</h1>
+
             <p>
-              View your personal information and manage your account
-              securely.
+              View your personal information and manage
+              your account securely.
             </p>
           </div>
         </header>
 
+        {/* Error message */}
+
         {pageError && (
-          <div className="sp-page-error" role="alert">
+          <div
+            className="sp-page-error"
+            role="alert"
+          >
             <AlertCircle size={18} />
+
             <span>{pageError}</span>
 
             <button
@@ -530,6 +718,11 @@ export default function StudentProfile() {
 
         {!pageError && (
           <>
+
+            {/* ====================================== */}
+            {/* STUDENT IDENTITY BANNER                */}
+            {/* ====================================== */}
+
             <section className="sp-identity-card">
               <div className="sp-avatar">
                 <UserRound size={31} />
@@ -540,32 +733,48 @@ export default function StudentProfile() {
                   STUDENT ACCOUNT
                 </span>
 
-                <h2>{profile.name || "Student"}</h2>
+                <h2>
+                  {profile.name || "Student"}
+                </h2>
 
                 <p>
-                  Student ID: {profile.studentId || "Not available"}
+                  Student ID:{" "}
+                  {profile.studentId || "Not available"}
                 </p>
               </div>
 
               <div className="sp-verified">
-                <ShieldCheck size={16} />
+                <span className="sp-status-dot" />
+
+                <ShieldCheck size={15} />
+
                 Authenticated
               </div>
             </section>
 
-            <section className="sp-section sp-personal-section">
+            {/* ====================================== */}
+            {/* PERSONAL DETAILS                       */}
+            {/* ====================================== */}
+
+            <section className="sp-section">
               <div className="sp-section-heading">
-                <div>
-                  <span className="sp-section-kicker">
-                    PERSONAL INFORMATION
-                  </span>
 
-                  <h2>Student details</h2>
+                <div className="sp-section-title-group">
+                  <div className="sp-section-heading-icon">
+                    <UserRound size={18} />
+                  </div>
 
-                  <p>
-                    Your authority-provided information and personal
-                    details.
-                  </p>
+                  <div>
+                    <span className="sp-section-kicker">
+                      PERSONAL INFORMATION
+                    </span>
+
+                    <h2>Personal details</h2>
+
+                    <p>
+                      Your personal and contact information.
+                    </p>
+                  </div>
                 </div>
 
                 <button
@@ -574,11 +783,13 @@ export default function StudentProfile() {
                   onClick={openProfileModal}
                 >
                   <Pencil size={15} />
+
                   Update Profile
                 </button>
               </div>
 
               <div className="sp-details-grid">
+
                 <ProfileField
                   label="Full name"
                   value={profile.name}
@@ -587,11 +798,63 @@ export default function StudentProfile() {
                 />
 
                 <ProfileField
-                  label="Student ID"
-                  value={profile.studentId}
-                  icon={ShieldCheck}
+                  label="Date of birth"
+                  value={profile.dateOfBirth}
+                  icon={CalendarDays}
+                />
+
+                <ProfileField
+                  label="Email address"
+                  value={profile.email}
+                  icon={Mail}
+                />
+
+                <ProfileField
+                  label="Phone number"
+                  value={profile.phoneNumber}
+                  icon={Phone}
                   readOnly
                 />
+
+              </div>
+            </section>
+
+            {/* ====================================== */}
+            {/* ACADEMIC DETAILS                      */}
+            {/* ====================================== */}
+
+            <section className="sp-section">
+              <div className="sp-section-heading">
+
+                <div className="sp-section-title-group">
+                  <div className="sp-section-heading-icon">
+                    <GraduationCap size={19} />
+                  </div>
+
+                  <div>
+                    <span className="sp-section-kicker">
+                      ACADEMIC & UNIVERSITY DETAILS
+                    </span>
+
+                    <h2>
+                      Academic details
+                    </h2>
+
+                    <p>
+                      University registration and course
+                      information.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sp-fixed-label">
+                  <ShieldCheck size={14} />
+
+                  Authority managed
+                </div>
+              </div>
+
+              <div className="sp-details-grid">
 
                 <ProfileField
                   label="University Roll No."
@@ -610,56 +873,61 @@ export default function StudentProfile() {
                 />
 
                 <ProfileField
-                  label="Phone number"
-                  value={profile.phoneNumber}
-                  icon={Phone}
+                  label="Student ID"
+                  value={profile.studentId}
+                  icon={BadgeCheck}
                   readOnly
-                />
-
-                <ProfileField
-                  label="Email address"
-                  value={profile.email}
-                  icon={Mail}
-                />
-
-                <ProfileField
-                  label="Date of birth"
-                  value={profile.dateOfBirth}
-                  icon={CalendarDays}
                 />
 
                 <ProfileField
                   label="Course ID"
                   value={profile.courseId}
-                  icon={Users}
+                  icon={BookOpen}
                   readOnly
                 />
 
                 <ProfileField
-                  label="Academic session ID"
+                  label="Academic Session ID"
                   value={profile.sessionId}
                   icon={CalendarDays}
                   readOnly
                 />
+
               </div>
             </section>
 
-            <section className="sp-section sp-family-section">
+            {/* ====================================== */}
+            {/* PARENT / GUARDIAN DETAILS              */}
+            {/* ====================================== */}
+
+            <section className="sp-section">
               <div className="sp-section-heading">
-                <div>
-                  <span className="sp-section-kicker">
-                    FAMILY INFORMATION
-                  </span>
 
-                  <h2>Parent / Guardian details</h2>
+                <div className="sp-section-title-group">
+                  <div className="sp-section-heading-icon">
+                    <Users size={19} />
+                  </div>
 
-                  <p>
-                    Contact information for your parents or guardians.
-                  </p>
+                  <div>
+                    <span className="sp-section-kicker">
+                      FAMILY INFORMATION
+                    </span>
+
+                    <h2>
+                      Parent / Guardian details
+                    </h2>
+
+                    <p>
+                      Contact information for your parents
+                      or guardians.
+                    </p>
+                  </div>
                 </div>
+
               </div>
 
               <div className="sp-details-grid">
+
                 <ProfileField
                   label="Father's name"
                   value={profile.fatherName}
@@ -683,31 +951,57 @@ export default function StudentProfile() {
                   value={profile.motherPhoneNumber}
                   icon={Phone}
                 />
+
               </div>
             </section>
 
+            {/* ====================================== */}
+            {/* PASSWORD & SECURITY                    */}
+            {/* ====================================== */}
+
             <section className="sp-security-card">
+
               <div className="sp-security-icon">
-                <LockKeyhole size={22} />
+                <LockKeyhole size={23} />
               </div>
 
               <div className="sp-security-content">
+
                 <span className="sp-section-kicker">
-                  ACCOUNT SECURITY
+                  SECURITY & SYSTEM
                 </span>
 
-                <h2>Password & security</h2>
+                <h2>
+                  Password & security
+                </h2>
 
                 <p>
-                  Keep your student account secure by using a strong,
-                  private password.
+                  Keep your student account secure by
+                  using a strong, private password.
                 </p>
 
                 {profile.mustChangePassword && (
                   <span className="sp-password-reminder">
+                    <AlertCircle size={13} />
+
                     Please change your initial password.
                   </span>
                 )}
+
+              </div>
+
+              <div className="sp-security-status">
+
+                <span className="sp-security-status-label">
+                  Account Status
+                </span>
+
+                <span className="sp-active-status">
+                  <span className="sp-status-dot" />
+
+                  ACTIVE
+                </span>
+
               </div>
 
               <button
@@ -716,18 +1010,30 @@ export default function StudentProfile() {
                 onClick={openPasswordModal}
               >
                 <LockKeyhole size={15} />
+
                 Update Password
               </button>
+
             </section>
+
           </>
         )}
+
       </div>
+
+      {/* ================================================= */}
+      {/* MODALS                                             */}
+      {/* ================================================= */}
 
       {activeModal && (
         <div
           className="sp-modal-backdrop"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeModal();
+            if (
+              event.target === event.currentTarget
+            ) {
+              closeModal();
+            }
           }}
         >
           <section
@@ -736,9 +1042,14 @@ export default function StudentProfile() {
             aria-modal="true"
             aria-labelledby="sp-modal-title"
           >
+
             {!successMessage ? (
               <>
+
+                {/* Modal heading */}
+
                 <div className="sp-modal-header">
+
                   <div className="sp-modal-heading-icon">
                     {activeModal === "profile" ? (
                       <UserRound size={22} />
@@ -774,18 +1085,31 @@ export default function StudentProfile() {
                       ? "Make changes to your editable personal information."
                       : "Verify your current password before setting a new one."}
                   </p>
+
                 </div>
 
+                {/* Modal error */}
+
                 {modalError && (
-                  <div className="sp-modal-error" role="alert">
+                  <div
+                    className="sp-modal-error"
+                    role="alert"
+                  >
                     <AlertCircle size={16} />
+
                     {modalError}
                   </div>
                 )}
 
+                {/* ====================================== */}
+                {/* PROFILE UPDATE FORM                    */}
+                {/* ====================================== */}
+
                 {activeModal === "profile" ? (
                   <form onSubmit={submitProfile}>
+
                     <div className="sp-form-grid">
+
                       <FormField
                         label="Email address"
                         name="email"
@@ -838,9 +1162,13 @@ export default function StudentProfile() {
                         placeholder="Enter 10-digit phone number"
                         warning={motherPhoneWarning}
                       />
+
                     </div>
 
+                    {/* Profile form buttons */}
+
                     <div className="sp-modal-actions">
+
                       <button
                         type="button"
                         className="sp-cancel-button"
@@ -861,27 +1189,40 @@ export default function StudentProfile() {
                               className="sp-spinner"
                               size={16}
                             />
+
                             Saving...
                           </>
                         ) : (
                           <>
                             <Check size={16} />
+
                             Save Changes
                           </>
                         )}
                       </button>
+
                     </div>
+
                   </form>
                 ) : (
+
+                  /* ====================================== */
+                  /* PASSWORD UPDATE FORM                  */
+                  /* ====================================== */
+
                   <form onSubmit={submitPassword}>
+
                     <div className="sp-password-fields">
+
                       <PasswordField
                         label="Current password"
                         name="currentPassword"
                         value={passwordForm.currentPassword}
                         visible={showPasswords.current}
                         onChange={handlePasswordChange}
-                        onToggle={() => togglePassword("current")}
+                        onToggle={() =>
+                          togglePassword("current")
+                        }
                       />
 
                       <PasswordField
@@ -890,37 +1231,48 @@ export default function StudentProfile() {
                         value={passwordForm.newPassword}
                         visible={showPasswords.new}
                         onChange={handlePasswordChange}
-                        onToggle={() => togglePassword("new")}
+                        onToggle={() =>
+                          togglePassword("new")
+                        }
                       />
 
                       {/* Live password validation */}
+
                       <div className="sp-password-rules">
+
                         <p className="sp-password-rules-title">
                           Password requirements
                         </p>
 
                         <div className="sp-password-rule-list">
-                          {passwordRules.map((rule, index) => (
-                            <div
-                              className={`sp-password-rule ${
-                                rule.passed
-                                  ? "sp-password-rule-passed"
-                                  : ""
-                              }`}
-                              key={index}
-                            >
-                              <span className="sp-password-rule-icon">
-                                {rule.passed ? (
-                                  <Check size={13} />
-                                ) : (
-                                  <X size={13} />
-                                )}
-                              </span>
 
-                              <span>{rule.label}</span>
-                            </div>
-                          ))}
+                          {passwordRules.map(
+                            (rule, index) => (
+                              <div
+                                className={`sp-password-rule ${
+                                  rule.passed
+                                    ? "sp-password-rule-passed"
+                                    : ""
+                                }`}
+                                key={index}
+                              >
+                                <span className="sp-password-rule-icon">
+                                  {rule.passed ? (
+                                    <Check size={13} />
+                                  ) : (
+                                    <X size={13} />
+                                  )}
+                                </span>
+
+                                <span>
+                                  {rule.label}
+                                </span>
+                              </div>
+                            )
+                          )}
+
                         </div>
+
                       </div>
 
                       <PasswordField
@@ -929,8 +1281,12 @@ export default function StudentProfile() {
                         value={passwordForm.confirmPassword}
                         visible={showPasswords.confirm}
                         onChange={handlePasswordChange}
-                        onToggle={() => togglePassword("confirm")}
+                        onToggle={() =>
+                          togglePassword("confirm")
+                        }
                       />
+
+                      {/* Password match status */}
 
                       {passwordForm.confirmPassword.length > 0 && (
                         <div
@@ -953,12 +1309,16 @@ export default function StudentProfile() {
                       )}
 
                       <p className="sp-password-hint">
-                        Your new password must be different from your
-                        current password.
+                        Your new password must be different
+                        from your current password.
                       </p>
+
                     </div>
 
+                    {/* Password form buttons */}
+
                     <div className="sp-modal-actions">
+
                       <button
                         type="button"
                         className="sp-cancel-button"
@@ -979,24 +1339,38 @@ export default function StudentProfile() {
                               className="sp-spinner"
                               size={16}
                             />
+
                             Updating...
                           </>
                         ) : (
                           <>
                             <LockKeyhole size={15} />
+
                             Update Password
                           </>
                         )}
                       </button>
+
                     </div>
+
                   </form>
                 )}
+
               </>
             ) : (
+
+              /* ====================================== */
+              /* SUCCESS SCREEN                         */
+              /* ====================================== */
+
               <div className="sp-success-content">
+
                 <div className="sp-success-ring">
                   <div className="sp-success-check">
-                    <Check size={38} strokeWidth={3} />
+                    <Check
+                      size={38}
+                      strokeWidth={3}
+                    />
                   </div>
                 </div>
 
@@ -1015,14 +1389,22 @@ export default function StudentProfile() {
                 <div className="sp-success-progress">
                   <span />
                 </div>
+
               </div>
+
             )}
+
           </section>
         </div>
       )}
+
     </main>
   );
 }
+
+// ======================================================
+// PASSWORD FIELD COMPONENT
+// ======================================================
 
 function PasswordField({
   label,
@@ -1034,9 +1416,13 @@ function PasswordField({
 }) {
   return (
     <label className="sp-form-field">
-      <span>{label}</span>
+
+      <span className="sp-form-label">
+        {label}
+      </span>
 
       <div className="sp-password-input">
+
         <input
           type={visible ? "text" : "password"}
           name={name}
@@ -1049,57 +1435,118 @@ function PasswordField({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={
+            visible ? "Hide password" : "Show password"
+          }
         >
-          {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+          {visible ? (
+            <EyeOff size={17} />
+          ) : (
+            <Eye size={17} />
+          )}
         </button>
+
       </div>
+
     </label>
   );
 }
 
+// ======================================================
+// PAGE STYLES
+// ======================================================
+
 function ProfileStyles() {
   return (
     <style>{`
+
+      /* ============================================= */
+      /* PAGE BACKGROUND                               */
+      /* ============================================= */
+
       .sp-page {
         position: relative;
         min-height: 100vh;
         overflow: hidden;
         isolation: isolate;
+
         padding: 30px clamp(18px, 4vw, 52px) 55px;
+
         color: #202945;
+
         background:
-          radial-gradient(ellipse at 8% 5%, rgba(216,223,248,.78), transparent 32%),
-          radial-gradient(ellipse at 92% 25%, rgba(193,154,82,.17), transparent 30%),
-          radial-gradient(ellipse at 50% 100%, rgba(226,231,247,.65), transparent 42%),
-          linear-gradient(135deg, #fbf4e7 0%, #f9f4ef 48%, #eef1fb 100%);
+          radial-gradient(
+            ellipse at 8% 5%,
+            rgba(216,223,248,.78),
+            transparent 32%
+          ),
+          radial-gradient(
+            ellipse at 92% 25%,
+            rgba(193,154,82,.17),
+            transparent 30%
+          ),
+          radial-gradient(
+            ellipse at 50% 100%,
+            rgba(226,231,247,.65),
+            transparent 42%
+          ),
+          linear-gradient(
+            135deg,
+            #fbf4e7 0%,
+            #f9f4ef 48%,
+            #eef1fb 100%
+          );
+
         font-family: inherit;
       }
 
       .sp-page::before {
         content: "";
+
         position: absolute;
         z-index: -1;
         inset: 0;
+
         pointer-events: none;
+
         opacity: .25;
-        background-image: radial-gradient(rgba(48,59,93,.16) .7px, transparent .7px);
+
+        background-image:
+          radial-gradient(
+            rgba(48,59,93,.16) .7px,
+            transparent .7px
+          );
+
         background-size: 24px 24px;
-        mask-image: linear-gradient(to bottom, black, transparent 75%);
+
+        mask-image:
+          linear-gradient(
+            to bottom,
+            black,
+            transparent 75%
+          );
       }
+
+      /* ============================================= */
+      /* BACKGROUND CIRCLES                            */
+      /* ============================================= */
 
       .sp-background-circle {
         position: absolute;
         z-index: -1;
+
         pointer-events: none;
+
         border: 1px solid rgba(48,59,93,.1);
         border-radius: 50%;
+
         animation: sp-float 9s ease-in-out infinite;
       }
 
       .sp-circle-one {
         width: 430px;
         height: 430px;
+
         top: 70px;
         right: -200px;
       }
@@ -1107,41 +1554,67 @@ function ProfileStyles() {
       .sp-circle-two {
         width: 290px;
         height: 290px;
+
         top: 145px;
         right: -130px;
+
         animation-delay: -3s;
       }
 
       .sp-circle-three {
         width: 250px;
         height: 250px;
+
         bottom: 25px;
         left: -145px;
+
         border-color: rgba(193,154,82,.2);
+
         animation-delay: -5s;
       }
 
       @keyframes sp-float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-13px); }
+        0%, 100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-13px);
+        }
       }
+
+      /* ============================================= */
+      /* MAIN CONTAINER                                */
+      /* ============================================= */
 
       .sp-container {
         position: relative;
         z-index: 1;
+
         width: min(1120px, 100%);
+
         margin: 0 auto;
       }
+
+      /* ============================================= */
+      /* BACK BUTTON                                   */
+      /* ============================================= */
 
       .sp-back {
         display: inline-flex;
         align-items: center;
         gap: 8px;
+
         color: #86632c;
+
         font-size: 12px;
         font-weight: 750;
+
         text-decoration: none;
-        transition: gap .22s ease, color .22s ease;
+
+        transition:
+          gap .22s ease,
+          color .22s ease;
       }
 
       .sp-back:hover {
@@ -1149,275 +1622,498 @@ function ProfileStyles() {
         color: #202945;
       }
 
+      /* ============================================= */
+      /* PAGE HEADING                                  */
+      /* ============================================= */
+
       .sp-heading {
         display: flex;
         align-items: center;
         gap: 16px;
+
         margin: 28px 0 24px;
+
         animation: sp-rise-in .55s ease both;
       }
 
       .sp-heading-icon {
         display: grid;
         place-items: center;
+
         width: 56px;
         height: 56px;
+
         flex-shrink: 0;
+
         color: #fff;
-        background: linear-gradient(145deg, #303b5d, #202945);
+
+        background:
+          linear-gradient(
+            145deg,
+            #303b5d,
+            #202945
+          );
+
         border: 1px solid rgba(255,255,255,.3);
         border-radius: 17px;
-        box-shadow: 0 10px 25px rgba(32,41,69,.2);
+
+        box-shadow:
+          0 10px 25px rgba(32,41,69,.2);
       }
 
-      .sp-eyebrow, .sp-section-kicker {
+      .sp-eyebrow,
+      .sp-section-kicker {
         display: block;
+
         color: #a27b37;
+
         font-size: 9px;
         font-weight: 850;
+
         letter-spacing: 1.7px;
       }
 
       .sp-heading h1 {
         margin: 4px 0;
+
         color: #202945;
+
         font-size: clamp(27px, 4vw, 35px);
+
         letter-spacing: -.8px;
       }
 
       .sp-heading p {
         margin: 0;
+
         color: #7b8296;
+
         font-size: 12px;
         line-height: 1.6;
       }
 
-      /* Student identity banner */
+      /* ============================================= */
+      /* STUDENT IDENTITY BANNER                       */
+      /* ============================================= */
 
       .sp-identity-card {
         position: relative;
+
         display: flex;
         align-items: center;
         gap: 18px;
+
         overflow: hidden;
+
         padding: 25px 28px;
+
         color: #fff;
+
         background:
-          radial-gradient(circle at 90% 0%, rgba(193,154,82,.3), transparent 35%),
-          linear-gradient(115deg, #202945, #303b5d);
+          radial-gradient(
+            circle at 90% 0%,
+            rgba(193,154,82,.3),
+            transparent 35%
+          ),
+          linear-gradient(
+            115deg,
+            #202945,
+            #303b5d
+          );
+
         border: 1px solid rgba(255,255,255,.18);
         border-radius: 21px;
-        box-shadow: 0 15px 35px rgba(32,41,69,.16);
+
+        box-shadow:
+          0 15px 35px rgba(32,41,69,.16);
+
         animation: sp-rise-in .6s .06s ease both;
       }
 
       .sp-identity-card::after {
         content: "";
+
         position: absolute;
+
         width: 220px;
         height: 220px;
+
         top: -145px;
         right: 100px;
+
         border: 1px solid rgba(255,255,255,.1);
         border-radius: 50%;
-        box-shadow: 0 0 0 25px rgba(255,255,255,.025),
-                    0 0 0 50px rgba(255,255,255,.02);
+
+        box-shadow:
+          0 0 0 25px rgba(255,255,255,.025),
+          0 0 0 50px rgba(255,255,255,.02);
+
         pointer-events: none;
       }
 
       .sp-avatar {
         position: relative;
         z-index: 1;
+
         display: grid;
         place-items: center;
+
         width: 62px;
         height: 62px;
+
         flex-shrink: 0;
+
         color: #f6e5c3;
+
         background: rgba(255,255,255,.12);
+
         border: 1px solid rgba(255,255,255,.22);
         border-radius: 19px;
       }
 
       .sp-identity-label {
         color: #d9c18f;
+
         font-size: 9px;
         font-weight: 800;
+
         letter-spacing: 1.5px;
       }
 
       .sp-identity-text h2 {
         margin: 5px 0;
+
         color: #fff;
+
         font-size: 21px;
+
         letter-spacing: -.3px;
       }
 
       .sp-identity-text p {
         margin: 0;
+
         color: #d0d5e1;
+
         font-size: 11px;
       }
 
       .sp-verified {
         position: relative;
         z-index: 1;
+
         display: inline-flex;
         align-items: center;
         gap: 7px;
+
         margin-left: auto;
+
         padding: 10px 14px;
+
         color: #e4f4e9;
+
         background: rgba(90,164,125,.17);
+
         border: 1px solid rgba(155,218,180,.25);
         border-radius: 30px;
+
         font-size: 10px;
         font-weight: 750;
       }
 
-      /* Main information section cards */
+      .sp-status-dot {
+        width: 7px;
+        height: 7px;
+
+        flex-shrink: 0;
+
+        background: #49b879;
+
+        border-radius: 50%;
+
+        box-shadow:
+          0 0 0 3px rgba(73,184,121,.12);
+      }
+
+      /* ============================================= */
+      /* SECTION CARDS                                 */
+      /* ============================================= */
 
       .sp-section {
         position: relative;
+
         overflow: hidden;
+
         margin-top: 25px;
         padding: 29px;
+
         background:
-          linear-gradient(145deg, rgba(255,255,255,.97), rgba(250,251,255,.94));
+          linear-gradient(
+            145deg,
+            rgba(255,255,255,.97),
+            rgba(250,251,255,.94)
+          );
+
         border: 1px solid rgba(211,216,231,.95);
         border-radius: 22px;
+
         box-shadow:
           0 15px 38px rgba(32,41,69,.065),
           0 2px 7px rgba(32,41,69,.025),
           inset 0 1px 0 rgba(255,255,255,.95);
+
         backdrop-filter: blur(12px);
+
         animation: sp-rise-in .65s ease both;
-        transition: box-shadow .3s ease, border-color .3s ease;
+
+        transition:
+          box-shadow .3s ease,
+          border-color .3s ease;
       }
 
       .sp-section::before {
         content: "";
+
         position: absolute;
+
         top: 0;
         left: 0;
+
         width: 100%;
         height: 4px;
-        background: linear-gradient(90deg, #b58a43, #e5d0a7 48%, #303b5d);
+
+        background:
+          linear-gradient(
+            90deg,
+            #b58a43,
+            #e5d0a7 48%,
+            #303b5d
+          );
+
         opacity: .9;
       }
 
       .sp-section::after {
         content: "";
+
         position: absolute;
+
         top: -115px;
         right: -90px;
+
         width: 250px;
         height: 250px;
+
         border: 1px solid rgba(193,154,82,.09);
         border-radius: 50%;
+
         pointer-events: none;
       }
 
       .sp-section:hover {
         border-color: rgba(193,154,82,.4);
+
         box-shadow:
           0 18px 42px rgba(32,41,69,.085),
           0 3px 9px rgba(32,41,69,.035);
       }
 
-      .sp-personal-section {
+      .sp-section:nth-of-type(2) {
         animation-delay: .1s;
       }
 
-      .sp-family-section {
-        animation-delay: .18s;
+      .sp-section:nth-of-type(3) {
+        animation-delay: .17s;
       }
 
       .sp-section-heading {
         position: relative;
         z-index: 1;
+
         display: flex;
         align-items: center;
         justify-content: space-between;
+
         gap: 18px;
+
         margin-bottom: 24px;
+      }
+
+      .sp-section-title-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+
+        min-width: 0;
+      }
+
+      .sp-section-heading-icon {
+        display: grid;
+        place-items: center;
+
+        width: 40px;
+        height: 40px;
+
+        flex-shrink: 0;
+
+        color: #9b712d;
+
+        background:
+          linear-gradient(
+            145deg,
+            #fff8eb,
+            #f8edda
+          );
+
+        border: 1px solid rgba(193,154,82,.18);
+        border-radius: 12px;
       }
 
       .sp-section-heading h2,
       .sp-security-content h2 {
         margin: 7px 0 6px;
+
         color: #202945;
+
         font-size: 21px;
         font-weight: 800;
+
         letter-spacing: -.45px;
       }
 
       .sp-section-heading p,
       .sp-security-content p {
         margin: 0;
+
         color: #7d879d;
+
         font-size: 12px;
         line-height: 1.7;
       }
 
       .sp-section-kicker {
         color: #a27b37;
+
         font-size: 9px;
       }
 
-      /* Individual information boxes */
+      .sp-fixed-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+
+        padding: 9px 12px;
+
+        color: #727d94;
+
+        background: #f4f5f9;
+
+        border: 1px solid #e4e7ef;
+        border-radius: 9px;
+
+        font-size: 10px;
+        font-weight: 750;
+      }
+
+      /* ============================================= */
+      /* DETAIL GRID                                   */
+      /* ============================================= */
 
       .sp-details-grid {
         position: relative;
         z-index: 1;
+
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
         gap: 15px;
       }
 
+      /* ============================================= */
+      /* INDIVIDUAL DETAIL BOX                        */
+      /* ============================================= */
+
       .sp-detail {
         position: relative;
+
         display: flex;
         align-items: center;
         gap: 15px;
+
         min-width: 0;
         min-height: 86px;
+
         padding: 17px 19px;
+
         overflow: hidden;
-        background: linear-gradient(115deg, #ffffff 0%, #f9faff 100%);
+
+        background:
+          linear-gradient(
+            115deg,
+            #ffffff 0%,
+            #f9faff 100%
+          );
+
         border: 1px solid #e2e7f1;
         border-left: 3px solid rgba(193,154,82,.75);
+
         border-radius: 15px;
+
         box-shadow:
           0 4px 12px rgba(32,41,69,.035),
           inset 0 1px 0 rgba(255,255,255,.9);
+
         transition:
           transform .25s ease,
           box-shadow .25s ease,
           border-color .25s ease,
           background .25s ease;
+
         animation: sp-card-in .5s ease both;
       }
 
       .sp-detail::after {
         content: "";
+
         position: absolute;
+
         right: -35px;
         bottom: -48px;
+
         width: 100px;
         height: 100px;
-        background: radial-gradient(circle, rgba(193,154,82,.09), transparent 70%);
+
+        background:
+          radial-gradient(
+            circle,
+            rgba(193,154,82,.09),
+            transparent 70%
+          );
+
         border-radius: 50%;
+
         opacity: 0;
+
         transition: opacity .25s ease;
+
         pointer-events: none;
       }
 
       .sp-detail:hover {
         transform: translateY(-3px);
+
         border-color: rgba(193,154,82,.55);
         border-left-color: #a77c35;
-        background: linear-gradient(115deg, #fff, #f8f9ff);
+
+        background:
+          linear-gradient(
+            115deg,
+            #fff,
+            #f8f9ff
+          );
+
         box-shadow:
           0 10px 22px rgba(32,41,69,.075),
           0 2px 5px rgba(193,154,82,.07);
@@ -1427,19 +2123,121 @@ function ProfileStyles() {
         opacity: 1;
       }
 
+      /* ============================================= */
+      /* MISSING EDITABLE DATA - RED BORDER            */
+      /* ============================================= */
+
+      .sp-detail-missing {
+        background:
+          linear-gradient(
+            115deg,
+            #fffafa,
+            #fff5f5
+          );
+
+        border: 1px solid #e66a6a;
+        border-left: 4px solid #dc4545;
+
+        box-shadow:
+          0 3px 12px rgba(220,69,69,.07),
+          0 0 0 2px rgba(220,69,69,.06);
+      }
+
+      .sp-detail-missing:hover {
+        border-color: #d83f3f;
+        border-left-color: #c92e2e;
+
+        background:
+          linear-gradient(
+            115deg,
+            #fffafa,
+            #fff1f1
+          );
+
+        box-shadow:
+          0 8px 20px rgba(220,69,69,.12),
+          0 0 0 2px rgba(220,69,69,.07);
+      }
+
+      .sp-detail-missing .sp-detail-icon {
+        color: #c84242;
+
+        background:
+          linear-gradient(
+            145deg,
+            #fff0f0,
+            #ffe3e3
+          );
+
+        border-color: #f4cccc;
+      }
+
+      .sp-detail-missing .sp-detail-label {
+        color: #a64b4b;
+      }
+
+      .sp-detail-missing .sp-detail-value {
+        color: #c13f3f;
+      }
+
+      .sp-detail-missing .sp-value-empty {
+        font-weight: 750;
+      }
+
+      .sp-missing-badge {
+        position: relative;
+        z-index: 1;
+
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        flex-shrink: 0;
+
+        padding: 5px 7px;
+
+        color: #b93636;
+
+        background: #ffeded;
+
+        border: 1px solid #f5cccc;
+        border-radius: 20px;
+
+        font-size: 9px;
+        font-weight: 800;
+      }
+
+      /* ============================================= */
+      /* DETAIL ICON                                  */
+      /* ============================================= */
+
       .sp-detail-icon {
         position: relative;
         z-index: 1;
+
         display: grid;
         place-items: center;
+
         width: 47px;
         height: 47px;
+
         flex-shrink: 0;
+
         color: #9b712d;
-        background: linear-gradient(145deg, #fff8eb, #f8edda);
+
+        background:
+          linear-gradient(
+            145deg,
+            #fff8eb,
+            #f8edda
+          );
+
         border: 1px solid rgba(193,154,82,.18);
         border-radius: 14px;
-        box-shadow: 0 3px 9px rgba(193,154,82,.07);
+
+        box-shadow:
+          0 3px 9px rgba(193,154,82,.07);
+
         transition:
           transform .25s ease,
           background .25s ease,
@@ -1448,52 +2246,102 @@ function ProfileStyles() {
 
       .sp-detail:hover .sp-detail-icon {
         color: #fff;
-        background: linear-gradient(145deg, #b58a43, #96702f);
+
+        background:
+          linear-gradient(
+            145deg,
+            #b58a43,
+            #96702f
+          );
+
         transform: scale(1.05);
       }
+
+      .sp-detail-missing:hover .sp-detail-icon {
+        color: #fff;
+
+        background:
+          linear-gradient(
+            145deg,
+            #e06464,
+            #c93a3a
+          );
+      }
+
+      /* ============================================= */
+      /* DETAIL CONTENT                                */
+      /* ============================================= */
 
       .sp-detail-content {
         position: relative;
         z-index: 1;
+
         display: flex;
         flex: 1;
+
         flex-direction: column;
         gap: 7px;
+
         min-width: 0;
       }
 
       .sp-detail-label {
         color: #7e879c;
+
         font-size: 11px;
         font-weight: 550;
+
         letter-spacing: .1px;
       }
 
       .sp-detail-value {
         overflow-wrap: anywhere;
+
         color: #26324f;
+
         font-size: 14px;
         font-weight: 800;
+
         line-height: 1.4;
+
         letter-spacing: -.15px;
       }
+
+      .sp-value-empty {
+        color: #9299a9;
+        font-weight: 650;
+      }
+
+      /* ============================================= */
+      /* FIXED BADGE                                   */
+      /* ============================================= */
 
       .sp-readonly {
         position: relative;
         z-index: 1;
+
         align-self: center;
+
         flex-shrink: 0;
+
         padding: 5px 9px;
+
         color: #7c8497;
+
         background: #f0f2f7;
+
         border: 1px solid #e7eaf1;
         border-radius: 20px;
+
         font-size: 9px;
         font-weight: 800;
+
         letter-spacing: .2px;
       }
 
-      /* Buttons */
+      /* ============================================= */
+      /* BUTTONS                                       */
+      /* ============================================= */
 
       .sp-primary-button,
       .sp-secondary-button,
@@ -1502,14 +2350,21 @@ function ProfileStyles() {
         align-items: center;
         justify-content: center;
         gap: 8px;
+
         padding: 12px 17px;
+
         color: #fff;
+
         background: #202945;
+
         border: 1px solid #202945;
         border-radius: 11px;
+
         font-size: 11px;
         font-weight: 750;
+
         cursor: pointer;
+
         transition:
           transform .22s ease,
           box-shadow .22s ease,
@@ -1519,7 +2374,10 @@ function ProfileStyles() {
       .sp-primary-button:hover,
       .sp-submit-button:hover {
         background: #303b5d;
-        box-shadow: 0 8px 19px rgba(32,41,69,.2);
+
+        box-shadow:
+          0 8px 19px rgba(32,41,69,.2);
+
         transform: translateY(-2px);
       }
 
@@ -1529,81 +2387,198 @@ function ProfileStyles() {
         transform: translateY(0);
       }
 
-      /* Security section */
+      /* ============================================= */
+      /* SECURITY CARD                                 */
+      /* ============================================= */
 
       .sp-security-card {
         display: flex;
         align-items: center;
         gap: 18px;
+
         margin-top: 25px;
         padding: 24px 27px;
+
         background:
-          radial-gradient(circle at 95% 0%, rgba(193,154,82,.12), transparent 32%),
-          linear-gradient(110deg, rgba(216,223,248,.75), rgba(255,255,255,.96));
+          radial-gradient(
+            circle at 95% 0%,
+            rgba(193,154,82,.12),
+            transparent 32%
+          ),
+          linear-gradient(
+            110deg,
+            rgba(216,223,248,.75),
+            rgba(255,255,255,.96)
+          );
+
         border: 1px solid #dfe4f1;
         border-radius: 20px;
-        box-shadow: 0 10px 27px rgba(32,41,69,.05);
-        transition: box-shadow .25s ease, transform .25s ease;
+
+        box-shadow:
+          0 10px 27px rgba(32,41,69,.05);
+
+        transition:
+          box-shadow .25s ease,
+          transform .25s ease;
+
         animation: sp-rise-in .65s .25s ease both;
       }
 
       .sp-security-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 30px rgba(32,41,69,.08);
+
+        box-shadow:
+          0 14px 30px rgba(32,41,69,.08);
       }
 
       .sp-security-icon {
         display: grid;
         place-items: center;
+
         width: 52px;
         height: 52px;
+
         flex-shrink: 0;
+
         color: #9b7738;
+
         background: #fff;
+
         border: 1px solid #e8eaf2;
         border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(32,41,69,.06);
+
+        box-shadow:
+          0 4px 12px rgba(32,41,69,.06);
       }
 
       .sp-security-content {
         flex: 1;
+        min-width: 0;
+      }
+
+      .sp-security-content h2 {
+        font-size: 19px;
       }
 
       .sp-password-reminder {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
         margin-top: 9px;
         padding: 6px 9px;
+
         color: #94651e;
+
         background: #fff6e6;
+
         border: 1px solid #f1e1c1;
         border-radius: 7px;
+
         font-size: 10px;
         font-weight: 750;
       }
 
+      .sp-security-status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+
+        flex-shrink: 0;
+      }
+
+      .sp-security-status-label {
+        color: #777f91;
+        font-size: 9px;
+      }
+
+      .sp-active-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        padding: 7px 10px;
+
+        color: #278354;
+
+        background: #eaf7ef;
+
+        border: 1px solid #d3efde;
+        border-radius: 20px;
+
+        font-size: 10px;
+        font-weight: 850;
+      }
+
       .sp-secondary-button {
         color: #303b5d;
+
         background: #fff;
+
         border-color: #dfe3ef;
       }
 
       .sp-secondary-button:hover {
         background: #f8f9fd;
-        box-shadow: 0 6px 15px rgba(32,41,69,.09);
+
+        box-shadow:
+          0 6px 15px rgba(32,41,69,.09);
+
         transform: translateY(-2px);
       }
 
-      /* Loading and errors */
+      /* ============================================= */
+      /* LOADING                                       */
+      /* ============================================= */
 
       .sp-loading {
         position: relative;
         z-index: 1;
+
         display: grid;
+
         min-height: 65vh;
+
         place-content: center;
         justify-items: center;
+
         gap: 12px;
+
         color: #68728a;
+
+        text-align: center;
+      }
+
+      .sp-loading-icon {
+        display: grid;
+        place-items: center;
+
+        width: 70px;
+        height: 70px;
+
+        color: #303b5d;
+
+        background: rgba(255,255,255,.75);
+
+        border: 1px solid #e3e7f1;
+        border-radius: 20px;
+
+        box-shadow:
+          0 8px 25px rgba(32,41,69,.07);
+      }
+
+      .sp-loading h2 {
+        margin: 0;
+
+        color: #303b5d;
+
+        font-size: 18px;
+      }
+
+      .sp-loading p {
+        margin: 0;
+
         font-size: 12px;
       }
 
@@ -1612,89 +2587,143 @@ function ProfileStyles() {
       }
 
       @keyframes sp-spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
+
+      /* ============================================= */
+      /* ERROR MESSAGES                                */
+      /* ============================================= */
 
       .sp-page-error,
       .sp-modal-error {
         display: flex;
         align-items: center;
         gap: 9px;
+
         padding: 13px 15px;
+
         color: #9c3d3d;
+
         background: #fff4f3;
+
         border: 1px solid #f1d5d2;
         border-radius: 11px;
+
         font-size: 11px;
       }
 
       .sp-page-error button {
         margin-left: auto;
+
         color: #8c3939;
+
         background: transparent;
+
         border: 0;
+
         font-weight: 800;
+
         cursor: pointer;
       }
 
-      /* Modal */
+      /* ============================================= */
+      /* MODAL BACKDROP                                */
+      /* ============================================= */
 
       .sp-modal-backdrop {
         position: fixed;
         inset: 0;
+
         z-index: 300;
+
         display: grid;
         place-items: center;
+
         overflow-y: auto;
+
         padding: 22px;
+
         background: rgba(18,25,44,.62);
+
         backdrop-filter: blur(8px);
+
         animation: sp-fade-in .2s ease both;
       }
 
+      /* ============================================= */
+      /* MODAL                                         */
+      /* ============================================= */
+
       .sp-modal {
         width: min(620px, 100%);
+
         max-height: min(90vh, 850px);
+
         overflow-y: auto;
+
         padding: 29px;
+
         background: #fff;
+
         border: 1px solid rgba(255,255,255,.8);
         border-radius: 22px;
-        box-shadow: 0 25px 90px rgba(12,19,39,.3);
-        animation: sp-modal-in .28s cubic-bezier(.2,.8,.2,1) both;
+
+        box-shadow:
+          0 25px 90px rgba(12,19,39,.3);
+
+        animation:
+          sp-modal-in .28s cubic-bezier(.2,.8,.2,1) both;
       }
 
       .sp-modal-header {
         position: relative;
+
         margin-bottom: 22px;
       }
 
       .sp-modal-heading-icon {
         display: grid;
         place-items: center;
+
         width: 45px;
         height: 45px;
+
         margin-bottom: 15px;
+
         color: #9b7738;
+
         background: #fbf4e7;
+
         border: 1px solid #f0e3c9;
         border-radius: 14px;
       }
 
       .sp-modal-close {
         position: absolute;
+
         top: 0;
         right: 0;
+
         display: grid;
         place-items: center;
+
         width: 36px;
         height: 36px;
+
         color: #747d91;
+
         background: #f5f6f9;
+
         border: 1px solid #eceef3;
         border-radius: 10px;
+
         cursor: pointer;
-        transition: background .2s ease, transform .2s ease;
+
+        transition:
+          background .2s ease,
+          transform .2s ease;
       }
 
       .sp-modal-close:hover {
@@ -1709,20 +2738,31 @@ function ProfileStyles() {
 
       .sp-modal-header h2 {
         margin: 7px 0;
+
         color: #202945;
+
         font-size: 23px;
       }
 
       .sp-modal-header p {
         margin: 0;
+
         color: #81899c;
+
         font-size: 11px;
         line-height: 1.7;
       }
 
+      /* ============================================= */
+      /* FORM GRID                                     */
+      /* ============================================= */
+
       .sp-form-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
         gap: 16px;
       }
 
@@ -1730,26 +2770,44 @@ function ProfileStyles() {
         display: flex;
         flex-direction: column;
         gap: 8px;
+
         min-width: 0;
+
         color: #46506b;
+
         font-size: 10px;
         font-weight: 750;
+      }
+
+      .sp-form-label {
+        color: #46506b;
       }
 
       .sp-form-field input {
         width: 100%;
         min-width: 0;
+
         height: 45px;
+
         padding: 0 13px;
+
         color: #303a57;
+
         background: #fbfcff;
+
         border: 1px solid #e3e7f0;
         border-radius: 10px;
+
         outline: none;
+
         font: inherit;
         font-size: 11px;
         font-weight: 500;
-        transition: border .2s ease, box-shadow .2s ease, background .2s ease;
+
+        transition:
+          border .2s ease,
+          box-shadow .2s ease,
+          background .2s ease;
       }
 
       .sp-form-field input:hover {
@@ -1758,8 +2816,23 @@ function ProfileStyles() {
 
       .sp-form-field input:focus {
         background: #fff;
+
         border-color: #b89555;
-        box-shadow: 0 0 0 3px rgba(193,154,82,.14);
+
+        box-shadow:
+          0 0 0 3px rgba(193,154,82,.14);
+      }
+
+      /* Empty fields in the update form */
+
+      .sp-form-field input.sp-input-empty {
+        border-color: #e7b4b4;
+        background: #fffafa;
+      }
+
+      .sp-form-field input.sp-input-empty:focus {
+        border-color: #b89555;
+        background: #fff;
       }
 
       /* Phone validation warnings */
@@ -1767,30 +2840,40 @@ function ProfileStyles() {
       .sp-form-field input.sp-input-invalid {
         border-color: #d85b5b;
         background: #fffafa;
-        box-shadow: 0 0 0 2px rgba(216,91,91,.08);
+
+        box-shadow:
+          0 0 0 2px rgba(216,91,91,.08);
       }
 
       .sp-form-field input.sp-input-invalid:focus {
         border-color: #d85b5b;
-        box-shadow: 0 0 0 3px rgba(216,91,91,.12);
+
+        box-shadow:
+          0 0 0 3px rgba(216,91,91,.12);
       }
 
       .sp-field-warning {
         display: flex;
         align-items: flex-start;
         gap: 5px;
+
         color: #c04444;
+
         font-size: 10px;
         font-weight: 600;
+
         line-height: 1.5;
       }
 
       .sp-field-warning svg {
         flex-shrink: 0;
+
         margin-top: 1px;
       }
 
-      /* Password fields */
+      /* ============================================= */
+      /* PASSWORD INPUT                                */
+      /* ============================================= */
 
       .sp-password-fields {
         display: flex;
@@ -1808,45 +2891,65 @@ function ProfileStyles() {
 
       .sp-password-input button {
         position: absolute;
+
         top: 50%;
         right: 10px;
+
         display: grid;
         place-items: center;
+
         padding: 4px;
+
         color: #858da0;
+
         background: transparent;
+
         border: 0;
+
         transform: translateY(-50%);
+
         cursor: pointer;
       }
 
       .sp-password-hint {
         margin: -4px 0 0;
+
         color: #858da0;
+
         font-size: 10px;
         line-height: 1.6;
       }
 
-      /* Live password rules */
+      /* ============================================= */
+      /* PASSWORD RULES                                */
+      /* ============================================= */
 
       .sp-password-rules {
         margin-top: -5px;
+
         padding: 15px 16px;
+
         background: #f8f9fc;
+
         border: 1px solid #e7eaf2;
         border-radius: 12px;
       }
 
       .sp-password-rules-title {
         margin: 0 0 12px;
+
         color: #303b5d;
+
         font-size: 11px;
         font-weight: 800;
       }
 
       .sp-password-rule-list {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
         gap: 10px 13px;
       }
 
@@ -1854,21 +2957,30 @@ function ProfileStyles() {
         display: flex;
         align-items: center;
         gap: 8px;
+
         color: #a04b4b;
+
         font-size: 10px;
         font-weight: 600;
+
         line-height: 1.4;
+
         transition: color .2s ease;
       }
 
       .sp-password-rule-icon {
         display: grid;
         place-items: center;
+
         width: 19px;
         height: 19px;
+
         flex-shrink: 0;
+
         color: #b64d4d;
+
         background: #fff0ef;
+
         border-radius: 50%;
       }
 
@@ -1876,16 +2988,24 @@ function ProfileStyles() {
         color: #278354;
       }
 
-      .sp-password-rule-passed .sp-password-rule-icon {
+      .sp-password-rule-passed
+      .sp-password-rule-icon {
         color: #fff;
+
         background: #43a875;
       }
+
+      /* ============================================= */
+      /* PASSWORD MATCH STATUS                         */
+      /* ============================================= */
 
       .sp-password-match {
         display: flex;
         align-items: center;
         gap: 7px;
+
         margin-top: -7px;
+
         font-size: 10px;
         font-weight: 700;
       }
@@ -1898,28 +3018,44 @@ function ProfileStyles() {
         color: #c04444;
       }
 
+      /* ============================================= */
+      /* MODAL ERROR                                   */
+      /* ============================================= */
+
       .sp-modal-error {
         margin-bottom: 17px;
       }
+
+      /* ============================================= */
+      /* MODAL BUTTONS                                 */
+      /* ============================================= */
 
       .sp-modal-actions {
         display: flex;
         justify-content: flex-end;
         gap: 10px;
+
         margin-top: 25px;
         padding-top: 18px;
+
         border-top: 1px solid #eff0f4;
       }
 
       .sp-cancel-button {
         padding: 11px 16px;
+
         color: #626b80;
+
         background: #f5f6f9;
+
         border: 1px solid #e8eaf0;
         border-radius: 10px;
+
         font-size: 11px;
         font-weight: 750;
+
         cursor: pointer;
+
         transition: background .2s ease;
       }
 
@@ -1933,53 +3069,79 @@ function ProfileStyles() {
         transform: none;
       }
 
-      /* Success state */
+      /* ============================================= */
+      /* SUCCESS SCREEN                                */
+      /* ============================================= */
 
       .sp-success-content {
         display: flex;
         flex-direction: column;
+
         align-items: center;
         justify-content: center;
+
         min-height: 330px;
+
         padding: 20px 10px;
+
         text-align: center;
+
         animation: sp-success-in .3s ease both;
       }
 
       .sp-success-ring {
         display: grid;
         place-items: center;
+
         width: 104px;
         height: 104px;
+
         margin-bottom: 24px;
+
         background: #eaf7ef;
+
         border: 1px solid #d5efdf;
         border-radius: 50%;
-        animation: sp-ring-pop .45s cubic-bezier(.2,.8,.2,1) both;
+
+        animation:
+          sp-ring-pop .45s cubic-bezier(.2,.8,.2,1) both;
       }
 
       .sp-success-check {
         display: grid;
         place-items: center;
+
         width: 67px;
         height: 67px;
+
         color: #fff;
+
         background: #48a878;
+
         border-radius: 50%;
-        box-shadow: 0 7px 20px rgba(72,168,120,.27);
-        animation: sp-check-pop .45s .12s cubic-bezier(.2,.8,.2,1) both;
+
+        box-shadow:
+          0 7px 20px rgba(72,168,120,.27);
+
+        animation:
+          sp-check-pop .45s .12s cubic-bezier(.2,.8,.2,1) both;
       }
 
       .sp-success-content h2 {
         margin: 9px 0 7px;
+
         color: #202945;
+
         font-size: 24px;
       }
 
       .sp-success-content p {
         max-width: 360px;
+
         margin: 0;
+
         color: #7e8799;
+
         font-size: 11px;
         line-height: 1.7;
       }
@@ -1987,28 +3149,39 @@ function ProfileStyles() {
       .sp-success-progress {
         width: 145px;
         height: 3px;
+
         margin-top: 25px;
+
         overflow: hidden;
+
         background: #edf0f3;
+
         border-radius: 10px;
       }
 
       .sp-success-progress span {
         display: block;
+
         width: 100%;
         height: 100%;
+
         background: #48a878;
+
         transform-origin: left;
+
         animation: sp-progress 1.1s linear both;
       }
 
-      /* Animations */
+      /* ============================================= */
+      /* ANIMATIONS                                    */
+      /* ============================================= */
 
       @keyframes sp-rise-in {
         from {
           opacity: 0;
           transform: translateY(13px);
         }
+
         to {
           opacity: 1;
           transform: translateY(0);
@@ -2020,6 +3193,7 @@ function ProfileStyles() {
           opacity: 0;
           transform: translateY(8px);
         }
+
         to {
           opacity: 1;
           transform: translateY(0);
@@ -2027,8 +3201,13 @@ function ProfileStyles() {
       }
 
       @keyframes sp-fade-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
       }
 
       @keyframes sp-modal-in {
@@ -2036,6 +3215,7 @@ function ProfileStyles() {
           opacity: 0;
           transform: translateY(18px) scale(.97);
         }
+
         to {
           opacity: 1;
           transform: translateY(0) scale(1);
@@ -2047,6 +3227,7 @@ function ProfileStyles() {
           opacity: 0;
           transform: scale(.97);
         }
+
         to {
           opacity: 1;
           transform: scale(1);
@@ -2058,6 +3239,7 @@ function ProfileStyles() {
           opacity: 0;
           transform: scale(.65);
         }
+
         to {
           opacity: 1;
           transform: scale(1);
@@ -2069,6 +3251,7 @@ function ProfileStyles() {
           opacity: 0;
           transform: scale(.35) rotate(-35deg);
         }
+
         to {
           opacity: 1;
           transform: scale(1) rotate(0);
@@ -2076,13 +3259,43 @@ function ProfileStyles() {
       }
 
       @keyframes sp-progress {
-        from { transform: scaleX(0); }
-        to { transform: scaleX(1); }
+        from {
+          transform: scaleX(0);
+        }
+
+        to {
+          transform: scaleX(1);
+        }
       }
 
-      /* Responsive layout */
+      /* ============================================= */
+      /* TABLET                                        */
+      /* ============================================= */
+
+      @media(max-width: 900px) {
+
+        .sp-details-grid {
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        }
+
+        .sp-security-card {
+          flex-wrap: wrap;
+        }
+
+        .sp-security-content {
+          flex: 1;
+          min-width: 180px;
+        }
+
+      }
+
+      /* ============================================= */
+      /* MOBILE                                        */
+      /* ============================================= */
 
       @media(max-width: 700px) {
+
         .sp-page {
           padding: 22px 15px 40px;
         }
@@ -2118,9 +3331,20 @@ function ProfileStyles() {
         .sp-secondary-button {
           margin-left: 70px;
         }
+
+        .sp-security-status {
+          align-items: flex-start;
+          margin-left: 70px;
+        }
+
       }
 
+      /* ============================================= */
+      /* SMALL MOBILE                                  */
+      /* ============================================= */
+
       @media(max-width: 520px) {
+
         .sp-details-grid,
         .sp-form-grid {
           grid-template-columns: 1fr;
@@ -2173,9 +3397,19 @@ function ProfileStyles() {
         .sp-password-rule-list {
           grid-template-columns: 1fr;
         }
+
+        .sp-fixed-label {
+          font-size: 9px;
+        }
+
       }
 
+      /* ============================================= */
+      /* VERY SMALL SCREENS                            */
+      /* ============================================= */
+
       @media(max-width: 370px) {
+
         .sp-detail {
           gap: 10px;
           padding: 12px 10px;
@@ -2190,12 +3424,23 @@ function ProfileStyles() {
           display: none;
         }
 
+        .sp-missing-badge {
+          padding: 4px;
+          font-size: 8px;
+        }
+
         .sp-identity-card {
           gap: 12px;
         }
+
       }
 
+      /* ============================================= */
+      /* REDUCE MOTION                                */
+      /* ============================================= */
+
       @media(prefers-reduced-motion: reduce) {
+
         .sp-page *,
         .sp-page *::before,
         .sp-page *::after {
@@ -2204,7 +3449,9 @@ function ProfileStyles() {
           transition-duration: .01ms !important;
           scroll-behavior: auto !important;
         }
+
       }
+
     `}</style>
   );
 }

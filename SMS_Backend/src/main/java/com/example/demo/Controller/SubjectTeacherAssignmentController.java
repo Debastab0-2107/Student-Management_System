@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.service.SubjectTeacherAssignmentExcelParser;
 import com.example.demo.service.SubjectTeacherAssignmentExcelRow;
 import com.example.demo.service.SubjectTeacherAssignmentService;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * Administrator endpoint for uploading subject-teacher assignments.
@@ -81,6 +82,32 @@ public class SubjectTeacherAssignmentController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Assignment upload failed. Check the backend log.");
+        }
+    }
+    
+    /**
+     * GET /api/admin/upload/assignments
+     *
+     * Returns all active teacher-subject assignments.
+     */
+    @GetMapping("/assignments")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAssignments() {
+
+        try {
+
+            return ResponseEntity.ok(
+                    assignmentService.getActiveAssignments()
+            );
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unable to retrieve teacher-subject assignments: "
+                            + exception.getMessage());
         }
     }
 }

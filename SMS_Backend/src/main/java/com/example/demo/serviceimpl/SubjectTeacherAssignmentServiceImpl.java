@@ -1,6 +1,7 @@
 package com.example.demo.serviceimpl;
 
 import java.util.HashSet;
+import com.example.demo.dto.response.SubjectTeacherAssignmentResponse;
 import java.util.List;
 import java.util.Set;
 
@@ -121,5 +122,10 @@ public class SubjectTeacherAssignmentServiceImpl implements SubjectTeacherAssign
                     + " is inactive or does not belong to semester "
                     + semesterId + ".");
         }
+    }
+    
+    @Override
+    public List<SubjectTeacherAssignmentResponse> getActiveAssignments() {
+        return assignmentDao.getActiveAssignments();
     }
 }

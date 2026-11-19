@@ -7,7 +7,9 @@ import {
   Download, X, CheckCircle2, AlertCircle, LoaderCircle, Search,
   RefreshCw, Printer, FileDown, UserX, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, SlidersHorizontal, ArrowLeft,
-  ShieldCheck, Clock3, FileUp
+  ShieldCheck, Clock3, FileUp, Eye,
+  UserRound, CalendarDays, Phone, Mail, GraduationCap as GraduationCapIcon,
+  BookOpen, IdCard, Shield, User
 } from "lucide-react";
 
 const COLORS = {
@@ -985,6 +987,8 @@ export default function StudentManagement() {
    STUDENT LIST PAGE
    ========================================================= */
 
+
+
 export function StudentList() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -996,13 +1000,28 @@ export function StudentList() {
   const [session, setSession] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  
+
+  // Close the details dialog with Escape, while keeping the effect hook unconditional.
+  useEffect(() => {
+    if (!selectedStudent) return undefined;
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") setSelectedStudent(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [selectedStudent]);
+
+  // ================= LOAD STUDENTS =================
 
   async function loadStudents() {
     setLoading(true);
 
     try {
       const response = await api.get("/admin/students");
-
       const payload = response.data;
 
       const records = Array.isArray(payload)
@@ -1022,7 +1041,7 @@ export function StudentList() {
       setNotice({
         type: "error",
         text: error.response?.data?.message ||
-          "Unable to load student records. The Admin student-list API may not be available yet."
+          "Unable to load student records."
       });
 
     } finally {
@@ -1034,6 +1053,8 @@ export function StudentList() {
     loadStudents();
   }, []);
 
+  // ================= HELPER FUNCTIONS =================
+
   function activeStudent(student) {
     const value = student.status ?? student.active;
 
@@ -1041,6 +1062,30 @@ export function StudentList() {
       String(value).toLowerCase() === "active" ||
       String(value).toLowerCase() === "true";
   }
+
+  function displayValue(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      String(value).trim() === ""
+    ) {
+      return "-";
+    }
+
+    return String(value);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[char]));
+  }
+
+  // ================= FILTER STUDENTS =================
 
   const filteredStudents = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -1079,7 +1124,9 @@ export function StudentList() {
         student.email,
         student.courseId,
         student.sessionId,
-        student.admissionYear
+        student.admissionYear,
+        student.universityRollNo,
+        student.universityRegistrationNo
       ].some(value =>
         String(value ?? "").toLowerCase().includes(query)
       );
@@ -1092,6 +1139,8 @@ export function StudentList() {
       );
     });
   }, [students, search, course, status, session]);
+
+  // ================= PAGINATION =================
 
   const totalPages = Math.max(
     1,
@@ -1114,6 +1163,8 @@ export function StudentList() {
   const activeCount = filteredStudents.filter(activeStudent).length;
   const inactiveCount = filteredStudents.length - activeCount;
 
+  // ================= RESET FILTERS =================
+
   function resetFilters() {
     setSearch("");
     setCourse("ALL");
@@ -1121,6 +1172,8 @@ export function StudentList() {
     setSession("");
     setPage(1);
   }
+
+  // ================= DEACTIVATE STUDENT =================
 
   async function deactivateStudent(student) {
     const id = String(student.studentId || "").trim();
@@ -1154,6 +1207,13 @@ export function StudentList() {
         )
       );
 
+      // Keep the opened popup status synchronized too.
+      setSelectedStudent(previous =>
+        previous && previous.studentId === id
+          ? { ...previous, status: false, active: false }
+          : previous
+      );
+
       setNotice({
         type: "success",
         text: `${student.name || id} has been deactivated.`
@@ -1170,6 +1230,8 @@ export function StudentList() {
       setWorkingId("");
     }
   }
+
+  // ================= EXPORT EXCEL =================
 
   const filterName = [
     course === "ALL" ? "AllCourses" : course,
@@ -1191,7 +1253,7 @@ export function StudentList() {
     const rows = filteredStudents.map(student => ({
       "Student ID": student.studentId || "",
       "Student Name": student.name || "",
-      "Phone Number": student.phoneNumber || "",
+      "University Roll No.": displayValue(student.universityRollNo),
       "Course": student.courseId || student.course || "",
       "Session / Admission Year":
         student.sessionId ||
@@ -1206,7 +1268,7 @@ export function StudentList() {
     worksheet["!cols"] = [
       { wch: 20 },
       { wch: 28 },
-      { wch: 18 },
+      { wch: 24 },
       { wch: 14 },
       { wch: 24 },
       { wch: 14 }
@@ -1226,6 +1288,8 @@ export function StudentList() {
     );
   }
 
+  // ================= PRINT STUDENTS =================
+
   function printStudents() {
     if (!filteredStudents.length) {
       setNotice({
@@ -1240,7 +1304,7 @@ export function StudentList() {
         <td>${index + 1}</td>
         <td>${escapeHtml(student.studentId)}</td>
         <td>${escapeHtml(student.name)}</td>
-        <td>${escapeHtml(student.phoneNumber)}</td>
+        <td>${escapeHtml(student.universityRollNo || "-")}</td>
         <td>${escapeHtml(student.courseId || student.course)}</td>
         <td>${escapeHtml(student.sessionId || student.session || student.admissionYear)}</td>
         <td>${activeStudent(student) ? "Active" : "Inactive"}</td>
@@ -1281,7 +1345,7 @@ export function StudentList() {
         </style>
       </head>
       <body>
-        <h1>DPP Institute of Technology — Student Directory</h1>
+        <h1>Student Directory</h1>
         <p>
           Filters: ${filterName} ·
           Total matching records: ${filteredStudents.length}
@@ -1292,7 +1356,7 @@ export function StudentList() {
               <th>#</th>
               <th>Student ID</th>
               <th>Name</th>
-              <th>Phone</th>
+              <th>University Roll No.</th>
               <th>Course</th>
               <th>Session</th>
               <th>Status</th>
@@ -1309,15 +1373,49 @@ export function StudentList() {
     printWindow.print();
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[char]));
-  }
+  // ================= POPUP DETAILS =================
+
+  // The field names below follow the student object returned by /admin/students.
+  // Missing values are displayed as "-" without changing the API data.
+  const detailSections = selectedStudent
+    ? [
+        {
+          title: "PERSONAL INFORMATION",
+          icon: <UserRound size={17} />,
+          fields: [
+            { label: "Name", value: selectedStudent.name, icon: <UserRound size={17} /> },
+            { label: "Date of Birth", value: selectedStudent.dateOfBirth, icon: <CalendarDays size={17} /> },
+            { label: "Phone", value: selectedStudent.phoneNumber, icon: <Phone size={17} /> },
+            { label: "Email", value: selectedStudent.email, icon: <Mail size={17} /> }
+          ]
+        },
+        {
+          title: "ACADEMIC & UNIVERSITY DETAILS",
+          icon: <GraduationCapIcon size={17} />,
+          fields: [
+            { label: "Student ID", value: selectedStudent.studentId, icon: <IdCard size={17} /> },
+            { label: "Course / Dept", value: selectedStudent.courseId || selectedStudent.course, icon: <GraduationCapIcon size={17} /> },
+            { label: "Admission Session", value: selectedStudent.sessionId || selectedStudent.session || selectedStudent.admissionYear, icon: <CalendarDays size={17} /> },
+            { label: "Current Semester", value: selectedStudent.currentSemesterId, icon: <BookOpen size={17} /> },
+            { label: "University Roll No.", value: selectedStudent.universityRollNo, icon: <Shield size={17} /> },
+            { label: "University Reg. No.", value: selectedStudent.universityRegistrationNo, icon: <IdCard size={17} /> }
+          ]
+        },
+        {
+          title: "PARENT / GUARDIAN INFORMATION",
+          icon: <Users size={17} />,
+          fields: [
+            { label: "Father's Name", value: selectedStudent.fatherName, icon: <User size={17} /> },
+            { label: "Father's Phone", value: selectedStudent.fatherPhoneNumber, icon: <Phone size={17} /> },
+            { label: "Mother's Name", value: selectedStudent.motherName, icon: <User size={17} /> },
+            { label: "Mother's Phone", value: selectedStudent.motherPhoneNumber, icon: <Phone size={17} /> }
+          ]
+        }
+      ]
+    : [];
+
+
+  // ================= COMPONENT UI =================
 
   return (
     <div className="sm-page">
@@ -1329,45 +1427,966 @@ export function StudentList() {
         .sl-top h1{margin:7px 0;color:${COLORS.navy};font-size:clamp(25px,3vw,32px);letter-spacing:-.8px;}
         .sl-top p{margin:0;color:${COLORS.muted};font-size:12px;line-height:1.7;}
         .sl-actions{display:flex;gap:9px;flex-wrap:wrap;}
-        .sl-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:18px;}
-        .sl-stat{padding:17px 19px;border:1px solid #ffffffd9;border-radius:15px;background:#ffffffd9;box-shadow:0 8px 22px #2029450b;}
-        .sl-stat span{display:block;color:#82899b;font-size:9px;font-weight:850;letter-spacing:1px;text-transform:uppercase;}
-        .sl-stat strong{display:block;margin-top:8px;color:${COLORS.navy};font-size:25px;}
-        .sl-panel{padding:20px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffffdc;box-shadow:0 10px 28px #2029450c;}
-        .sl-filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
-        .sl-filter-head h3{display:flex;align-items:center;gap:9px;margin:0;color:${COLORS.navy};font-size:14px;}
-        .sl-filter-grid{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;gap:12px;}
-        .sl-field label{display:block;margin-bottom:7px;color:#687187;font-size:9px;font-weight:850;letter-spacing:1px;text-transform:uppercase;}
-        .sl-field input,.sl-field select,.sl-search input{width:100%;height:42px;padding:0 12px;border:1px solid #e2e3e6;border-radius:10px;outline:none;color:${COLORS.ink};background:#fff;font:inherit;font-size:11px;}
-        .sl-field input:focus,.sl-field select:focus,.sl-search input:focus{border-color:${COLORS.gold};box-shadow:0 0 0 3px #c19a521b;}
-        .sl-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:17px 0;flex-wrap:wrap;}
-        .sl-search{position:relative;flex:1;min-width:230px;max-width:560px;}
-        .sl-search svg{position:absolute;left:13px;top:13px;color:#8d95a5;}
-        .sl-search input{padding-left:39px;height:44px;}
-        .sl-count{color:#858ba0;font-size:11px;}
-        .sl-count strong{color:${COLORS.navy};}
-        .sl-table-wrap{overflow-x:auto;border:1px solid #ececf0;border-radius:13px;background:white;}
-        .sl-table{width:100%;border-collapse:collapse;min-width:790px;}
-        .sl-table th{padding:13px 14px;color:#778095;background:#f8f8f7;font-size:9px;letter-spacing:.8px;text-align:left;text-transform:uppercase;white-space:nowrap;}
-        .sl-table td{padding:14px;border-top:1px solid #f0f0f1;color:#596176;font-size:11px;white-space:nowrap;}
-        .sl-table td strong{color:${COLORS.navy};font-size:11px;}
-        .sl-status{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:850;}
-        .sl-status.active{color:#28714d;background:#eaf6ef;}
-        .sl-status.inactive{color:#a04a4a;background:#fff0ef;}
-        .sl-deactivate{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #f0d4d1;border-radius:8px;color:#a34b46;background:#fff8f7;font-size:9px;font-weight:800;cursor:pointer;}
-        .sl-deactivate:disabled{opacity:.5;cursor:wait;}
-        .sl-empty{padding:45px 15px;text-align:center;color:#9299a8;font-size:12px;}
-        .sl-empty svg{display:block;margin:0 auto 10px;color:#b6a47e;}
-        .sl-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px;flex-wrap:wrap;}
-        .sl-page-buttons{display:flex;align-items:center;gap:5px;}
-        .sl-page-buttons button{min-width:31px;height:31px;border:1px solid #e5e5e7;border-radius:8px;color:#677087;background:white;font-size:10px;cursor:pointer;}
-        .sl-page-buttons button.current{border-color:${COLORS.navy};color:white;background:${COLORS.navy};}
-        .sl-page-buttons button:disabled{opacity:.4;cursor:not-allowed;}
-        .sl-page-size{height:32px;padding:0 8px;border:1px solid #e5e5e7;border-radius:8px;color:#626b80;background:white;font-size:10px;}
-        .sl-loading{display:flex;justify-content:center;align-items:center;gap:10px;padding:45px;color:#858ba0;font-size:12px;}
-        @media(max-width:760px){.sl-filter-grid{grid-template-columns:1fr 1fr;}.sl-stats{grid-template-columns:1fr 1fr;}}
-        @media(max-width:480px){.sl-filter-grid{grid-template-columns:1fr;}.sl-stats{grid-template-columns:1fr;}.sl-actions{width:100%;}.sl-actions button{flex:1;}}
+        
+/* ===== STATISTICS CARDS ===== */
+
+.sl-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.sl-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  padding: 15px 18px;
+  border: 1.5px solid #d9c69e;
+  border-radius: 13px;
+  background: #fffaf0;
+  box-shadow: 0 5px 15px rgba(32,41,69,.07);
+  animation: slStatEnter .55s ease both;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.sl-stat:nth-child(2) {
+  animation-delay: .08s;
+}
+
+.sl-stat:nth-child(3) {
+  animation-delay: .16s;
+}
+
+.sl-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(32,41,69,.14);
+}
+
+/* Matching - cream and gold */
+
+.sl-stat:nth-child(1) {
+  background: linear-gradient(120deg,#fffdf6,#f8efd9);
+  border-color: #d6c18e;
+}
+
+.sl-stat:nth-child(1) span {
+  color: #806637;
+}
+
+.sl-stat:nth-child(1) strong {
+  color: #26314e;
+}
+
+/* Active - DEEP GREEN with WHITE TEXT */
+
+.sl-stat:nth-child(2) {
+  background: linear-gradient(120deg, #20734D, #31915F);
+  border-color: #104d32;
+}
+
+.sl-stat:nth-child(2) span,
+.sl-stat:nth-child(2) strong {
+  color: #ffffff;
+}
+
+/* Inactive - DEEP RED with WHITE TEXT */
+
+.sl-stat:nth-child(3) {
+  background: linear-gradient(120deg, #A33D43, #C45459);
+  border-color: #76262c;
+}
+
+.sl-stat:nth-child(3) span,
+.sl-stat:nth-child(3) strong {
+  color: #ffffff;
+}
+
+.sl-stat span {
+  display: block;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.sl-stat strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 26px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== MAIN CREAM PANEL ===== */
+
+.sl-panel {
+  padding: 18px;
+  border: 1.5px solid #cdb987;
+  border-radius: 17px;
+  background: linear-gradient(145deg,#fffdf6,#fff9e9);
+  box-shadow: 0 9px 25px rgba(32,41,69,.10);
+}
+
+/* ===== REFINE STUDENT LISTING HEADER ===== */
+
+.sl-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sl-filter-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 15px;
+  border: 1px solid #303c60;
+  border-radius: 10px;
+  color: #ffffff;
+  background: linear-gradient(110deg,#172342,#303d64);
+  font-size: 13px;
+  font-weight: 850;
+  box-shadow: 0 3px 9px rgba(23,35,66,.15);
+}
+
+.sl-filter-head h3 svg {
+  color: #ffffff;
+}
+
+/* Reset button */
+
+.sl-filter-head .sm-text-button {
+  padding: 8px 16px;
+  border: 1px solid #a68a53;
+  border-radius: 9px;
+  color: #e8d19a;
+  background: #172342;
+  font-size: 10px;
+  font-weight: 800;
+  transition: all .2s ease;
+}
+
+.sl-filter-head .sm-text-button:hover {
+  color: #ffffff;
+  border-color: #d6b875;
+  background: #303d64;
+  transform: translateY(-2px);
+}
+
+/* ===== NAVY FILTER CONTAINER ===== */
+
+.sl-filter-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #303d61;
+  border-radius: 11px;
+  background: linear-gradient(110deg,#172342,#202e50);
+  box-shadow: 0 4px 12px rgba(23,35,66,.13);
+}
+
+.sl-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.sl-field input,
+.sl-field select,
+.sl-search input {
+  width: 100%;
+  height: 39px;
+  padding: 0 12px;
+  border: 1.5px solid #d6c9a9;
+  border-radius: 8px;
+  outline: none;
+  color: #26314e;
+  background: #fffdf5;
+  font: inherit;
+  font-size: 11px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.sl-field input:focus,
+.sl-field select:focus,
+.sl-search input:focus {
+  border-color: #c5a55f;
+  box-shadow: 0 0 0 3px rgba(197,165,95,.2);
+}
+
+/* ===== SEARCH TOOLBAR ===== */
+
+.sl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 14px;
+  flex-wrap: wrap;
+}
+
+.sl-search {
+  position: relative;
+  flex: 1;
+  min-width: 230px;
+  max-width: 560px;
+}
+
+.sl-search svg {
+  position: absolute;
+  left: 13px;
+  top: 11px;
+  color: #a18a58;
+}
+
+.sl-search input {
+  height: 38px;
+  padding-left: 39px;
+  background: #fffdf6;
+}
+
+.sl-count {
+  color: #586078;
+  font-size: 10px;
+}
+
+.sl-count strong {
+  color: #202945;
+}
+
+/* ===== TABLE OUTER BORDER ===== */
+
+.sl-table-wrap {
+  overflow-x: auto;
+  border: 1.8px solid #c6b17f;
+  border-radius: 12px;
+  background: #fffdf5;
+  box-shadow: 0 3px 12px rgba(88,69,34,.09);
+}
+
+.sl-table {
+  width: 100%;
+  min-width: 790px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Navy to gold table heading */
+
+.sl-table thead {
+  background: linear-gradient(
+    105deg,
+    #202945 0%,
+    #303b5d 65%,
+    #a28b59 100%
+  );
+}
+
+.sl-table th {
+  padding: 13px 14px;
+  border: none;
+  color: #ffffff;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .65px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Clearly visible gold row borders */
+
+.sl-table td {
+  padding: 13px 14px;
+  border-bottom: 1.3px solid #d9c9a3;
+  color: #303950;
+  font-size: 11px;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+
+.sl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sl-table td strong {
+  color: #202945;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Cream and pale yellow alternating rows */
+
+.sl-table tbody tr:nth-child(odd) {
+  background: #fffdf5;
+}
+
+.sl-table tbody tr:nth-child(even) {
+  background: #f8f1df;
+}
+
+.sl-table tbody tr {
+  transition: background .2s ease;
+  animation: slTableRowEnter .35s ease both;
+}
+
+.sl-table tbody tr:hover {
+  background: #f0e5c9;
+}
+
+/* Status labels */
+
+.sl-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.sl-status.active {
+  color: #28714d;
+  border-color: #c4e2cc;
+  background: #e1f1e5;
+}
+
+.sl-status.inactive {
+  color: #a04a4a;
+  border-color: #e9c2bf;
+  background: #fce8e6;
+}
+
+/* Action buttons */
+
+.sl-deactivate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border: 1.3px solid #bd8580;
+  border-radius: 8px;
+  color: #a34b46;
+  background: #fffaf4;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.sl-deactivate:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #a34b46;
+  background: #fff0ed;
+  box-shadow: 0 4px 10px rgba(163,75,70,.12);
+}
+
+.sl-deactivate:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.sl-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sl-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1.3px solid #cbb98f;
+  border-radius: 9px;
+  color: #303b5d;
+  background: #fffaf0;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.sl-view:hover {
+  transform: translateY(-2px);
+  border-color: #a68a53;
+  color: #ffffff;
+  background: #202945;
+  box-shadow: 0 5px 13px #20294522;
+}
+
+/* ===== EMPTY STATE AND PAGINATION ===== */
+
+.sl-empty {
+  padding: 45px 15px;
+  text-align: center;
+  color: #9299a8;
+  font-size: 12px;
+}
+
+.sl-empty svg {
+  display: block;
+  margin: 0 auto 10px;
+  color: #b6a47e;
+}
+
+.sl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.sl-page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sl-page-buttons button {
+  min-width: 31px;
+  height: 31px;
+  border: 1px solid #d5c8a8;
+  border-radius: 8px;
+  color: #303b5d;
+  background: #fffdf5;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.sl-page-buttons button:hover:not(:disabled) {
+  border-color: #a68a53;
+  transform: translateY(-2px);
+}
+
+.sl-page-buttons button.current {
+  border-color: #202945;
+  color: #ffffff;
+  background: #202945;
+}
+
+.sl-page-buttons button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.sl-page-size {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #d5c8a8;
+  border-radius: 8px;
+  color: #303b5d;
+  background: #fffdf5;
+  font-size: 10px;
+}
+
+.sl-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 45px;
+  color: #858ba0;
+  font-size: 12px;
+}
+
+/* ===== LIST ANIMATIONS ===== */
+
+@keyframes slStatEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slTableRowEnter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media(max-width:760px) {
+  .sl-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sl-stats {
+    gap: 9px;
+  }
+}
+
+@media(max-width:520px) {
+  .sl-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .sl-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sl-panel {
+    padding: 12px;
+  }
+
+  .sl-filter-head {
+    align-items: flex-start;
+  }
+
+  .sl-search {
+    max-width: none;
+    min-width: 100%;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .sl-stat,
+  .sl-table tbody tr {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+        /* STUDENT DETAILS POPUP */
+        .sl-modal-backdrop{
+          position:fixed;
+          inset:0;
+          z-index:1000;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:18px;
+          background:rgba(20,29,49,.72);
+          backdrop-filter:blur(8px);
+          animation:slBackdropIn .25s ease-out both;
+        }
+
+        .sl-modal{
+          position:relative;
+          width:min(780px,100%);
+          max-height:min(88vh,920px);
+          overflow:auto;
+          border:2.5px solid ${COLORS.gold};
+          border-radius:21px;
+          background:linear-gradient(145deg,#fff 0%,#fffdf9 100%);
+          box-shadow:0 0 0 5px #c19a521a,0 25px 80px #0c162a59;
+          animation:slModalIn .38s cubic-bezier(.2,.8,.2,1) both;
+        }
+
+        .sl-modal::before{
+          content:"";
+          position:absolute;
+          top:0;
+          left:12%;
+          width:76%;
+          height:3px;
+          border-radius:0 0 10px 10px;
+          background:linear-gradient(90deg,transparent,#c19a52,#e7cc91,#c19a52,transparent);
+        }
+
+        .sl-modal-head{
+          position:sticky;
+          top:0;
+          z-index:2;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:15px;
+          padding:23px 26px;
+          border-bottom:1px solid #eee6d7;
+          background:linear-gradient(110deg,#fff,#fffaf0);
+        }
+
+        .sl-modal-head h2{
+          margin:0 0 6px;
+          color:${COLORS.navy};
+          font-size:21px;
+          font-weight:850;
+          letter-spacing:-.5px;
+        }
+
+        .sl-modal-head p{
+          margin:0;
+          color:${COLORS.muted};
+          font-size:11px;
+        }
+
+        .sl-modal-close{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          width:39px;
+          height:39px;
+          flex-shrink:0;
+          border:1px solid #e9dfcb;
+          border-radius:11px;
+          color:#6f7585;
+          background:#fff;
+          cursor:pointer;
+          transition:all .22s ease;
+        }
+
+        .sl-modal-close:hover{
+          transform:rotate(90deg);
+          border-color:${COLORS.gold};
+          color:#fff;
+          background:${COLORS.navy};
+          box-shadow:0 5px 14px #2029452e;
+        }
+
+        .sl-detail-grid{
+          display:grid;
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:13px;
+          padding:23px 26px 27px;
+        }
+
+        .sl-detail-item{
+          position:relative;
+          min-width:0;
+          padding:16px 17px;
+          overflow:hidden;
+          border:2px solid #e9e9ed;
+          border-radius:13px;
+          background:linear-gradient(135deg,#fff,#faf9f6);
+          transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease;
+          animation:slCardIn .4s ease both;
+        }
+
+        .sl-detail-item::before{
+          content:"";
+          position:absolute;
+          top:13px;
+          bottom:13px;
+          left:0;
+          width:3px;
+          border-radius:0 5px 5px 0;
+          background:${COLORS.gold};
+          opacity:.75;
+        }
+
+        .sl-detail-item:hover{
+          transform:translateY(-3px);
+          border-color:#d7bd87;
+          background:#fffdf8;
+          box-shadow:0 8px 20px #20294512;
+        }
+
+        .sl-detail-item span{
+          display:block;
+          margin-bottom:8px;
+          color:#8a8fa0;
+          font-size:9px;
+          font-weight:850;
+          letter-spacing:1px;
+          text-transform:uppercase;
+        }
+
+        .sl-detail-item strong{
+          display:block;
+          overflow-wrap:anywhere;
+          color:${COLORS.ink};
+          font-size:12px;
+          font-weight:750;
+          line-height:1.6;
+        }
+
+        /* ACTIVE STATUS - GREEN */
+        .sl-detail-item.status-active{
+          border-color:#b9e3ca;
+          background:linear-gradient(135deg,#f4fff7,#eaf8ef);
+        }
+
+        .sl-detail-item.status-active::before{
+          background:#26965c;
+          opacity:1;
+        }
+
+        .sl-detail-item.status-active span{
+          color:#39845b;
+        }
+
+        .sl-detail-item.status-active strong{
+          display:inline-flex;
+          align-items:center;
+          gap:7px;
+          width:fit-content;
+          padding:6px 12px;
+          border:1px solid #b9e3ca;
+          border-radius:30px;
+          color:#167443;
+          background:#dff5e7;
+          font-size:10px;
+          letter-spacing:.5px;
+        }
+
+        .sl-detail-item.status-active strong::before{
+          content:"";
+          width:7px;
+          height:7px;
+          border-radius:50%;
+          background:#26965c;
+          box-shadow:0 0 0 3px #26965c21;
+        }
+
+        /* INACTIVE STATUS - RED */
+        .sl-detail-item.status-inactive{
+          border-color:#f0c5c5;
+          background:linear-gradient(135deg,#fff8f8,#fff0f0);
+        }
+
+        .sl-detail-item.status-inactive::before{
+          background:#d34d4d;
+          opacity:1;
+        }
+
+        .sl-detail-item.status-inactive span{
+          color:#a95c5c;
+        }
+
+        .sl-detail-item.status-inactive strong{
+          display:inline-flex;
+          align-items:center;
+          gap:7px;
+          width:fit-content;
+          padding:6px 12px;
+          border:1px solid #f0c5c5;
+          border-radius:30px;
+          color:#b52f2f;
+          background:#ffe5e5;
+          font-size:10px;
+          letter-spacing:.5px;
+        }
+
+        .sl-detail-item.status-inactive strong::before{
+          content:"";
+          width:7px;
+          height:7px;
+          border-radius:50%;
+          background:#d34d4d;
+          box-shadow:0 0 0 3px #d34d4d1f;
+        }
+
+        @keyframes slBackdropIn{
+          from{opacity:0}
+          to{opacity:1}
+        }
+
+        @keyframes slModalIn{
+          from{opacity:0;transform:translateY(22px) scale(.96)}
+          to{opacity:1;transform:translateY(0) scale(1)}
+        }
+
+        @keyframes slCardIn{
+          from{opacity:0;transform:translateY(10px)}
+          to{opacity:1;transform:translateY(0)}
+        }
+
+        @media(max-width:760px){
+          .sl-filter-grid{grid-template-columns:1fr 1fr;}
+          .sl-stats{grid-template-columns:1fr 1fr;}
+        }
+
+        @media(max-width:520px){
+          .sl-modal-backdrop{padding:10px;}
+          .sl-modal{border-radius:16px;max-height:92vh;}
+          .sl-modal-head{padding:17px;}
+          .sl-modal-head h2{font-size:18px;}
+          .sl-detail-grid{grid-template-columns:1fr;gap:10px;padding:16px;}
+          .sl-detail-item{padding:14px 15px;}
+        }
+
+        @media(max-width:480px){
+          .sl-filter-grid{grid-template-columns:1fr;}
+          .sl-stats{grid-template-columns:1fr;}
+          .sl-actions{width:100%;}
+          .sl-actions button{flex:1;}
+        }
+
+        @media(prefers-reduced-motion:reduce){
+          .sl-modal-backdrop,.sl-modal,.sl-detail-item{
+            animation:none!important;
+            transition:none!important;
+          }
+        }
+
+        /* ===== REFINED STUDENT DETAILS DIALOG ===== */
+        .sl-modal-backdrop{
+          background:rgba(17,25,43,.66);
+          backdrop-filter:blur(9px) saturate(115%);
+          -webkit-backdrop-filter:blur(9px) saturate(115%);
+        }
+        .sl-modal{
+          width:min(780px,100%);
+          max-height:min(90vh,940px);
+          padding:0;
+          overflow:auto;
+          border:1.5px solid #d8bd80;
+          border-radius:22px;
+          background:#fffdf8;
+          box-shadow:0 0 0 5px rgba(193,154,82,.13),0 30px 90px rgba(8,17,35,.42);
+          transform-origin:center center;
+          animation:slModalSpring .62s cubic-bezier(.18,.89,.32,1.22) both;
+          scrollbar-width:thin;
+          scrollbar-color:#d5c294 #f8f5ed;
+        }
+        .sl-modal::before{display:none;}
+        .sl-modal-head{
+          padding:21px 24px 17px;
+          background:linear-gradient(115deg,#fffdf7,#fff8e9);
+          border-bottom:1px solid #eee4d0;
+        }
+        .sl-modal-head h2{
+          margin:0 0 5px;
+          font-size:22px;
+          letter-spacing:-.55px;
+        }
+        .sl-modal-head p{font-size:11px;}
+        .sl-modal-close{
+          width:39px;height:39px;border-radius:50%;
+          border:1px solid #e9dfcb;background:#fffdf8;
+        }
+        .sl-modal-close:hover{transform:rotate(90deg) scale(1.04);}
+        .sl-profile-banner{
+          display:flex;align-items:center;justify-content:space-between;
+          gap:16px;margin:16px 21px 13px;padding:14px 17px;
+          border:1px solid rgba(255,255,255,.14);
+          border-radius:13px;color:#fff;
+          background:linear-gradient(105deg,#202945 0%,#303b5d 100%);
+          box-shadow:0 7px 18px rgba(32,41,69,.16);
+          animation:slBannerSettle .55s .12s both;
+        }
+        .sl-profile-identity{min-width:0;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;}
+        .sl-profile-identity strong{color:#fff;font-size:16px;font-weight:850;letter-spacing:-.2px;}
+        .sl-profile-identity span{color:#d5d9e3;font-size:12px;}
+        .sl-profile-status-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+        .sl-profile-status-label{color:#e7e9ef;font-size:9px;font-weight:800;letter-spacing:.6px;}
+        .sl-profile-status{
+          display:inline-flex;align-items:center;gap:7px;padding:6px 11px;
+          border:1px solid rgba(255,255,255,.16);border-radius:30px;
+          font-size:9px;font-weight:850;letter-spacing:.5px;
+        }
+        .sl-profile-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(255,255,255,.1);}
+        .sl-profile-status.active{color:#c9f4d8;background:rgba(44,151,91,.24);}
+        .sl-profile-status.inactive{color:#ffd1d1;background:rgba(191,65,65,.22);}
+        .sl-detail-sections{display:grid;gap:12px;padding:0 21px 22px;}
+        .sl-detail-section{
+          padding:12px 12px 13px;
+          border:1.5px solid #cbb27c;
+          border-radius:13px;
+          background:linear-gradient(145deg,#fffefa 0%,#fff9ed 100%);
+          box-shadow:0 4px 11px rgba(32,41,69,.055),inset 0 1px 0 #fff;
+          animation:slSectionBounce .58s cubic-bezier(.2,.82,.28,1.18) both;
+        }
+        .sl-detail-section:nth-child(2){animation-delay:.09s;}
+        .sl-detail-section:nth-child(3){animation-delay:.17s;}
+        .sl-detail-section-head{
+          display:flex;align-items:center;gap:8px;margin:0 0 10px;
+          color:#27324d;font-size:10px;font-weight:900;letter-spacing:.45px;
+        }
+        .sl-detail-section-head-icon{
+          width:27px;height:27px;display:grid;place-items:center;flex-shrink:0;
+          border:1px solid #e8d9b8;border-radius:8px;color:#987638;background:#f8f0df;
+        }
+        .sl-detail-fields{
+          display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+          gap:9px 11px;
+        }
+        .sl-detail-field{
+          min-width:0;display:flex;align-items:center;gap:8px;
+          padding:8px 8px;border:1px solid #eee4cf;border-radius:10px;
+          background:rgba(255,255,255,.66);
+          transition:transform .24s cubic-bezier(.2,.8,.2,1),border-color .24s,box-shadow .24s,background .24s;
+          animation:slFieldAppear .45s ease both;
+        }
+        .sl-detail-field:hover{
+          transform:translateY(-2px) scale(1.012);
+          border-color:#d5bd8c;background:#fff;
+          box-shadow:0 5px 13px rgba(32,41,69,.08);
+        }
+        .sl-detail-field-icon{
+          width:32px;height:32px;display:grid;place-items:center;flex-shrink:0;
+          border:1px solid #e9ddc3;border-radius:10px;color:#987638;
+          background:linear-gradient(145deg,#fbf5e8,#f2e8d2);
+        }
+        .sl-detail-field-copy{min-width:0;display:grid;gap:3px;}
+        .sl-detail-field-copy span{
+          color:#72788a;font-size:9px;font-weight:600;line-height:1.25;
+        }
+        .sl-detail-field-copy strong{
+          display:block;overflow-wrap:anywhere;color:#252c43;
+          font-size:11px;font-weight:800;line-height:1.35;
+        }
+        @keyframes slModalSpring{
+          0%{opacity:0;transform:translateY(28px) scale(.78)}
+          62%{opacity:1;transform:translateY(-4px) scale(1.018)}
+          82%{transform:translateY(2px) scale(.995)}
+          100%{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes slBannerSettle{
+          0%{opacity:0;transform:translateY(9px) scale(.985)}
+          70%{opacity:1;transform:translateY(-2px) scale(1.005)}
+          100%{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes slSectionBounce{
+          0%{opacity:0;transform:translateY(13px) scale(.975)}
+          72%{opacity:1;transform:translateY(-2px) scale(1.004)}
+          100%{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes slFieldAppear{
+          from{opacity:0;transform:translateY(7px)}
+          to{opacity:1;transform:translateY(0)}
+        }
+        @media(max-width:760px){
+          .sl-detail-fields{grid-template-columns:repeat(2,minmax(0,1fr));}
+        }
+        @media(max-width:520px){
+          .sl-modal{width:100%;max-height:93vh;border-radius:17px;}
+          .sl-modal-head{padding:17px;}
+          .sl-profile-banner{align-items:flex-start;flex-direction:column;margin:12px 13px;padding:12px 13px;gap:9px;}
+          .sl-profile-status-wrap{width:100%;justify-content:space-between;}
+          .sl-detail-sections{padding:0 13px 15px;gap:10px;}
+          .sl-detail-section{padding:11px 10px;}
+          .sl-detail-fields{grid-template-columns:1fr 1fr;gap:7px;}
+          .sl-detail-field{padding:7px 6px;gap:6px;}
+          .sl-detail-field-icon{width:29px;height:29px;}
+          .sl-detail-field-copy span{font-size:8px;}
+          .sl-detail-field-copy strong{font-size:10px;}
+        }
+        @media(max-width:360px){
+          .sl-detail-fields{grid-template-columns:1fr;}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .sl-modal,.sl-profile-banner,.sl-detail-section,.sl-detail-field{
+            animation:none!important;transition:none!important;
+          }
+        }
       `}</style>
+
+      {/* PAGE HEADER */}
 
       <Link to="/admin/students" className="sl-back">
         <ArrowLeft size={15} />
@@ -1420,6 +2439,8 @@ export function StudentList() {
         onClose={() => setNotice({ type: "", text: "" })}
       />
 
+      {/* STATISTICS */}
+
       <div className="sl-stats">
         <div className="sl-stat">
           <span>Matching Students</span>
@@ -1436,6 +2457,8 @@ export function StudentList() {
           <strong>{inactiveCount}</strong>
         </div>
       </div>
+
+      {/* FILTERS AND TABLE */}
 
       <section className="sl-panel">
         <div className="sl-filter-head">
@@ -1497,7 +2520,7 @@ export function StudentList() {
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}
-              placeholder="Search student ID, name, phone, course..."
+              placeholder="Search student ID, name, roll number, course..."
             />
           </div>
 
@@ -1512,7 +2535,7 @@ export function StudentList() {
               <tr>
                 <th>Student ID</th>
                 <th>Student Name</th>
-                <th>Phone Number</th>
+                <th>University Roll No.</th>
                 <th>Course</th>
                 <th>Session</th>
                 <th>Status</th>
@@ -1550,22 +2573,25 @@ export function StudentList() {
                   return (
                     <tr key={id}>
                       <td>
-                        <strong>{id || "—"}</strong>
+                        <strong>{displayValue(id)}</strong>
                       </td>
 
-                      <td>{student.name || "—"}</td>
-
-                      <td>{student.phoneNumber || "—"}</td>
+                      <td>{displayValue(student.name)}</td>
 
                       <td>
-                        {student.courseId || student.course || "—"}
+                        {displayValue(student.universityRollNo)}
                       </td>
 
                       <td>
-                        {student.sessionId ||
+                        {displayValue(student.courseId || student.course)}
+                      </td>
+
+                      <td>
+                        {displayValue(
+                          student.sessionId ||
                           student.session ||
-                          student.admissionYear ||
-                          "—"}
+                          student.admissionYear
+                        )}
                       </td>
 
                       <td>
@@ -1577,21 +2603,33 @@ export function StudentList() {
                       </td>
 
                       <td>
-                        {active ? (
+                        <div className="sl-row-actions">
                           <button
-                            className="sl-deactivate"
-                            onClick={() => deactivateStudent(student)}
-                            disabled={workingId === id}
+                            type="button"
+                            className="sl-view"
+                            title="View full student details"
+                            aria-label={`View details for ${student.name || id}`}
+                            onClick={() => setSelectedStudent(student)}
                           >
-                            {workingId === id
-                              ? <LoaderCircle className="sm-spin" size={13} />
-                              : <UserX size={13} />}
-
-                            Deactivate
+                            <Eye size={15} />
                           </button>
-                        ) : (
-                          <span className="sl-count">No action</span>
-                        )}
+
+                          {active ? (
+                            <button
+                              className="sl-deactivate"
+                              onClick={() => deactivateStudent(student)}
+                              disabled={workingId === id}
+                            >
+                              {workingId === id
+                                ? <LoaderCircle className="sm-spin" size={13} />
+                                : <UserX size={13} />}
+
+                              Deactivate
+                            </button>
+                          ) : (
+                            <span className="sl-count">Inactive</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1600,6 +2638,8 @@ export function StudentList() {
             </tbody>
           </table>
         </div>
+
+        {/* PAGINATION */}
 
         <div className="sl-pagination">
           <div className="sl-count">
@@ -1622,6 +2662,7 @@ export function StudentList() {
             <button
               onClick={() => setPage(1)}
               disabled={page === 1}
+              title="First page"
             >
               <ChevronsLeft size={14} />
             </button>
@@ -1629,6 +2670,7 @@ export function StudentList() {
             <button
               onClick={() => setPage(value => Math.max(1, value - 1))}
               disabled={page === 1}
+              title="Previous page"
             >
               <ChevronLeft size={14} />
             </button>
@@ -1640,6 +2682,7 @@ export function StudentList() {
             <button
               onClick={() => setPage(value => Math.min(totalPages, value + 1))}
               disabled={page === totalPages}
+              title="Next page"
             >
               <ChevronRight size={14} />
             </button>
@@ -1647,12 +2690,96 @@ export function StudentList() {
             <button
               onClick={() => setPage(totalPages)}
               disabled={page === totalPages}
+              title="Last page"
             >
               <ChevronsRight size={14} />
             </button>
           </div>
         </div>
       </section>
+
+      {/* STUDENT DETAILS POPUP */}
+      {selectedStudent && (
+        <div
+          className="sl-modal-backdrop"
+          onMouseDown={event => {
+            if (event.target === event.currentTarget) {
+              setSelectedStudent(null);
+            }
+          }}
+        >
+          <section
+            className="sl-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="student-detail-title"
+          >
+            <div className="sl-modal-head">
+              <div>
+                <h2 id="student-detail-title">Student Details</h2>
+                <p>Read-only student information</p>
+              </div>
+
+              <button
+                type="button"
+                className="sl-modal-close"
+                onClick={() => setSelectedStudent(null)}
+                aria-label="Close student details"
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className="sl-profile-banner">
+              <div className="sl-profile-identity">
+                <strong>{displayValue(selectedStudent.name)}</strong>
+                <span>({displayValue(selectedStudent.studentId)})</span>
+              </div>
+
+              <div className="sl-profile-status-wrap">
+                <span className="sl-profile-status-label">ACCOUNT STATUS</span>
+                <span className={`sl-profile-status ${activeStudent(selectedStudent) ? "active" : "inactive"}`}>
+                  {activeStudent(selectedStudent) ? "ACTIVE" : "INACTIVE"}
+                </span>
+              </div>
+            </div>
+
+            <div className="sl-detail-sections">
+              {detailSections.map((section, sectionIndex) => (
+                <section className="sl-detail-section" key={section.title}>
+                  <h3 className="sl-detail-section-head">
+                    <span className="sl-detail-section-head-icon">
+                      {section.icon}
+                    </span>
+                    {section.title}
+                  </h3>
+
+                  <div className="sl-detail-fields">
+                    {section.fields.map((field, fieldIndex) => (
+                      <div
+                        className="sl-detail-field"
+                        key={field.label}
+                        style={{
+                          animationDelay: `${0.12 + sectionIndex * 0.08 + fieldIndex * 0.045}s`
+                        }}
+                      >
+                        <span className="sl-detail-field-icon">
+                          {field.icon}
+                        </span>
+                        <span className="sl-detail-field-copy">
+                          <span>{field.label}</span>
+                          <strong>{displayValue(field.value)}</strong>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
+

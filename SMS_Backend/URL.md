@@ -101,7 +101,7 @@
 
 ### Teacher-Subject assign by Admin's Token
 - `POST http://localhost:8080/api/admin/upload/assignments`
-
+- `GET http://localhost:8080/api/admin/upload/assignments`
 
 	
 

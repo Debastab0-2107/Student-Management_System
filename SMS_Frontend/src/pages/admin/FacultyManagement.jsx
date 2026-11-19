@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import api from "../../services/api";
 import * as XLSX from "xlsx";
@@ -17,6 +16,7 @@ import {
   LoaderCircle,
   GraduationCap,
   UserRound,
+  Eye,
   Printer,
   FileDown,
   RotateCcw,
@@ -91,6 +91,7 @@ export default function FacultyManagement() {
   const [notice, setNotice] = useState({ type: "", text: "" });
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
 
@@ -125,6 +126,18 @@ export default function FacultyManagement() {
   useEffect(() => {
     loadFaculty();
   }, []);
+
+  // Close the read-only faculty details popup with Escape.
+  useEffect(() => {
+    if (!selectedFaculty) return undefined;
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") setSelectedFaculty(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [selectedFaculty]);
 
   const departmentOptions = useMemo(() => {
     return [
@@ -1757,6 +1770,111 @@ body {
   overflow: visible !important;
 }
         }
+
+        /* ===== STUDENT LISTING VISUAL LANGUAGE ===== */
+        .fm-stats {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 13px;
+          margin-bottom: 18px;
+        }
+        .fm-stat {
+          min-height: 88px;
+          padding: 15px 18px;
+          border: 1.5px solid #d9c69e;
+          border-radius: 13px;
+          background: #fffaf0;
+          box-shadow: 0 5px 15px rgba(32,41,69,.07);
+        }
+        .fm-stat-label { color: #806b45; font-size: 12px; letter-spacing: .2px; text-transform: none; }
+        .fm-stat strong { margin-top: 8px; color: #202945; font-size: 30px; }
+        .fm-stat small { color: #8d826d; font-size: 10px; }
+        .fm-stat.active-card {
+          border-color: #20734d;
+          color: #fff;
+          background: linear-gradient(120deg, #20734D, #31915F);
+        }
+        .fm-stat.inactive-card {
+          border-color: #a33d43;
+          color: #fff;
+          background: linear-gradient(120deg, #A33D43, #C45459);
+        }
+        .fm-stat.active-card .fm-stat-label,
+        .fm-stat.active-card strong,
+        .fm-stat.active-card small,
+        .fm-stat.inactive-card .fm-stat-label,
+        .fm-stat.inactive-card strong,
+        .fm-stat.inactive-card small { color: #fff; }
+        .fm-stat.active-card .fm-stat-icon,
+        .fm-stat.inactive-card .fm-stat-icon { color: #fff; background: #ffffff20; }
+
+        .fm-workspace-heading {
+          margin: 0 0 0;
+          border: 0;
+          border-radius: 14px 14px 0 0;
+          color: #fff;
+          background: linear-gradient(120deg, #202945, #303b5d);
+        }
+        .fm-workspace-title h2 { color: #fff; }
+        .fm-workspace-title p { color: #d5d9e3; }
+        .fm-title-icon { border-color: #d5b87566; color: #f0d49a; background: #ffffff12; }
+        .fm-filter-shell {
+          border: 1px solid #303b5d;
+          border-radius: 13px;
+          color: #fff;
+          background: linear-gradient(125deg, #202945, #303b5d);
+          box-shadow: 0 8px 20px #20294518;
+        }
+        .fm-filter-heading h3 { color: #fff; font-size: 13px; }
+        .fm-filter-heading p { color: #cbd1df; }
+        .fm-filter-heading-icon { color: #f0d49a; background: #ffffff16; }
+        .fm-subtle-btn { border-color: #ffffff35; color: #f5e6c5; background: #ffffff10; }
+        .fm-subtle-btn:hover { border-color: #e5c681; color: #fff; background: #ffffff1c; }
+        .fm-filter-group { border-color: #ffffff24; background: #ffffff0d; }
+        .fm-filter-group h4 { color: #e6cc96; }
+        .fm-check { color: #edf0f6; }
+        .fm-check:hover { color: #f3d99f; }
+        .fm-check input { accent-color: #d2ad65; }
+
+        .fm-table-frame { border: 1.5px solid #c6a45f; border-radius: 11px; }
+        .fm-table { border-collapse: separate; border-spacing: 0; }
+        .fm-table th {
+          color: #fff;
+          border-bottom: 1px solid #d0ad68;
+          background: linear-gradient(110deg, #202945 0%, #303b5d 68%, #9b7944 100%);
+          font-size: 10px;
+        }
+        .fm-table td { border-bottom: 1px solid #dfc98f; color: #41465a; }
+        .fm-table tbody tr:nth-child(odd) { background: #fffaf0; }
+        .fm-table tbody tr:nth-child(even) { background: #fff4d9; }
+        .fm-table tbody tr:hover { background: #f5e8c7; }
+        .fm-table td strong, .fm-person-name { color: #202945; }
+        .fm-pagination { border-top: 1px solid #d9c28b; background: #fffaf0; }
+        .fm-icon-btn.view { color: #87662f; border-color: #e4d3ad; background: #fffaf0; }
+        .fm-icon-btn.view:hover { color: #fff; border-color: #303b5d; background: #303b5d; }
+
+        .fm-detail-modal { width: min(100%, 720px); padding: 0; overflow: hidden; }
+        .fm-detail-modal .fm-modal-head { padding: 21px 24px; margin: 0; border-bottom: 1px solid #eee5d3; background: #fffaf0; }
+        .fm-detail-banner {
+          display: flex; align-items: center; justify-content: space-between; gap: 15px;
+          padding: 19px 24px; color: #fff;
+          background: linear-gradient(115deg, #202945, #303b5d 72%, #80653c);
+        }
+        .fm-detail-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .fm-detail-avatar { width: 45px; height: 45px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #e7cc91; border-radius: 13px; color: #f0d49a; background: #ffffff15; }
+        .fm-detail-identity strong { display: block; color: #fff; font-size: 16px; }
+        .fm-detail-identity span { display: block; margin-top: 4px; color: #e0e4ec; font-size: 10px; }
+        .fm-detail-status { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 20px; color: #fff; background: #ffffff20; font-size: 9px; font-weight: 800; letter-spacing: .6px; }
+        .fm-detail-status.inactive { background: #b94d55; }
+        .fm-detail-content { display: grid; gap: 14px; max-height: 58vh; overflow: auto; padding: 20px 24px 24px; }
+        .fm-detail-section { padding: 14px; border: 1px solid #eadfc8; border-radius: 11px; background: #fffdf8; }
+        .fm-detail-section h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #303b5d; font-size: 10px; letter-spacing: .7px; }
+        .fm-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+        .fm-detail-item { min-width: 0; padding: 10px 11px; border: 1px solid #f0e8d8; border-radius: 8px; background: #fff; }
+        .fm-detail-item span { display: block; margin-bottom: 5px; color: #8c806b; font-size: 9px; }
+        .fm-detail-item strong { display: block; overflow-wrap: anywhere; color: #303b5d; font-size: 11px; font-weight: 700; }
+
+        @media(max-width:720px) { .fm-stats { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+        @media(max-width:560px) { .fm-stats { grid-template-columns: 1fr; } .fm-detail-grid { grid-template-columns: 1fr; } .fm-detail-banner { align-items: flex-start; flex-direction: column; } }
       `}</style>
 
       <div className="fm-print-area">
@@ -1804,37 +1922,28 @@ body {
         <section className="fm-stats fm-no-print">
           <div className="fm-stat">
             <div className="fm-stat-top">
-              <span className="fm-stat-label">Filtered Faculty</span>
+              <span className="fm-stat-label">Matching Faculty</span>
               <div className="fm-stat-icon"><Users size={16} /></div>
             </div>
             <strong>{filteredFaculty.length}</strong>
             <small>Matching current filters</small>
           </div>
 
-          <div className="fm-stat">
+          <div className="fm-stat active-card">
             <div className="fm-stat-top">
-              <span className="fm-stat-label">Permanent Faculty</span>
-              <div className="fm-stat-icon"><GraduationCap size={16} /></div>
-            </div>
-            <strong>{permanentCount}</strong>
-            <small>In current listing</small>
-          </div>
-
-          <div className="fm-stat">
-            <div className="fm-stat-top">
-              <span className="fm-stat-label">Visiting Faculty</span>
-              <div className="fm-stat-icon"><UserRound size={16} /></div>
-            </div>
-            <strong>{visitingCount}</strong>
-            <small>In current listing</small>
-          </div>
-
-          <div className="fm-stat">
-            <div className="fm-stat-top">
-              <span className="fm-stat-label">Active / Inactive</span>
+              <span className="fm-stat-label">Active Faculty</span>
               <div className="fm-stat-icon"><ShieldCheck size={16} /></div>
             </div>
-            <strong>{activeCount} / {inactiveCount}</strong>
+            <strong>{activeCount}</strong>
+            <small>In current listing</small>
+          </div>
+
+          <div className="fm-stat inactive-card">
+            <div className="fm-stat-top">
+              <span className="fm-stat-label">Inactive Faculty</span>
+              <div className="fm-stat-icon"><UserX size={16} /></div>
+            </div>
+            <strong>{inactiveCount}</strong>
             <small>In current listing</small>
           </div>
         </section>
@@ -2069,7 +2178,7 @@ body {
                         </td>
                       </tr>
                     ) : (
-                      filteredFaculty.map((person, index) => {
+                      paginatedFaculty.map((person, index) => {
                         const type = getFacultyType(person);
                         const active = isFacultyActive(person);
 
@@ -2127,6 +2236,16 @@ body {
 
                             <td className="fm-no-print">
                               <div className="fm-row-actions">
+                                <button
+                                  className="fm-icon-btn view"
+                                  type="button"
+                                  title="View Faculty Details"
+                                  aria-label={`View details for ${person.name || person.teacherId}`}
+                                  onClick={() => setSelectedFaculty(person)}
+                                >
+                                  <Eye size={14} />
+                                </button>
+
                                 {type === "VISITING" && active && (
                                   <button
                                     className="fm-icon-btn"
@@ -2454,6 +2573,74 @@ body {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {/* Read-only Faculty Details popup opened by the eye button */}
+      {selectedFaculty && (
+        <div
+          className="fm-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedFaculty(null);
+          }}
+        >
+          <section
+            className="fm-modal fm-detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fm-faculty-detail-title"
+          >
+            <div className="fm-modal-head">
+              <div>
+                <h2 id="fm-faculty-detail-title">Faculty Details</h2>
+                <p>Read-only faculty information</p>
+              </div>
+              <button
+                type="button"
+                className="fm-close"
+                onClick={() => setSelectedFaculty(null)}
+                aria-label="Close faculty details"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <div className="fm-detail-banner">
+              <div className="fm-detail-identity">
+                <div className="fm-detail-avatar"><UserRound size={22} /></div>
+                <div>
+                  <strong>{safeText(selectedFaculty.name) || "—"}</strong>
+                  <span>Teacher ID: {safeText(selectedFaculty.teacherId) || "—"}</span>
+                </div>
+              </div>
+              <span className={`fm-detail-status ${isFacultyActive(selectedFaculty) ? "" : "inactive"}`}>
+                {isFacultyActive(selectedFaculty) ? "ACTIVE" : "INACTIVE"}
+              </span>
+            </div>
+
+            <div className="fm-detail-content">
+              <section className="fm-detail-section">
+                <h3><UserRound size={15} /> PERSONAL & CONTACT INFORMATION</h3>
+                <div className="fm-detail-grid">
+                  <div className="fm-detail-item"><span>Faculty Name</span><strong>{safeText(selectedFaculty.name) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Teacher ID</span><strong>{safeText(selectedFaculty.teacherId) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Phone Number</span><strong>{safeText(selectedFaculty.phoneNumber) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Alternate Phone Number</span><strong>{safeText(selectedFaculty.alternatePhoneNumber) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Email Address</span><strong>{safeText(selectedFaculty.email) || "—"}</strong></div>
+                </div>
+              </section>
+
+              <section className="fm-detail-section">
+                <h3><GraduationCap size={15} /> EMPLOYMENT & ACADEMIC INFORMATION</h3>
+                <div className="fm-detail-grid">
+                  <div className="fm-detail-item"><span>Department</span><strong>{safeText(selectedFaculty.deptId) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Faculty Type</span><strong>{getFacultyType(selectedFaculty) === "PERMANENT" ? "Permanent" : getFacultyType(selectedFaculty) === "VISITING" ? "Visiting" : getFacultyType(selectedFaculty)}</strong></div>
+                  <div className="fm-detail-item"><span>Educational Details</span><strong>{safeText(selectedFaculty.educationalDetails) || "—"}</strong></div>
+                  <div className="fm-detail-item"><span>Account Status</span><strong>{isFacultyActive(selectedFaculty) ? "Active" : "Inactive"}</strong></div>
+                </div>
+              </section>
+            </div>
           </section>
         </div>
       )}

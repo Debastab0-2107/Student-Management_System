@@ -422,46 +422,72 @@ public class AdminController {
      * Password hashes and other sensitive authentication
      * information are deliberately excluded.
      */
-    @GetMapping("/students")
-    public ResponseEntity<?> getAllStudents() {
 
-        try {
+@GetMapping("/students")
+public ResponseEntity<?> getAllStudents() {
 
-            List<Student> students = studentService.findAll();
+    try {
 
-            List<Map<String, Object>> response = new ArrayList<>();
+        List<Student> students = studentService.findAll();
 
-            for (Student student : students) {
+        List<Map<String, Object>> response = new ArrayList<>();
 
-                Map<String, Object> studentData = new HashMap<>();
+        for (Student student : students) {
 
-                studentData.put("studentId", student.getStudentId());
-                studentData.put("name", student.getName());
-                studentData.put("phoneNumber", student.getPhoneNumber());
-                studentData.put("email", student.getEmail());
-                studentData.put("courseId", student.getCourseId());
-                studentData.put("sessionId", student.getSessionId());
-                studentData.put("active", student.isActive());
-                studentData.put(
-                        "status",
-                        student.isActive() ? "ACTIVE" : "INACTIVE"
-                );
+            Map<String, Object> studentData = new HashMap<>();
 
-                response.add(studentData);
-            }
+            // Basic student details
+            studentData.put("studentId", student.getStudentId());
+            studentData.put("name", student.getName());
+            studentData.put("phoneNumber", student.getPhoneNumber());
+            studentData.put("email", student.getEmail());
 
-            return ResponseEntity.ok(response);
+            // Academic details
+            studentData.put("courseId", student.getCourseId());
+            studentData.put("sessionId", student.getSessionId());
+            studentData.put("currentSemesterId", student.getCurrentSemesterId());
 
-        } catch (Exception e) {
+            // University details
+            studentData.put("universityRollNo", student.getUniversityRollNo());
+            studentData.put("universityRegistrationNo", student.getUniversityRegistrationNo());
 
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "message",
-                            "Failed to retrieve student list"
-                    ));
+            // Personal details
+            studentData.put("dateOfBirth", student.getDateOfBirth());
+
+            // Parent details
+            studentData.put("fatherName", student.getFatherName());
+            studentData.put("fatherPhoneNumber", student.getFatherPhoneNumber());
+            studentData.put("motherName", student.getMotherName());
+            studentData.put("motherPhoneNumber", student.getMotherPhoneNumber());
+
+            // Account status
+            studentData.put("active", student.isActive());
+            studentData.put(
+                    "status",
+                    student.isActive() ? "ACTIVE" : "INACTIVE"
+            );
+
+            // Never include passwordHash or authentication secrets.
+            response.add(studentData);
         }
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+
+        org.slf4j.LoggerFactory
+                .getLogger(AdminController.class)
+                .error("Failed to retrieve admin student list", e);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "message",
+                        "Failed to retrieve student list"
+                ));
     }
+}
+
     
     /**
      * Uploads subjects using an administrator Excel file.

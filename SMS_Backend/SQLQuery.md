@@ -191,3 +191,6 @@
 
 ### After testing, restore the assignment:
 	UPDATE subject_teacher_assignment SET is_active = 1 WHERE teacher_id = 'TEST_RF_2026_004'  AND subject_id = 'MCAN-105'  AND session_id = '2026-28';
+	
+
+    

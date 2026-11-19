@@ -6,7 +6,10 @@ import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.dao.SubjectTeacherAssignmentDao;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.example.demo.dto.response.SubjectTeacherAssignmentResponse;
 @Repository
 public class SubjectTeacherAssignmentDaoImpl implements SubjectTeacherAssignmentDao {
     private final SessionFactory sessionFactory;
@@ -169,4 +172,51 @@ public class SubjectTeacherAssignmentDaoImpl implements SubjectTeacherAssignment
             return count != null && count.longValue() > 0;
         }
     }
+    
+
+@Override
+public List<SubjectTeacherAssignmentResponse> getActiveAssignments() {
+
+    try (Session session = sessionFactory.openSession()) {
+
+        List<Object[]> rows = session.createNativeQuery(
+                "SELECT " +
+                "a.teacher_id, " +
+                "f.name, " +
+                "f.status, " +
+                "a.subject_id, " +
+                "s.subject_name, " +
+                "a.session_id " +
+                "FROM subject_teacher_assignment a " +
+                "JOIN faculty f ON f.teacher_id = a.teacher_id " +
+                "JOIN subject s ON s.subject_id = a.subject_id " +
+                "WHERE a.is_active = 1 " +
+                "ORDER BY s.subject_name, a.session_id, f.name"
+        ).getResultList();
+
+        List<SubjectTeacherAssignmentResponse> assignments =
+                new ArrayList<>();
+
+        for (Object[] row : rows) {
+
+            boolean teacherActive = Boolean.TRUE.equals(row[2]);
+
+            SubjectTeacherAssignmentResponse assignment =
+                    new SubjectTeacherAssignmentResponse(
+                            (String) row[0],
+                            (String) row[1],
+                            teacherActive,
+                            (String) row[3],
+                            (String) row[4],
+                            (String) row[5]
+                    );
+
+            // THIS LINE WAS MISSING
+            assignments.add(assignment);
+        }
+
+        return assignments;
+    }
+}
+
 }

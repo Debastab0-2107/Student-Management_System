@@ -1,4 +1,7 @@
 package com.example.demo.dao;
+import java.util.List;
+import com.example.demo.dto.response.SubjectTeacherAssignmentResponse;
+
 
 public interface SubjectTeacherAssignmentDao {
     boolean isActiveTeacher(String teacherId);
@@ -18,4 +21,5 @@ public interface SubjectTeacherAssignmentDao {
     boolean isActiveSubjectInSemester(
             String subjectId,
             String semesterId);
+    List<SubjectTeacherAssignmentResponse> getActiveAssignments();
 }
